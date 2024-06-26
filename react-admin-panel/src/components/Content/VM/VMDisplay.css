@@ -50,8 +50,7 @@
 /* PREVIEW */
 
 #VMDataDisplay > #Preview {
-    padding: 0.5rem;
-    display: flex;   
+    display: flex;
     
     grid-row: 1;
     grid-column: 2 / 5;

@@ -1,7 +1,7 @@
-import './VMDataDisplay.css';
+import './VMDisplay.css';
 import React from 'react'
 
-export default function VMDataDisplay() {
+export default function VMDataDisplay({currentDisplay}) {
   return (
     <div id='VMDataDisplay'>
         <div id='PrimaryInfo'>
@@ -22,7 +22,6 @@ export default function VMDataDisplay() {
                     <li>Adres: 172.16.100.1/24 (VLAN 16)</li>
                     <li>Adres: 10.0.0.69/24 (ADMIN)</li>
                 </ul>
-
             </ul>
         </div>
         <div id='Preview'>
