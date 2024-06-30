@@ -1,0 +1,13 @@
+#NetworkPanel{
+    position: relative;
+    display: flex;
+    flex: 1;
+
+    padding: 2vh;
+}
+
+#NetworkPanel .test{
+    width: 50px;
+    height: 50px;
+    background-color:navy;
+}

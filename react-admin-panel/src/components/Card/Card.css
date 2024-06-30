@@ -11,4 +11,5 @@
 
     font-size: 1rem;
     color: var(--text-primary);
+    text-decoration: none;
 }
