@@ -2,8 +2,9 @@
 /* RESET PROPERTIES */
 /* ############################## */
 
-html, body, h1,h2,h3,h4,h5 {
+html, body, h1,h2,h3,h4,h5, :root {
     margin: 0;
+    padding: 0;
 }
 
 a{
@@ -44,7 +45,7 @@ button{
 [color-mode="dark"]{
     --background-color: #1f030a;
     --nav-color: #130206;
-    --header-color: #050102;
+    --header-color: #000000;
     --line-color: #130206;
     --text-primary: #f2f2f2;
     --text-secondary: #f2f2f2;
@@ -62,11 +63,16 @@ button{
 /* CSS */
 /* ############################## */
 
+html, body, #root {
+    flex: 1;
+    display: flex;
+    min-height: 100vh;
+}
+
 #App{
+    flex: 1;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    
-    min-height: 100vh;
 
     background-color: var(--background-color);
     color: var(--text-primary);
@@ -85,31 +91,7 @@ hr{
     opacity: 0.25;
 }
 
-header{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 10px 20px;
-    min-height: 50px;
-
-    background-color: var(--header-color);
-    border-bottom: solid var(--line-color) 2.5px;
-    color: var(--text-secondary);
-}
-
 main{
     display: flex;
-}
 
-main > nav{
-    min-width: 250px;
-
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    
-    padding: 10px;
-
-    background-color: var(--nav-color);
 }

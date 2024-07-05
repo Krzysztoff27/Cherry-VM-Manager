@@ -1,7 +1,11 @@
 import React from 'react'
+import Navigation from '../../components/Navigation/Navigation'
 
 export default function MainPage() {
   return (
-    <div>MainPage</div>
+    <>
+      <Navigation/>
+      <div>MainPage</div>
+    </>
   )
 }

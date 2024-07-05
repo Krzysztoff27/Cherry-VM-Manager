@@ -1,43 +1,53 @@
-import './App.css';
-import './Fonts.css';
-import { useState } from 'react';
+import { useMemo } from 'react';
+import { useCookies } from 'react-cookie'
+import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
 import useLocalStorage from 'use-local-storage';
-import Toggle from '../Toggle/Toggle';
-import Card from '../Card/Card';
+
 import MainPage from '../../Pages/Main/MainPage.jsx';
 import NetworkPanel from '../../Pages/NetworkPanel/NetworkPanel.jsx';
 import VirtualMachine from '../../Pages/VirtualMachine/VirtualMachine.jsx';
-import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import LoginPage from '../../Pages/Login/LoginPage.jsx';
+import Header from '../Header/Header.jsx';
+import useFetch from '../../hooks/useFetch.jsx';
+import UsersPage from '../../Pages/UsersPage/UsersPage.jsx';
+
+import './App.css';
+import './Fonts.css';
+
+const API_URL = 'http://localhost:8000';
 
 function App() {
+    const [cookies, setCookies] = useCookies(['token']);
     const [isDarkMode, setIsDarkMode] = useLocalStorage('isDarkMode', true);
 
-    const changeColorMode = () => setIsDarkMode(!isDarkMode);              
+    const authOptions = useMemo(() => cookies.token ? {
+        headers: {
+            'accept': 'application/json',
+            'Authorization': 'Bearer ' + cookies.token,
+        }
+    } : null, [cookies.token]);
+
+    const {loading: authLoading, error: authError, data: user} = useFetch(API_URL + '/user', authOptions);
+
+    const changeColorMode = () => setIsDarkMode(!isDarkMode);
+    const setToken = (token) => setCookies('token', token, {path: '/'});
+
+    if(authLoading || authError) return ( 
+        <div id='App' color-mode={isDarkMode ? 'dark' : 'light'}>
+            <LoginPage setToken={setToken} API_URL={API_URL}/>
+        </div>
+    )
 
     return (
         <Router>
             <div id='App' color-mode={isDarkMode ? 'dark' : 'light'}>
-                <header>
-                    <h3>🍒 Wiśniowy Panel Kontrolny</h3>
-                    
-                    <Toggle 
-                        label={isDarkMode ? 'Tryb ciemny' : 'Tryb jasny'}
-                        id='colorModeToggle' 
-                        isChecked={isDarkMode} 
-                        handleChange={changeColorMode}
-                    />
-                </header>
+                <Header isDarkMode={isDarkMode} changeColorModeFunc={changeColorMode} user={user} logoutFunc={() => setToken(null)}/>
                 <main>
-                    <nav>
-                        <Card name="Strona Główna" link='/'/>
-                        {/* <Card name="Panel Sieci" link='/panel-sieci'/> */}
-                        <Card name="Desktop 1" link='/wirtualka/1'/>
-                    </nav>
-                    
                     <Routes>
                         <Route exact path='/' element={<MainPage/>}/>
-                        {/* <Route path='/panel-sieci' element={<NetworkPanel/>}/> */}
-                        <Route path='/wirtualka/:id' element={<VirtualMachine/>}/>
+                        <Route path='/vm/:id' element={<VirtualMachine/>}/>
+                        <Route path='/uzytkownicy' element={<UsersPage/>}/>
+                        <Route path='/panel-sieci' element={<NetworkPanel/>}/>
                     </Routes>
                 </main>
             </div>
