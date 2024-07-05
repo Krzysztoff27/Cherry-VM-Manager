@@ -84,6 +84,7 @@ logs
 *.sql
 *.sqlite
 *.sqlite3
+*db.json
 
 npm-debug.log*
 yarn-debug.log*
@@ -101,6 +102,8 @@ ssl
 nbproject
 public/uploads/*
 !public/uploads/.gitkeep
+
+__pycache__
 
 ############################
 # Node.js
