@@ -15,13 +15,13 @@ import jwt, pwd, grp, pam, logging
 
 load_dotenv()
 
-try:
-    SECRET_KEY = str(getenv('SECRET_KEY'))
-    ALGORITHM = str(getenv('ALGORITHM'))
-    ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
-    ACCESS_GROUP_GID = int(getenv('ACCESS_GROUP_GID'))
-except:
-    raise Exception('Lacking .env configuration')
+SECRET_KEY = getenv('SECRET_KEY')
+ALGORITHM = getenv('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES', default=5))
+ACCESS_GROUP_GID = int(getenv('ACCESS_GROUP_GID') or 0) or None
+
+if not SECRET_KEY or not ALGORITHM:
+    raise Exception('[!] SECRET_KEY or ALGORITHM not set in the .env configuration')
 
 app = FastAPI()
 app.add_middleware(
@@ -56,6 +56,8 @@ def get_user(username):
     
 
 def is_user_in_access_group(username):
+    if not ACCESS_GROUP_GID: 
+        return True
     try:
         if username in grp.getgrgid(ACCESS_GROUP_GID): 
             return True
