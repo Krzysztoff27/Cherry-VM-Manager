@@ -15,10 +15,13 @@ import jwt, pwd, grp, pam, logging
 
 load_dotenv()
 
-SECRET_KEY = getenv('SECRET_KEY')
-ALGORITHM = getenv('ALGORITHM')
-ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
-ACCESS_GROUP_GID = int(getenv('ACCESS_GROUP_GID'))
+try:
+    SECRET_KEY = str(getenv('SECRET_KEY'))
+    ALGORITHM = str(getenv('ALGORITHM'))
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
+    ACCESS_GROUP_GID = int(getenv('ACCESS_GROUP_GID'))
+except:
+    raise Exception('Lacking .env configuration')
 
 app = FastAPI()
 app.add_middleware(
