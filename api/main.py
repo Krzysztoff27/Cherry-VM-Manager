@@ -55,11 +55,12 @@ def get_user(username):
         return None
     
 
-def is_user_in_access_group(username):
+def is_user_in_access_group(username: str):
     if not ACCESS_GROUP_GID: 
         return True
+    group_members = grp.getgrgid(ACCESS_GROUP_GID).gr_mem
     try:
-        if username in grp.getgrgid(ACCESS_GROUP_GID): 
+        if username in group_members:
             return True
         return False
     except:
@@ -67,7 +68,7 @@ def is_user_in_access_group(username):
     
 
 def authenticate_user(username: str, password: str):
-    authenticated = pam.authenticate(username, password)  
+    authenticated = pam.authenticate(username, password)
     if not authenticated:
         return False
     if not is_user_in_access_group(username):
