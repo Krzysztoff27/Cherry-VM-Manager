@@ -4,3 +4,4 @@ pyjwt
 passlib[bcrypt]
 pydantic
 python-dotenv
+python-pam
