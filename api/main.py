@@ -37,6 +37,9 @@ logging.getLogger('passlib').setLevel(logging.ERROR) # silence the error caused 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+################################
+# authentication & authorization
+################################
 
 class Token(BaseModel):
     access_token: str
@@ -121,3 +124,39 @@ async def login_for_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return Token(access_token=access_token, token_type="bearer")
+
+
+################################
+# requests
+################################
+
+class VM_Data(BaseModel):
+    name: str | None = None
+    port: int | None = None
+    # add more parameters here
+
+@app.post("/vm") # request for data of all VMs
+async def get_all_vms_data(
+    current_user: Annotated[User, Depends(get_current_user)], # added for authentication, if not logged in the exception would be raised and the function won't execute
+) -> dict[int, VM_Data]: # should return a dictionary of virtual machine data objects
+    # ...
+    # ...
+    # ...
+    # example return:
+    return {
+        1: VM_Data(name='Desktop 1', port=1337),
+        2: VM_Data(name='Server 1', port=6969),
+        3: VM_Data(name='Desktop 2'),
+        #...
+    }
+
+@app.post("/vm/{id}") # request for data of a specific VM
+async def get_vm_data(
+    id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> VM_Data: # returns a singular virtual machine data object
+    # ...
+    # ...
+    # ...
+    # example return:
+    return VM_Data(name=f'Desktop {id}', port=id * 1000)
