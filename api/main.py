@@ -153,7 +153,7 @@ example_VM = VM_Data(
     active = False
 )
 
-@app.post("/vm") # request for data of all VMs
+@app.get("/vm") # request for data of all VMs
 async def get_all_vms_data(
     current_user: Annotated[User, Depends(get_current_user)], # added for authentication, if not logged in the exception would be raised and the function won't execute
 ) -> dict[int, VM_Data]: # should return a dictionary of virtual machine data objects
@@ -168,7 +168,7 @@ async def get_all_vms_data(
         #...
     }
 
-@app.post("/vm/{id}") # request for data of a specific VM
+@app.get("/vm/{id}") # request for data of a specific VM
 async def get_vm_data(
     id: int,
     current_user: Annotated[User, Depends(get_current_user)],
