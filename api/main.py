@@ -138,8 +138,20 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]
 
 class VM_Data(BaseModel):
     name: str | None = None
+    type: str | None = None
     port: int | None = None
+    domain: str | None = None
+    active: bool = False
+    active_connections: list = []
     # add more parameters here
+
+example_VM = VM_Data(
+    name = 'Maszyna 1', 
+    type = 'Desktop',
+    port = 1000,
+    domain = 'desktop1.wisniowa.oedu.pl',
+    active = False
+)
 
 @app.post("/vm") # request for data of all VMs
 async def get_all_vms_data(
@@ -165,4 +177,4 @@ async def get_vm_data(
     # ...
     # ...
     # example return:
-    return VM_Data(name=f'Desktop {id}', port=id * 1000)
+    return example_VM
