@@ -107,6 +107,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
     return user
 
+################################
+# auth requests
+################################
 
 @app.post("/token")
 async def login_for_access_token(
@@ -125,9 +128,12 @@ async def login_for_access_token(
     )
     return Token(access_token=access_token, token_type="bearer")
 
+@app.get("/user", response_model=User)
+async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]) -> User:
+    return current_user
 
 ################################
-# requests
+# data requests
 ################################
 
 class VM_Data(BaseModel):
