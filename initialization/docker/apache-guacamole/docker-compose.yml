@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  guacd:
+    restart: always
+    image: guacamole/guacd
+
+  guacamole-server:
+    env_file:
+      - ./credentials.env
+    restart: always
+    image: guacamole/guacamole
+    links:
+      - guacd
+      - database
+    ports:
+      - "8080:8080"
+    environment:
+      - GUACD_HOSTNAME=guacd
+      - POSTGRESQL_HOSTNAME=database
+      - POSTGRESQL_DATABASE=${GUACAMOLE_DATABASE}
+      - POSTGRESQL_USER=${GUACAMOLE_USER}
+      - POSTGRESQL_PASSWORD=${GUACAMOLE_PASSWORD}
+
+  database:
+    env_file:
+      - ./credentials.env
+    restart: always
+    image: postgres
+    environment:
+      - POSTGRES_USER=${GUACAMOLE_USER}
+      - POSTGRES_DB=${GUACAMOLE_DATABASE}
+      - POSTGRES_PASSWORD=${GUACAMOLE_PASSWORD}
+    volumes:
+      - ./db:/var/lib/postgresql/data:rw
+      - ./initdb.sql:/initdb.sql:ro
