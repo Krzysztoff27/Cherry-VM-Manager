@@ -1,37 +1,68 @@
-import React from 'react'
-import { Flex, NavLink, Tooltip, Space, Title, Avatar, Group, rem, Text, UnstyledButton } from '@mantine/core';
-import { IconDeviceDesktop, IconTerminal2, IconTopologyStar, IconChevronRight, IconCherryFilled, IconLogout } from '@tabler/icons-react';
-import { useLocation } from 'react-router-dom';
+import React, { useState } from 'react'
+import { Flex, NavLink, Tooltip, Space, Title, Avatar, Group, rem, Text, UnstyledButton, Container, InputWrapper, ScrollArea } from '@mantine/core';
+import { IconDeviceDesktop, IconTerminal2, IconTopologyStar, IconChevronRight, IconCherryFilled, IconLogout, IconX } from '@tabler/icons-react';
+import { Link, useNavigate } from 'react-router-dom';
+import useFetch from '../../hooks/useFetch.jsx';
+import { notifications } from '@mantine/notifications';
 
-const categories = [
-    {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines'},
-    {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops'},
-    {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
-]
+const categories = {
+    vm: {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines', subLinks: []},
+    pc: {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops', subLinks: []},
+    networkPanel: {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
+}
 
+const showError = (message, id) => {
+    if(id) notifications.hide(id);
 
-export default function NavBar({user, logout}) {
-    let location = useLocation().pathname;
-    const mainLinks = categories.map((category) => (
-        <Tooltip
-            label={category.label}
-            position='right'
-            withArrow
-            transitionProps={{duration: 0}}
-            key={category.label}
-        >
+    notifications.show({
+        id: id ?? 'default-id',
+        withCloseButton: true,
+        autoClose: 2000,
+        title: 'Wystąpił błąd',
+        message: message,
+        color: 'red',
+        icon: <IconX/>,
+        loading: false,
+    });
+};
+
+export default function NavBar({user, logout, API_URL, AUTH_OPTIONS}) {
+    const [active, setActive] = useState(0)
+    const [opened, setOpened] = useState(null)
+    const navigate = useNavigate();
+
+    const {error: VMError, data: VMData} = useFetch(API_URL + '/vm', AUTH_OPTIONS);
+
+    if(VMError) showError('Nie udało się pobrać danych o maszynach wirtualnych', 'vm');
+    if(VMData) {
+        categories.vm.subLinks = Object.values(VMData).map((vm, i) => (
             <NavLink
-                onClick={() => location = category.link}
-                active={location === category.link}
-                href={category.link}
-                label={category.label}
-                h='50'
-                variant="light"
-                leftSection={<category.icon stroke={1.5}/>}
-                rightSection={<IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />}
-            >
-            </NavLink>
-        </Tooltip>
+                label={vm.type + ' ' + vm.number}
+                key={i}
+                onClick={() => navigate(categories.vm.link + '/' + vm.id)}
+            /> 
+        ))
+    }
+
+    const mainLinks = Object.values(categories).map((category, i) => (
+        <NavLink
+            key={i}
+            onClick={() => {
+                setActive(i)
+                setOpened(opened === i ? null : i);
+                navigate(category.link);
+            }}
+            active={active === i}
+            opened={category.subLinks && opened === i}
+            label={category.label}
+            
+            h='50'
+            variant="light"
+            leftSection={<category.icon stroke={1.5}/>}
+            rightSection={<IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />}
+        >
+            {category.subLinks}
+        </NavLink>    
     ))
 
     return (
@@ -40,9 +71,7 @@ export default function NavBar({user, logout}) {
             justify='space-between'
             h='100%'
         >
-            <Flex
-                direction='column'
-            >
+            <ScrollArea p='sm'>
                 <Flex align='center' gap='sm'>
                     <IconCherryFilled style={{width: rem(44), height: rem(44)}}/>
                     <Title order={3}>Wiśniowy Panel Kontrolny</Title>
@@ -50,22 +79,13 @@ export default function NavBar({user, logout}) {
                 <Space h='sm'/>
                 <Flex direction='column'>
                     {mainLinks}
-
                 </Flex>
-            </Flex>
-            <Group>
-                <Avatar
-                    src="/icons/tux.png"
-                    radius="sm"
-                />
+            </ScrollArea>
+            <Group p='sm'>
+                <Avatar src="/icons/tux.png" radius="sm"/>
                 <div style={{ flex: 1 }}>
-                <Text size="sm" fw={500}>
-                    {user?.username ?? ''}
-                </Text>
-
-                <Text c="dimmed" size="xs">
-                    {'local@' + user?.username ?? ''}
-                </Text>
+                    <Text size="sm" fw={500}>{user?.username ?? ''}</Text>
+                    <Text c="dimmed" size="xs">{'local@' + user?.username ?? ''}</Text>
                 </div>
 
                 <UnstyledButton
