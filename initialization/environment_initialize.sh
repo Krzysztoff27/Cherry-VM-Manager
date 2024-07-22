@@ -1,7 +1,9 @@
 #!/bin/bash
 
-#Environmental variables - paths to files storing dependencies names to be installed
-ZYPPER_PACKAGES="./packages.txt"
+#Environmental variables - paths to files storing installation logs and dependencies names to be installed
+LOGS_FILE="./installation_logs.txt"
+ZYPPER_PACKAGES="./zypper_packages.txt"
+PYTHON_PACKAGES="./python_packages.txt" #DIRECTORY TO BE CHANGED IN FINAL VERSION
 
 #Force script to exit on ERR occurence
 set -e
@@ -9,13 +11,17 @@ set -e
 #Error handler to call on ERR occurence and print an error message
 error_handler(){
     echo "An error occured! Error code: $?"
+    echo -e "See the installation_logs.txt file for specific information.\n"
 }
 trap "error_handler" ERR
+
+purge_logs(){
+    > "$LOGS_FILE"
+}
 
 #Universal function to read dependenies names from a file
 read_file(){
     packages=()
-
     while IFS= read -r line || [[ -n "$line" ]]; do
         packages+=("$line")
     done < "$1"
@@ -26,16 +32,32 @@ read_file(){
 install_zypper(){
     read_file "$ZYPPER_PACKAGES"
     index=1
-
+    echo "[Stage I] - Zypper packages installation "
     echo -n "["$index"] Refreshing zypper repositories: "
-    zypper -n refresh > /dev/null 2>&1
+    zypper -n refresh >> "$LOGS_FILE" 2>&1 #/dev/null 2>&1
     echo 'OK'
-
     for line in "${packages[@]}"; do
         clean_line=$(echo "$line" | tr -cd '[:alnum:][=-=]')
         ((index++))
         echo -n "["$index"] Installing "$clean_line": "
-        zypper -n install "$clean_line" > /dev/null 2>&1
+        zypper -n install "$clean_line" >> "$LOGS_FILE" 2>&1  #/dev/null 2>&1
+        echo 'OK'
+    done
+    echo ""
+}
+
+install_python(){
+    read_file "$PYTHON_PACKAGES"
+    index=1
+    echo "[Stage II] - Python packages installation"
+
+    #INSERT VIRTUAL ENVIRONMENT INITIALIZATION TO PREVENT VERSION CONFLICTS
+
+    for line in "${packages[@]}"; do
+        clean_line=$(echo "$line" | tr -cd '[:alnum:][[]]')
+        echo -n "["$index"] Installing "$clean_line": "
+        ((index++))
+        #insert pip installation
         echo 'OK'
     done
 }
@@ -47,4 +69,6 @@ if (($EUID != 0)); then
 fi
 
 #Calls for certain functions - parts of the whole environment initialization process
+purge_logs #delete logs from previous installation process
 install_zypper
+install_python
