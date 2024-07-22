@@ -1,26 +1,22 @@
 import { useEffect, useState } from "react";
+import { API_URL, validPath } from './api.jsx';
 
-/**
- * Custom hook to fetch data from a given URL with options
- * @param {String} url - location of the JSON to fetch
- * @param {Object} options - fetch options including headers
- * @returns {Object} - loading, error, and data state
- */
-const useFetch = (url, options) => {
+const useFetch = (path, token = null, options = {}) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     
+    const fetchURL = API_URL + validPath(path);
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(url, options);
+                const response = await fetch(fetchURL, options);
                 if (!response.ok){
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
                 }
                 
                 const json = await response.json();
-
                 setData(json);
                 setError(null);
                 setLoading(false);
@@ -29,8 +25,8 @@ const useFetch = (url, options) => {
                 setLoading(false);
             }
         };
-        if(url) fetchData();
-    }, [url, options]);
+        fetchData();
+    }, [path, token]);
 
     return { loading, error, data };
 }

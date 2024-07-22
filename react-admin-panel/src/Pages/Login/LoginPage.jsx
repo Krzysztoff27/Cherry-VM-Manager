@@ -1,10 +1,11 @@
-import { Button, Center, Container, Divider, Fieldset, Group, PasswordInput, Space, Text, TextInput } from '@mantine/core';
-import { useForm, isNotEmpty} from '@mantine/form';
+import { Button, Center, Divider, Fieldset, Group, PasswordInput, Space, Text, TextInput } from '@mantine/core';
+import { useForm, isNotEmpty } from '@mantine/form';
 import React from 'react'
 import { IconX } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import usePost from '../../api/usePost';
 
-export default function LoginPage({setToken, API_URL}) {
+export default function LoginPage({ token, setToken }) {
     const form = useForm({
         mode: 'uncontrolled',
         validate: {
@@ -12,7 +13,7 @@ export default function LoginPage({setToken, API_URL}) {
             password: isNotEmpty(),
         }
     })
-    
+
     const showError = (message) => notifications.show({
         withCloseButton: true,
         autoClose: 10000,
@@ -24,27 +25,18 @@ export default function LoginPage({setToken, API_URL}) {
         loading: false,
     });
 
-    function authenticate(values) {
-        if(!API_URL) {
-            showError('Nie udało połączyć się z serwerem uwierzytelniającym.');
-            throw new Error('API URL not set')
-        }
-
-        fetch(API_URL + '/token', {
-            method: 'POST', 
-            headers: {'accept': 'application/json'},
-            body: new URLSearchParams({
-                username: values.username, 
-                password: values.password,
-            })
+    async function authenticate(values) {
+        usePost('/token', {
+            username: values.username,
+            password: values.password,
         })
         .then(response => {
-            if(!response.ok) return showError('Niepoprawny login lub hasło.')
+            if (!response.ok) return showError('Niepoprawny login lub hasło.');
             notifications.clean();
             return response.json();
         })
         .then(json => setToken(json.access_token))
-        .catch(err => showError())
+        .catch(_ => showError());
     }
 
     return (
@@ -54,9 +46,9 @@ export default function LoginPage({setToken, API_URL}) {
                     <Text size="xl" fw={500}>
                         Wiśniowy Panel Kontrolny
                     </Text>
-                    <Space h="sm"/>
-                    <Divider label="Zaloguj się dopuszczonym kontem serwerowym"/>
-                    <Space h="sm"/>
+                    <Space h="sm" />
+                    <Divider label="Zaloguj się dopuszczonym kontem serwerowym" />
+                    <Space h="sm" />
                     <TextInput
                         label="Nazwa użytkownika"
                         description=" "
@@ -65,7 +57,7 @@ export default function LoginPage({setToken, API_URL}) {
                         key={form.key('username')}
                         {...form.getInputProps('username')}
                     />
-                    <Space h="sm"/>
+                    <Space h="sm" />
                     <PasswordInput
                         label="Hasło"
                         description=" "

@@ -1,68 +1,75 @@
-import React, { useState } from 'react'
-import { Flex, NavLink, Tooltip, Space, Title, Avatar, Group, rem, Text, UnstyledButton, Container, InputWrapper, ScrollArea } from '@mantine/core';
-import { IconDeviceDesktop, IconTerminal2, IconTopologyStar, IconChevronRight, IconCherryFilled, IconLogout, IconX } from '@tabler/icons-react';
-import { Link, useNavigate } from 'react-router-dom';
-import useFetch from '../../hooks/useFetch.jsx';
-import { notifications } from '@mantine/notifications';
+import { Avatar, Container, Flex, Group, NavLink, rem, ScrollArea, Space, Text, Title, Tooltip, UnstyledButton, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
+import { IconCherryFilled, IconChevronRight, IconDeviceDesktop, IconLogout, IconMoon, IconSun, IconTerminal2, IconTopologyStar } from '@tabler/icons-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const categories = {
-    vm: {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines', subLinks: []},
-    pc: {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops', subLinks: []},
+    vm: {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines'},
+    pc: {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops'},
     networkPanel: {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
 }
 
-const showError = (message, id) => {
-    if(id) notifications.hide(id);
+function IconButton({onClick, label = null, children}) {
+    return (
+        <Tooltip label={label} hidden={!label}>
+            <UnstyledButton
+                onClick={onClick}
+                size="xl"
+                aria-label={label}
+            >
+                {children}
+            </UnstyledButton>
+        </Tooltip>
+    );
+}
 
-    notifications.show({
-        id: id ?? 'default-id',
-        withCloseButton: true,
-        autoClose: 2000,
-        title: 'Wystąpił błąd',
-        message: message,
-        color: 'red',
-        icon: <IconX/>,
-        loading: false,
-    });
-};
+function User({user, logout}){
+    const { setColorScheme } = useMantineColorScheme();
+    const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
+    const toggleColorScheme = () => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')
 
-export default function NavBar({user, logout, API_URL, AUTH_OPTIONS}) {
+    return (
+        <Group p='sm' pr='lg'>
+            <Avatar src="/icons/tux.png" radius="sm"/>
+            <div style={{ flex: 1 }}>
+                <Text size="sm" fw={500}>{user?.username ?? ''}</Text>
+                <Text c="dimmed" size="xs">{'local@' + (user?.username ?? '')}</Text>
+            </div>
+
+            <IconButton onClick={toggleColorScheme} label='Zmień motyw koloru'>
+                <Container lightHidden>
+                    <IconSun stroke={1.5}/>
+                </Container>
+                <Container darkHidden>
+                    <IconMoon stroke={1.5}/>
+                </Container>
+            </IconButton>
+            <IconButton onClick={logout} label='Wyloguj się'>
+                <IconLogout  stroke={1.5} />
+            </IconButton>
+        </Group>
+    );
+}
+
+export default function NavBar({user, logout}) {
     const [active, setActive] = useState(0)
-    const [opened, setOpened] = useState(null)
+    
     const navigate = useNavigate();
-
-    const {error: VMError, data: VMData} = useFetch(API_URL + '/vm', AUTH_OPTIONS);
-
-    if(VMError) showError('Nie udało się pobrać danych o maszynach wirtualnych', 'vm');
-    if(VMData) {
-        categories.vm.subLinks = Object.values(VMData).map((vm, i) => (
-            <NavLink
-                label={vm.type + ' ' + vm.number}
-                key={i}
-                onClick={() => navigate(categories.vm.link + '/' + vm.id)}
-            /> 
-        ))
-    }
-
     const mainLinks = Object.values(categories).map((category, i) => (
         <NavLink
             key={i}
             onClick={() => {
                 setActive(i)
-                setOpened(opened === i ? null : i);
                 navigate(category.link);
             }}
             active={active === i}
-            opened={category.subLinks && opened === i}
             label={category.label}
             
             h='50'
             variant="light"
             leftSection={<category.icon stroke={1.5}/>}
             rightSection={<IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />}
-        >
-            {category.subLinks}
-        </NavLink>    
+        />
     ))
 
     return (
@@ -81,19 +88,7 @@ export default function NavBar({user, logout, API_URL, AUTH_OPTIONS}) {
                     {mainLinks}
                 </Flex>
             </ScrollArea>
-            <Group p='sm'>
-                <Avatar src="/icons/tux.png" radius="sm"/>
-                <div style={{ flex: 1 }}>
-                    <Text size="sm" fw={500}>{user?.username ?? ''}</Text>
-                    <Text c="dimmed" size="xs">{'local@' + user?.username ?? ''}</Text>
-                </div>
-
-                <UnstyledButton
-                    onClick={logout}
-                >
-                    <IconLogout style={{ width: rem(20), height: rem(20) }} stroke={1.5} />
-                </UnstyledButton>
-            </Group>
+            <User user={user} logout={logout}/>
         </Flex>
     )
 }
