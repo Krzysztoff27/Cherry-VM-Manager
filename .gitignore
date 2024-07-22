@@ -78,9 +78,9 @@ $RECYCLE.BIN/
 # Logs and databases
 ############################
 
-logs
+#logs
 .tmp
-*.log
+#*.log
 *.sql
 *.sqlite
 *.sqlite3
@@ -109,7 +109,7 @@ public/uploads/*
 lib-cov
 lcov.info
 pids
-logs
+#logs
 results
 node_modules
 .node_history

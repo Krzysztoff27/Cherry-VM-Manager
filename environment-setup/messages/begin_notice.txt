@@ -1,0 +1,3 @@
+This script will perform an automatic installation of Cherry VM Manager.
+Although the process of installation should be seamless, 
+we do not recommend running it without reading the documentation first.
