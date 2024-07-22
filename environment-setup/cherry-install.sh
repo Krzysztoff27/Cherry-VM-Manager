@@ -2,8 +2,8 @@
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
 LOGS_FILE="./installation_logs.txt"
-ZYPPER_PACKAGES="./zypper_packages.txt"
-PYTHON_PACKAGES="./python_packages.txt" #DIRECTORY TO BE CHANGED IN FINAL VERSION
+ZYPPER_PACKAGES="./dependencies/zypper_packages.txt"
+PYTHON_PACKAGES="./dependencies/python_packages.txt" #DIRECTORY TO BE CHANGED IN FINAL VERSION
 
 #Force script to exit on ERR occurence
 set -e
