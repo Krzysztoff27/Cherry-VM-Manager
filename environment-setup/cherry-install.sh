@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
-readonly LOGS_FILE="./logs/installation_logs.txt"
+readonly LOGS_FILE="./logs/installation_logs_"$(date +%d-%m-%y_%H-%M-%S)".txt"
 readonly ZYPPER_PACKAGES="./dependencies/zypper_packages.txt"
 readonly PYTHON_PACKAGES="./dependencies/python_packages.txt" #DIRECTORY TO BE CHANGED IN FINAL VERSION
 
@@ -14,10 +14,6 @@ error_handler(){
     echo -e "See the installation_logs.txt file for specific information.\n"
 }
 trap "error_handler" ERR
-
-purge_logs(){
-    > "$LOGS_FILE"
-}
 
 #Universal function to read dependenies names from a file
 read_file(){
@@ -69,6 +65,5 @@ if (($EUID != 0)); then
 fi
 
 #Calls for certain functions - parts of the whole environment initialization process
-purge_logs #delete logs from previous installation process
 install_zypper
 install_python
