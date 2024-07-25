@@ -148,9 +148,10 @@ class MachineNetworkData(VirtualMachine):
     active_connections: list | None = None
 
 class MachineState(VirtualMachine):
-    cpu: int | None = None
-    ram_max: int | None = None
-    ram_used: int | None = None
+    active: bool | None = None
+    cpu: float | None = None
+    ram_max: float | None = None
+    ram_used: float | None = None
     # ...
 
 @app.get("/vm/all/networkdata") # request for data of all VMs
@@ -162,10 +163,10 @@ async def get_all_vms_network_data(
     # ...
     # example return:
     return {
-        1: MachineNetworkData(id=1, group='Desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
-        2: MachineNetworkData(id=2, group='Desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
-        3: MachineNetworkData(id=3, group='Serwer',  group_member_id=1, port=1501, domain='serwer1.wisniowa.oedu.pl'),
-        4: MachineNetworkData(id=4, group='Serwer',  group_member_id=2, port=1502, domain='serwer2.wisniowa.oedu.pl'),
+        1: MachineNetworkData(id=1, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
+        2: MachineNetworkData(id=2, group='desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
+        3: MachineNetworkData(id=3, group='serwer',  group_member_id=1, port=1501, domain='serwer1.wisniowa.oedu.pl'),
+        4: MachineNetworkData(id=4, group='serwer',  group_member_id=2, port=1502, domain='serwer2.wisniowa.oedu.pl'),
         # ...
     }
     
@@ -179,7 +180,7 @@ async def get_all_vms_state(
     # ...
     # example return:
     return {
-        1: MachineState(id=1, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
+        1: MachineState(id=1, group='desktop', active=True, group_member_id=1, cpu=0.42, ram_used=3462, ram_max=4096)
         # ...
     }
 
@@ -192,7 +193,7 @@ async def get_vm_network_data(
     # ...
     # ...
     # example return:
-    return MachineNetworkData(id=id, group='Desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
+    return MachineNetworkData(id=id, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
 
 @app.get("/vm/{id}/state")
 async def get_vm_state(
@@ -203,4 +204,4 @@ async def get_vm_state(
     # ...
     # ...
     # example return:
-    return MachineState(id=id, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
+    return MachineState(id=id, group='Desktop', group_member_id=1, active=True, cpu=0.87, ram_used=3462, ram_max=4096)
