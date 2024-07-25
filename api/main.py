@@ -147,7 +147,7 @@ class MachineNetworkData(VirtualMachine):
     domain: str | None = None
     active_connections: list | None = None
 
-class MachineStatus(VirtualMachine):
+class MachineState(VirtualMachine):
     cpu: int | None = None
     ram_max: int | None = None
     ram_used: int | None = None
@@ -170,16 +170,16 @@ async def get_all_vms_network_data(
     }
     
 
-@app.get("/vm/all/status")
-async def get_all_vms_status(
+@app.get("/vm/all/state")
+async def get_all_vms_state(
     current_user: Annotated[User, Depends(get_current_user)],
-) -> dict[int, MachineStatus]:
+) -> dict[int, MachineState]:
     # ...
     # ...
     # ...
     # example return:
     return {
-        1: MachineStatus(id=1, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
+        1: MachineState(id=1, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
         # ...
     }
 
@@ -194,13 +194,13 @@ async def get_vm_network_data(
     # example return:
     return MachineNetworkData(id=id, group='Desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
 
-@app.get("/vm/{id}/status")
-async def get_vm_status(
+@app.get("/vm/{id}/state")
+async def get_vm_state(
     id: int,
     current_user: Annotated[User, Depends(get_current_user)],
-) -> dict[int, MachineStatus]:
+) -> dict[int, MachineState]:
     # ...
     # ...
     # ...
     # example return:
-    return MachineStatus(id=id, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
+    return MachineState(id=id, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
