@@ -8,6 +8,7 @@ import VMPreviewPage from '../../Pages/VMDisplay/VMPreviewPage.jsx';
 import NavBar from '../NavBar/NavBar.jsx';
 
 import useFetch from '../../api/useFetch.jsx';
+import Redirect from '../Redirect/Redirect.jsx';
 
 function App() {
     const [cookies, setCookies] = useCookies(['token']);
@@ -42,7 +43,7 @@ function App() {
 
                 <AppShell.Main>
                     <Routes>
-                        <Route exact path='/' element={<VMPreviewPage authFetch={authFetch}/>}/>
+                        <Route exact path='/' element={<Redirect to='/virtual-machines'/>}/>
                         <Route path='/virtual-machines' element={<VMPreviewPage authFetch={authFetch}/>}/>
                         <Route path='/virtual-machines/:id' element={'/virtual-machines/:id'}/>
                         <Route path='/desktops' element={'/desktops'}/>
