@@ -13,6 +13,19 @@ from os import getenv
 
 import jwt, pwd, grp, pam, logging
 
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"], # allow local origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+################################
+# authentication & authorization
+################################
+
 load_dotenv()
 
 SECRET_KEY = getenv('SECRET_KEY')
@@ -23,37 +36,25 @@ ACCESS_GROUP_GID = int(getenv('ACCESS_GROUP_GID') or 0) or None
 if not SECRET_KEY or not ALGORITHM:
     raise Exception('[!] SECRET_KEY or ALGORITHM not set in the .env configuration')
 
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # allow local origins
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 logging.getLogger('passlib').setLevel(logging.ERROR) # silence the error caused by a bug in the bcrypt package
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-################################
-# authentication & authorization
-################################
 
 class Token(BaseModel):
     access_token: str
     token_type: str
 
 class User(BaseModel):
-    username: str
     uid: int
+    username: str
+    full_name: str | None = None
 
 
 def get_user(username):
     try:
         user = pwd.getpwnam(username)
-        return User(username=user.pw_name, uid=user.pw_uid)
+        return User(uid=user.pw_uid, username=user.pw_name, full_name=user.pw_gecos)
     except KeyError:
         return None
     
@@ -136,45 +137,70 @@ async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]
 # data requests
 ################################
 
-class VM_Data(BaseModel):
-    name: str | None = None
-    type: str | None = None
+class VirtualMachine(BaseModel):
+    id: int                             # unique ID for each machine
+    group: str | None = None            # string of a corresponding machine group e.g.: "Desktop" or "Server"
+    group_member_id: int | None = None  # unique ID for each machine in the scope of a group
+
+class MachineNetworkData(VirtualMachine):
     port: int | None = None
     domain: str | None = None
-    active: bool = False
-    active_connections: list = []
-    # add more parameters here
+    active_connections: list | None = None
 
-example_VM = VM_Data(
-    name = 'Maszyna 1', 
-    type = 'Desktop',
-    port = 1000,
-    domain = 'desktop1.wisniowa.oedu.pl',
-    active = False
-)
+class MachineStatus(VirtualMachine):
+    cpu: int | None = None
+    ram_max: int | None = None
+    ram_used: int | None = None
+    # ...
 
-@app.get("/vm") # request for data of all VMs
-async def get_all_vms_data(
-    current_user: Annotated[User, Depends(get_current_user)], # added for authentication, if not logged in the exception would be raised and the function won't execute
-) -> dict[int, VM_Data]: # should return a dictionary of virtual machine data objects
+@app.get("/vm/all/networkdata") # request for data of all VMs
+async def get_all_vms_network_data(
+    current_user: Annotated[User, Depends(get_current_user)], # provides authentication
+) -> dict[int, MachineNetworkData]:
     # ...
     # ...
     # ...
     # example return:
     return {
-        1: VM_Data(name='Desktop 1', port=1337),
-        2: VM_Data(name='Server 1', port=6969),
-        3: VM_Data(name='Desktop 2'),
-        #...
+        1: MachineNetworkData(id=1, group='Desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
+        2: MachineNetworkData(id=2, group='Desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
+        3: MachineNetworkData(id=3, group='Serwer',  group_member_id=1, port=1501, domain='serwer1.wisniowa.oedu.pl'),
+        4: MachineNetworkData(id=4, group='Serwer',  group_member_id=2, port=1502, domain='serwer2.wisniowa.oedu.pl'),
+        # ...
     }
+    
 
-@app.get("/vm/{id}") # request for data of a specific VM
-async def get_vm_data(
-    id: int,
+@app.get("/vm/all/status")
+async def get_all_vms_status(
     current_user: Annotated[User, Depends(get_current_user)],
-) -> VM_Data: # returns a singular virtual machine data object
+) -> dict[int, MachineStatus]:
     # ...
     # ...
     # ...
     # example return:
-    return example_VM
+    return {
+        1: MachineStatus(id=1, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
+        # ...
+    }
+
+@app.get("/vm/{id}/networkdata") 
+async def get_vm_network_data(
+    id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> MachineNetworkData: # 
+    # ...
+    # ...
+    # ...
+    # example return:
+    return MachineNetworkData(id=id, group='Desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
+
+@app.get("/vm/{id}/status")
+async def get_vm_status(
+    id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> dict[int, MachineStatus]:
+    # ...
+    # ...
+    # ...
+    # example return:
+    return MachineStatus(id=id, group='Desktop', group_member_id=1, cpu=0.87, ram_used=3462, ram_max=4096)
