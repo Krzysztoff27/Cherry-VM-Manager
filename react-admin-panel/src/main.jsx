@@ -9,21 +9,6 @@ import './main.css';
 
 const theme = createTheme({
   defaultRadius: 'md',
-  primaryColor: 'cherry',
-  colors: {
-    cherry: [
-      "#fdedf1",
-      "#f5d7de",
-      "#eda9b9",
-      "#e77a94",
-      "#e15474",
-      "#df3d60",
-      "#df3155",
-      "#c62546",
-      "#b11f3e",
-      "#9b1334"
-    ]
-  }
 });
 
 

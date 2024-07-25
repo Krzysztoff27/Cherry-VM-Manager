@@ -32,7 +32,7 @@ function User({user, logout}){
         <Group p='sm' pr='lg'>
             <Avatar src="/icons/tux.png" radius="sm"/>
             <div style={{ flex: 1 }}>
-                <Text size="sm" fw={500}>{user?.username ?? ''}</Text>
+                <Text size="sm" fw={500}>{user?.full_name ?? user?.username ?? ''}</Text>
                 <Text c="dimmed" size="xs">{'local@' + (user?.username ?? '')}</Text>
             </div>
 
@@ -79,9 +79,9 @@ export default function NavBar({user, logout}) {
             h='100%'
         >
             <ScrollArea p='sm'>
-                <Flex align='center' gap='sm'>
-                    <IconCherryFilled style={{width: rem(44), height: rem(44)}}/>
-                    <Title order={3}>Wiśniowy Panel Kontrolny</Title>
+                <Flex align='center' gap='6px' pl='8px'>
+                    <IconCherryFilled style={{width: rem(35), height: rem(35)}}/>
+                    <Title order={4}>Wiśniowy Panel Kontrolny</Title>
                 </Flex>
                 <Space h='sm'/>
                 <Flex direction='column'>
