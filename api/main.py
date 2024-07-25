@@ -147,7 +147,7 @@ class MachineNetworkData(VirtualMachine):   # * this data will be requested once
     active_connections: list | None = None  # if possible, list of IP addresses 
     # ... add more if required
 
-class MachineState(VirtualMachine):         # * when displaying this data will be requested by the website every 1-3s
+class MachineState(VirtualMachine):         # * when displaying a page needing this data, it will be requested every 1-3s
     active: bool = False                    # is the machine online?
     cpu: int = 0                            # ∈ <0,100> % of CPU usage
     ram_max: int | None = None              # RAM assigned to the VM in MB
@@ -204,7 +204,7 @@ async def get_vm_network_data(
 async def get_vm_state(
     id: int,
     current_user: Annotated[User, Depends(get_current_user)], # ! -"-
-) -> dict[int, MachineState]:
+) -> MachineState:
     # ...
     # ... code here
     # ...
