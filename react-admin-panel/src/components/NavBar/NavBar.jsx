@@ -68,7 +68,7 @@ export default function NavBar({user, logout}) {
             h='50'
             variant="light"
             leftSection={<category.icon stroke={1.5}/>}
-            rightSection={<IconChevronRight size="0.8rem" stroke={1.5} className="mantine-rotate-rtl" />}
+            rightSection={<IconChevronRight size="0.8rem" stroke={1.5}/>}
         />
     ))
 

@@ -1,13 +1,130 @@
-import { Card, Group, Text, Badge, Button, Image, SimpleGrid, Stack, Progress, Flex, Grid, Title, ActionIcon } from "@mantine/core";
-import { IconDeviceRemote, IconNumber, IconScreenShare, IconScreenShareOff } from "@tabler/icons-react";
-import { Link } from "react-router-dom";
+import { ActionIcon, Badge, Box, Button, Card, Collapse, Container, Group, Image, SimpleGrid, Stack, Text, Title, UnstyledButton } from "@mantine/core";
+import { useElementSize, useLocalStorage } from "@mantine/hooks";
+import { IconChevronDown, IconChevronRight, IconHomeLink, IconHomeX, IconPlayerPlayFilled, IconPlayerStopFilled, IconScreenShare, IconScreenShareOff } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
 
 const concatanateObjectParametersFromTwoObjectsIntoArrayOfObjects = (a, b) =>
     Object.keys({ ...a, ...b })?.map(key => ({...a[key], ...b[key]}));
 
 const firstLetterCapital = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-const DUMMY_ADDRESS_VAR = '10.0.0.1';
+function VMCard({vm, to}){
+    const navigate = useNavigate();
+    if(!vm) return;
+
+    const handleCardClick = () => navigate(to);
+    
+    const handleBadgeClick = (event) => {
+        event.stopPropagation(); // Prevents the card click event
+        // ...
+        // ... to be replaced with logic
+        // ...
+        console.log('VM ' + vm.id + ': Badge clicked.')
+    };
+    
+    const handleButtonClick = (event) => {
+        event.stopPropagation(); // Prevents the card click event
+        if (vm.active) window.open(`http://${vm.domain}`, '_blank');
+    };
+
+    return (
+        <Card shadow="sm" padding="md" radius="md" withBorder onClick={handleCardClick} style={{cursor: 'pointer'}}>
+            <Card.Section>
+                <Image
+                    src="/icons/white_geeko.webp"
+                    height={55}
+                    alt="geeko"
+                    style={{
+                        objectPosition: '0 0',
+                        filter: 'brightness(0) saturate(100%) invert(24%) sepia(0%) saturate(0%) hue-rotate(225deg) brightness(93%) contrast(87%)'
+                    }}
+                    lightHidden
+                />
+                <Image
+                    src="/icons/white_geeko.webp"
+                    height={55}
+                    alt="geeko"
+                    style={{
+                        objectPosition: '0 0',
+                        filter: 'brightness(0.875)'
+                    }}
+                    darkHidden
+                />
+            </Card.Section>
+
+            <Group justify="space-between" mt="md" mb="xs">
+                <Title order={4}>{firstLetterCapital(vm.group)} {vm.group_member_id}</Title>
+                <Badge 
+                    onClick={handleBadgeClick}
+                    color={vm.active ? 'suse-green' : 'red.6'} 
+                    variant={vm.active ? 'filled' : 'outline'} 
+                    leftSection={vm.active ? <IconPlayerPlayFilled size={10}/> : <IconPlayerStopFilled size={10}/>}
+                >
+                    {vm.active ? 'on' : 'off'}
+                </Badge>
+            </Group>
+            <Stack gap='xs'>
+                <Group justify="start" gap='4px' align='center'>
+                    {vm.active ? 
+                        <IconScreenShare    size={18}/> : 
+                        <IconScreenShareOff size={18}/>
+                    }
+                    <Text>{vm.domain}</Text>
+                </Group>
+                <Group justify="start" gap='4px' align='center'>
+                    {vm.active ? 
+                        <IconHomeLink size={18}/> : 
+                        <IconHomeX    size={18}/>
+                    }
+                    <Text>172.168.100.1:{vm.port}</Text>
+                </Group>
+            </Stack>
+            
+            <Button 
+                onClick={handleButtonClick}
+                disabled={!vm.active}
+
+                variant="light" 
+                mt="md" 
+                radius="md" 
+            >
+                Połącz się z tą maszyną
+            </Button>
+        </Card>
+        
+    );
+}
+
+function CardGroup({children, group}){
+    const {ref, width} = useElementSize();
+    const [opened, setOpened] = useLocalStorage({key: `${group}-opened`, defaultValue: false});
+    const toggle = () => setOpened((o) => !o);
+
+    return (
+        <Stack ref={ref}>
+            <Button 
+                onClick={toggle} 
+                aria-label={`${opened ? 'Zwiń' : 'Rozwiń'} grupę maszyn wirtualnych.`}
+                variant='default' 
+                fullWidth
+                justify='left'
+                leftSection={
+                    opened ?
+                    <IconChevronDown size={16} stroke={1.5}/> :
+                    <IconChevronRight size={16} stroke={1.5}/>
+                }
+            >
+                <Text>{firstLetterCapital(group)}</Text>
+            </Button>
+
+            <Collapse in={opened}>
+                <SimpleGrid cols={Math.floor(width / 300)}>
+                    {children}   
+                </SimpleGrid>
+            </Collapse>
+        </Stack>
+    )
+}
 
 export default function VMPreviewPage({authFetch}) {
     const {loading: networkDataLoading, error: networkDataError, data: networkData} = authFetch('/vm/all/networkdata')
@@ -21,56 +138,18 @@ export default function VMPreviewPage({authFetch}) {
 
     for(const vm of virtualMachines){
         if(!cards[vm.group]) cards[vm.group] = [];
-        const inGroupId = cards[vm.group].length + 1; 
 
-        cards[vm.group].push((
-            <Link to={`./${vm.id}`}>
-                <Card shadow="sm" padding="md" radius="md" key={vm.id} withBorder w={275}>
-                    <Card.Section>
-                        <Image
-                        src="https://linuxiac.b-cdn.net/wp-content/uploads/2021/03/opensuse.png"
-                        height={75}
-                        alt="Norway"
-                        />
-                    </Card.Section>
-
-                    <Group justify="space-between" mt="md" mb="xs">
-                        <Title order={4}>{firstLetterCapital(vm.group)} {inGroupId}</Title>
-                        <Badge color={vm.active ? 'lime' : 'red'}>{vm.active ? 'On' : 'Off'}</Badge>
-                    </Group>
-                
-                    <Stack gap='xs'>
-                        <Group justify="start" gap='4px' align='center'>
-                            <ActionIcon variant="subtle" aria-label="Połączenie zdalne" color='white' size='xs'>
-                                {vm.active ? <IconScreenShare/> : <IconScreenShareOff/>}
-                            </ActionIcon>
-                            <Text>{vm.domain}</Text>
-                        </Group>
-                        <Group justify="start" gap='4px' align='center'>
-                            <ActionIcon variant="subtle" aria-label="Połączenie zdalne" color='white' size='xs'>
-                                {vm.active ? <IconNumber/> : <IconNumber/>}
-                            </ActionIcon>
-                            <Text>{DUMMY_ADDRESS_VAR}:{vm.port}</Text>
-                        </Group>
-                    </Stack>
-
-                    <Button disabled={!vm.active} variant="light" fullWidth mt="md" radius="md">
-                        Połącz się z maszyną
-                    </Button>
-                </Card>
-            </Link>
-        ))
+        cards[vm.group].push(<VMCard vm={vm} to={`./${vm.id}`} key={vm.id}/>)
     }
 
 
     return (
         <Stack>
             {Object.keys(cards).map((group, i) => (
-                <Group key={i}>
-                    {cards[group]}   
-                </Group>
+                <CardGroup key={i} group={group}>
+                    {cards[group]}
+                </CardGroup>
             ))}
-        </Stack>
-        
+        </Stack>        
     )
 }
