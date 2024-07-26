@@ -1,62 +1,44 @@
-import { Avatar, Container, Flex, Group, NavLink, rem, ScrollArea, Space, Text, Title, Tooltip, UnstyledButton, useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
-import { IconCherryFilled, IconChevronRight, IconDeviceDesktop, IconLogout, IconMoon, IconSun, IconTerminal2, IconTopologyStar } from '@tabler/icons-react';
+import { ActionIcon, Stack, Tooltip } from '@mantine/core';
+import { IconDeviceDesktop, IconLogout, IconTerminal2, IconTopologyStar } from '@tabler/icons-react';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const categories = {
-    vm: {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines'},
-    pc: {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops'},
-    networkPanel: {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
-}
+const categories = [
+    {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines'},
+    {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops'},
+    {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
+]
 
-function IconButton({onClick, label = null, children}) {
+function IconButton({onClick, label = null, icon, active}) {
     return (
-        <Tooltip label={label} hidden={!label}>
-            <UnstyledButton
+        <Tooltip 
+            label={label} 
+            hidden={!label} 
+            position='right'
+            color='#3b3b3b'
+            offset={{mainAxis: 8}}
+            transitionProps={{ transition: 'scale-x', duration: 200 }}
+
+        >
+            <ActionIcon
+                variant={active ? 'filled' : 'default'}
                 onClick={onClick}
-                size="xl"
+                size='xl'
                 aria-label={label}
             >
-                {children}
-            </UnstyledButton>
+                {icon}
+            </ActionIcon>
         </Tooltip>
     );
 }
 
-function User({user, logout}){
-    const { setColorScheme } = useMantineColorScheme();
-    const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
-    const toggleColorScheme = () => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')
-
-    return (
-        <Group p='sm' pr='lg'>
-            <Avatar src="/icons/tux.png" radius="sm"/>
-            <div style={{ flex: 1 }}>
-                <Text size="sm" fw={500}>{user?.full_name ?? user?.username ?? ''}</Text>
-                <Text c="dimmed" size="xs">{'local@' + (user?.username ?? '')}</Text>
-            </div>
-
-            <IconButton onClick={toggleColorScheme} label='Zmień motyw koloru'>
-                <Container lightHidden>
-                    <IconSun stroke={1.5}/>
-                </Container>
-                <Container darkHidden>
-                    <IconMoon stroke={1.5}/>
-                </Container>
-            </IconButton>
-            <IconButton onClick={logout} label='Wyloguj się'>
-                <IconLogout  stroke={1.5} />
-            </IconButton>
-        </Group>
-    );
-}
-
-export default function NavBar({user, logout}) {
-    const [active, setActive] = useState(0)
+export default function NavBar({logout}) {
+    const location = useLocation();
+    const [active, setActive] = useState(categories.findIndex(cat => cat.link === location.pathname));
     
     const navigate = useNavigate();
-    const mainLinks = Object.values(categories).map((category, i) => (
-        <NavLink
+    const mainLinks = categories.map((category, i) => (
+        <IconButton
             key={i}
             onClick={() => {
                 setActive(i)
@@ -64,31 +46,25 @@ export default function NavBar({user, logout}) {
             }}
             active={active === i}
             label={category.label}
-            
-            h='50'
-            variant="light"
-            leftSection={<category.icon stroke={1.5}/>}
-            rightSection={<IconChevronRight size="0.8rem" stroke={1.5}/>}
+            icon={<category.icon stroke={1.5} />}
         />
     ))
 
     return (
-        <Flex
+        <Stack
             direction='column'
+            p='lg'
             justify='space-between'
+            align='center'
             h='100%'
+            style={{backgroundColor: ""}}
         >
-            <ScrollArea p='sm'>
-                <Flex align='center' gap='6px' pl='8px'>
-                    <IconCherryFilled style={{width: rem(35), height: rem(35)}}/>
-                    <Title order={4}>Wiśniowy Panel Kontrolny</Title>
-                </Flex>
-                <Space h='sm'/>
-                <Flex direction='column'>
-                    {mainLinks}
-                </Flex>
-            </ScrollArea>
-            <User user={user} logout={logout}/>
-        </Flex>
+            <Stack gap='md'>
+                {mainLinks}
+            </Stack>
+            <Stack>
+                <IconButton onClick={logout} label='Wyloguj się' icon={<IconLogout  stroke={1.5} />}/>
+            </Stack>
+        </Stack>
     )
 }

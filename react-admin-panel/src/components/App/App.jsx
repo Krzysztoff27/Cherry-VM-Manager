@@ -31,7 +31,7 @@ function App() {
         <Router>
             <AppShell
                 navbar={{
-                    width: '310px',
+                    width: '70px',
                     breakpoint: 'sm',
                 }}
                 padding="md"
