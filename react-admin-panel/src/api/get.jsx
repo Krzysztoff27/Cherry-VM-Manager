@@ -1,17 +1,16 @@
 import { API_URL, validPath } from './api.jsx';
 
-async function usePost(path, params = {}) {
+async function get(path, options = {}) {
     if(!API_URL) {
         throw new Error('API URL not set')
     }
 
     return await fetch(`${API_URL}${validPath(path)}`, {
-        method: 'POST', 
         headers: {
-            'accept': 'application/json',
+            'accept': 'application/json'
         },
-        body: new URLSearchParams(params)
+        ...options
     });
 }
 
-export default usePost;
+export default get;

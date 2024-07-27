@@ -1,9 +1,9 @@
 import { Button, Center, Divider, Fieldset, Group, PasswordInput, Space, Text, TextInput } from '@mantine/core';
 import { useForm, isNotEmpty } from '@mantine/form';
 import React from 'react'
-import { IconX } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
-import usePost from '../../api/usePost';
+import post from '../../api/post.jsx';
+import { showError } from '../../systems/notifications.jsx';
 
 export default function LoginPage({ token, setToken }) {
     const form = useForm({
@@ -14,29 +14,18 @@ export default function LoginPage({ token, setToken }) {
         }
     })
 
-    const showError = (message) => notifications.show({
-        withCloseButton: true,
-        autoClose: 10000,
-        title: 'Wystąpił błąd podczas logowania',
-        message: message,
-        color: 'red',
-        icon: <IconX />,
-        className: 'my-notification-class',
-        loading: false,
-    });
-
     async function authenticate(values) {
-        usePost('/token', {
+        post('/token', {
             username: values.username,
             password: values.password,
         })
         .then(response => {
-            if (!response.ok) return showError('Niepoprawny login lub hasło.');
+            if (!response.ok) return showError({title: 'Wystąpił bład podczas logowania', message: 'Niepoprawny login lub hasło.'});
             notifications.clean();
             return response.json();
         })
         .then(json => setToken(json.access_token))
-        .catch(_ => showError());
+        .catch(_ => showError({title: 'Wystąpił bład podczas logowania'}));
     }
 
     return (

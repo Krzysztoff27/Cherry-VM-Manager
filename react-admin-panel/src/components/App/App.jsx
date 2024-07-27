@@ -4,11 +4,12 @@ import { AppShell, Center, Loader } from '@mantine/core';
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import LoginPage from '../../Pages/Login/LoginPage.jsx';
-import VMPreviewPage from '../../Pages/VMDisplay/VMPreviewPage.jsx';
+import MachineMainPage from '../../Pages/VirtualMachines/MachineMainPage.jsx';
+import MachinePage from '../../Pages/VirtualMachines/MachinePage.jsx';
 import NavBar from '../NavBar/NavBar.jsx';
-
-import useFetch from '../../api/useFetch.jsx';
 import Redirect from '../Redirect/Redirect.jsx';
+
+import useFetch from '../../hooks/useFetch.jsx';
 
 function App() {
     const [cookies, setCookies] = useCookies(['token']);
@@ -44,8 +45,8 @@ function App() {
                 <AppShell.Main>
                     <Routes>
                         <Route exact path='/' element={<Redirect to='/virtual-machines'/>}/>
-                        <Route path='/virtual-machines' element={<VMPreviewPage authFetch={authFetch}/>}/>
-                        <Route path='/virtual-machines/:id' element={'/virtual-machines/:id'}/>
+                        <Route path='/virtual-machines' element={<MachineMainPage authFetch={authFetch}/>}/>
+                        <Route path='/virtual-machines/:id' element={<MachinePage authFetch={authFetch} authOptions={authOptions}/>}/>
                         <Route path='/desktops' element={'/desktops'}/>
                         <Route path='/network-panel' element={'/network-panel'}/>
                     </Routes>    

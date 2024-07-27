@@ -1,15 +1,14 @@
-import { ActionIcon, Badge, Box, Button, Card, Collapse, Container, Group, Image, SimpleGrid, Stack, Text, Title, UnstyledButton } from "@mantine/core";
+import { Badge, Button, Card, Collapse, Group, Image, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { useElementSize, useLocalStorage } from "@mantine/hooks";
 import { IconChevronDown, IconChevronRight, IconHomeLink, IconHomeX, IconPlayerPlayFilled, IconPlayerStopFilled, IconScreenShare, IconScreenShareOff } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 
-const concatanateObjectParametersFromTwoObjectsIntoArrayOfObjects = (a, b) =>
+const mergeObjectPropertiesToArray = (a, b) =>
     Object.keys({ ...a, ...b })?.map(key => ({...a[key], ...b[key]}));
 
 const firstLetterCapital = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-function VMCard({vm, to}){
-    const navigate = useNavigate();
+function VMCard({vm, to, navigate}){
     if(!vm) return;
 
     const handleCardClick = () => navigate(to);
@@ -127,19 +126,20 @@ function CardGroup({children, group}){
 }
 
 export default function VMPreviewPage({authFetch}) {
+    const navigate = useNavigate();
     const {loading: networkDataLoading, error: networkDataError, data: networkData} = authFetch('/vm/all/networkdata')
     const {loading: stateDataLoading, error: stateDataError, data: stateData} = authFetch('/vm/all/state')
-    
+
     if(networkDataLoading || stateDataLoading) return;
     if(networkDataError || stateDataError) return;
 
-    const virtualMachines = concatanateObjectParametersFromTwoObjectsIntoArrayOfObjects(networkData, stateData);
+    const virtualMachines = mergeObjectPropertiesToArray(networkData, stateData);
     let cards = {};
 
     for(const vm of virtualMachines){
         if(!cards[vm.group]) cards[vm.group] = [];
 
-        cards[vm.group].push(<VMCard vm={vm} to={`./${vm.id}`} key={vm.id}/>)
+        cards[vm.group].push(<VMCard vm={vm} to={`./${vm.id}`} navigate={navigate} key={vm.id}/>)
     }
 
 

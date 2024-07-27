@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API_URL, validPath } from './api.jsx';
+import { API_URL, validPath } from '../api/api.jsx';
 
 const useFetch = (path, token = null, options = {}) => {
     const [data, setData] = useState(null);
@@ -12,13 +12,12 @@ const useFetch = (path, token = null, options = {}) => {
         const fetchData = async () => {
             try {
                 const response = await fetch(fetchURL, options);
-                if (!response.ok){
-                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                if (!response.ok) setError(response);
+                else{
+                    const json = await response.json();
+                    setData(json);
+                    setError(null);
                 }
-                
-                const json = await response.json();
-                setData(json);
-                setError(null);
                 setLoading(false);
             } catch (err) {
                 setError(err);
