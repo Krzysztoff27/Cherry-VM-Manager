@@ -3,12 +3,18 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import get from "../../api/get";
 import { IconPlayerPlayFilled, IconPlayerStopFilled } from "@tabler/icons-react";
+import { showError } from "../../systems/notifications";
 
 export default function MachinePage({authFetch, authOptions}) {
     const {id} = useParams();
 
     const {loading: loading, error: error, data: networkData} = authFetch(`/vm/${id}/networkdata`);
     const [state, setState] = useState({});
+
+    const handleError = (err) => {
+        if(err?.status == 401) return navigate('/login');
+        showError({title: 'Wystąpił bład', message: 'Nie udało się pobrać informacji o maszynie'})
+    }
 
     const handleBadgeClick = () => {}
 
@@ -25,7 +31,7 @@ export default function MachinePage({authFetch, authOptions}) {
     }, []);
 
     if (loading) return;
-    if (error) return;
+    if (error) handleError(error);
 
     return (
         <Grid h='100%'>
@@ -54,13 +60,13 @@ export default function MachinePage({authFetch, authOptions}) {
                         <Table.Tbody>
                             <Table.Tr>
                                 <Table.Td><Text fw={500}>CPU</Text></Table.Td>
-                                <Table.Td><Progress value={state.cpu ?? 0} transitionDuration={200}/></Table.Td>
-                                <Table.Td>{state.cpu}%</Table.Td>
+                                <Table.Td><Progress value={state?.cpu ?? 0} transitionDuration={200}/></Table.Td>
+                                <Table.Td>{state?.cpu}%</Table.Td>
                             </Table.Tr>
                             <Table.Tr>
                                 <Table.Td>RAM</Table.Td>
-                                <Table.Td><Progress value={state.ram_used * 100 / state.ram_max ?? 0} transitionDuration={200}/></Table.Td>
-                                <Table.Td>{state.ram_used}MB / {state.ram_max}MB</Table.Td>
+                                <Table.Td><Progress value={state?.ram_used * 100 / state?.ram_max ?? 0} transitionDuration={200}/></Table.Td>
+                                <Table.Td>{state?.ram_used}MB / {state?.ram_max}MB</Table.Td>
                             </Table.Tr>
                         </Table.Tbody>
                     </Table>

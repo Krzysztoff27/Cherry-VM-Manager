@@ -2,6 +2,8 @@ import { Badge, Button, Card, Collapse, Group, Image, SimpleGrid, Stack, Text, T
 import { useElementSize, useLocalStorage } from "@mantine/hooks";
 import { IconChevronDown, IconChevronRight, IconHomeLink, IconHomeX, IconPlayerPlayFilled, IconPlayerStopFilled, IconScreenShare, IconScreenShareOff } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import Redirect from "../../components/Redirect/Redirect";
+import { showError } from "../../systems/notifications";
 
 const mergeObjectPropertiesToArray = (a, b) =>
     Object.keys({ ...a, ...b })?.map(key => ({...a[key], ...b[key]}));
@@ -125,13 +127,21 @@ function CardGroup({children, group}){
     )
 }
 
-export default function VMPreviewPage({authFetch}) {
+export default function MachineMainPage({authFetch}) {
     const navigate = useNavigate();
     const {loading: networkDataLoading, error: networkDataError, data: networkData} = authFetch('/vm/all/networkdata')
     const {loading: stateDataLoading, error: stateDataError, data: stateData} = authFetch('/vm/all/state')
 
+    const handleError = (err) => {
+        if(err?.status == 401) return navigate('/login');
+        showError({title: `Wystąpił bład ${err?.status ?? ''}`, message: 'Nie udało się pobrać informacji o maszynach', autoclose: 1000})
+    }
+
     if(networkDataLoading || stateDataLoading) return;
-    if(networkDataError || stateDataError) return;
+    if(networkDataError || stateDataError) {
+        handleError(networkDataError || stateDataError);
+        return;
+    }
 
     const virtualMachines = mergeObjectPropertiesToArray(networkData, stateData);
     let cards = {};
@@ -141,7 +151,6 @@ export default function VMPreviewPage({authFetch}) {
 
         cards[vm.group].push(<VMCard vm={vm} to={`./${vm.id}`} navigate={navigate} key={vm.id}/>)
     }
-
 
     return (
         <Stack>

@@ -10,7 +10,13 @@ async function get(path, options = {}) {
             'accept': 'application/json'
         },
         ...options
-    });
+    }).catch(err => new Response(null, {
+        status: 503,
+        statusText: 'No response from the server',
+        headers: {
+            'Content-Type': 'text/plain'
+        }
+    }));
 }
 
 export default get;

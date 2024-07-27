@@ -4,8 +4,9 @@ import React from 'react'
 import { notifications } from '@mantine/notifications';
 import post from '../../api/post.jsx';
 import { showError } from '../../systems/notifications.jsx';
+import { useNavigate } from 'react-router-dom';
 
-export default function LoginPage({ token, setToken }) {
+export default function LoginPage({ setToken }) {
     const form = useForm({
         mode: 'uncontrolled',
         validate: {
@@ -24,7 +25,9 @@ export default function LoginPage({ token, setToken }) {
             notifications.clean();
             return response.json();
         })
-        .then(json => setToken(json.access_token))
+        .then(json => {
+            setToken(json.access_token)
+        })
         .catch(_ => showError({title: 'Wystąpił bład podczas logowania'}));
     }
 

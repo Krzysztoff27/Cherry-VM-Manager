@@ -11,7 +11,13 @@ async function post(path, params = {}) {
             'accept': 'application/json',
         },
         body: new URLSearchParams(params)
-    });
+    }).catch(err => new Response(null, {
+        status: 503,
+        statusText: 'No response from the server',
+        headers: {
+            'Content-Type': 'text/plain'
+        }
+    }));
 }
 
 export default post;
