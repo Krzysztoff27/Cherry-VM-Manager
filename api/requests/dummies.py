@@ -1,4 +1,4 @@
-from data_requests import MachineNetworkData, MachineState
+from requests.data_requests import MachineNetworkData, MachineState
 
 NETWORK_DATA_DUMMY = {
         1: MachineNetworkData(id=1, group='desktop', group_member_id=1, port=11001, domain='desktop1.wisniowa.oedu.pl'),
