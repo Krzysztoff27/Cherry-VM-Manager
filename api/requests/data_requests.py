@@ -17,11 +17,12 @@ class VirtualMachine(BaseModel):            # * parent class with properties nee
 class MachineNetworkData(VirtualMachine):   # * this data will be requested once per page load
     port: int | None = None                 # transport layer port used by the VM
     domain: str | None = None               # proxy domain for the VM Apache Guacamole site
-    active_connections: list | None = None  # if possible, list of IP addresses 
     # ... add more if required
 
 class MachineState(VirtualMachine):         # * when displaying a page needing this data, it will be requested every 1-3s
     active: bool = False                    # is the machine online?
+    loading: bool = False                   # is the machine loading (in a state between online and offline)
+    active_connections: list | None = None  # if possible, list of IP addresses 
     cpu: int = 0                            # ∈ <0,100> % of CPU usage
     ram_max: int | None = None              # RAM assigned to the VM in MB
     ram_used: int | None = None             # RAM used by the VM in MB
