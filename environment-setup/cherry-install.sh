@@ -98,6 +98,6 @@ if (($EUID != 0)); then
 fi
 
 #Calls for certain functions - parts of the whole environment initialization process
-#install_zypper_packages
-#install_zypper_patterns
+install_zypper_packages
+install_zypper_patterns
 configure_kvm
