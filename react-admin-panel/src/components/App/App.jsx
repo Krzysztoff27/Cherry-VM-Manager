@@ -11,6 +11,7 @@ import Layout from '../Layout/Layout.jsx';
 
 import useFetch from '../../hooks/useFetch.jsx';
 import NavBar from '../NavBar/NavBar.jsx';
+import NetworkPanel from '../../Pages/NetworkPanel/NetworkPanel.jsx';
 
 function App() {
     return (
@@ -45,14 +46,17 @@ function AppRoutes(){
     return (
         <Routes>
             <Route path='/login' element={<LoginPage token={cookies.token} setToken={setToken}/>}/>
-            <Route element={<Layout navbar={<NavBar logout={logout} user={user}/>}/>}> 
-                <Route exact path='/' element={<Redirect to='/virtual-machines'/>}/>
-                <Route path='/virtual-machines' element={<MachineMainPage authFetch={authFetch} logout={logout}/>}/>
-                <Route path='/virtual-machines/:id' element={<MachinePage authFetch={authFetch} authOptions={authOptions} logout={logout}/>}/>
-                <Route path='/desktops' element={'/desktops'}/>
-                <Route path='/network-panel' element={'/network-panel'}/>   
+            <Route element={
+                <Layout navbar={
+                    <NavBar logout={logout} user={user}/>
+                }/>
+            }> 
+                <Route exact path='/'               element={<Redirect to='/virtual-machines'/>}/>
+                <Route path='/virtual-machines'     element={<MachineMainPage   authFetch={authFetch} logout={logout}/>}/>
+                <Route path='/virtual-machines/:id' element={<MachinePage       authFetch={authFetch} authOptions={authOptions} logout={logout}/>}/>
+                <Route path='/desktops'             element={'/desktops'}/>
+                <Route path='/network-panel'        element={<NetworkPanel      authFetch={authFetch} authOptions={authOptions}/>}/>   
             </Route>
-    
         </Routes>
     )
 }

@@ -1,7 +1,6 @@
 import { notifications } from "@mantine/notifications";
 import { IconX } from "@tabler/icons-react";
 
-
 export const showError = (options) => notifications.show({
     withCloseButton: true,
     autoClose: options.autoClose ?? 10000,
