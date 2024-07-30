@@ -60,22 +60,32 @@ configure_kvm(){
     cpu_model=$(grep "model name" /proc/cpuinfo -m 1 | awk -F: '{print $2}';)
     if echo "$cpu_model" | grep -q "Intel"; then
         cpu_producer='intel'
+        if (grep -q "vmx" /proc/cpuinfo); then
+            nested_support=true
+        fi
     elif echo "$cpu_model" | grep -q "AMD"; then
         cpu_producer='amd'
+        if (grep -q "svm" /proc/cpuinfo); then
+            nested_support=true
+        fi
     else
         echo "Unrecognized CPU, cannot proceed with KVM configuration." > "$LOGS_FILE" 
-          exit 125 
+        exit 125 
     fi
-    nested_support=$(cat /sys/module/kvm_"$cpu_producer"/parameters/nested)
-    if [[ "$nested_support" == 'Y' ]]; then
-        read -p "[?] Detected nested virtualization support. Enable? (y/n): " enable_nested
-        if [[ "$enable_nested" == 'y' ]]; then
-            modprobe -r kvm_"$cpu_producer"
-            modprobe kvm_"$cpu_producer" nested=1
-            echo "options kvm_intel nested=1" >> "/etc/modprobe.d/kvm.conf"
-            echo "[i] Nested virtualization enabled"
+    nested_state=$(cat /sys/module/kvm_"$cpu_producer"/parameters/nested)
+    if [[ "$nested_support" == true ]]; then
+        if [[ "$nested_state" != 'Y' ]]; then
+            read -p "[?] Detected nested virtualization support. Enable? (y/n): " enable_nested
+            if [[ "$enable_nested" == 'y' ]]; then
+                modprobe -r kvm_"$cpu_producer"
+                modprobe kvm_"$cpu_producer" nested=1
+                echo "options kvm_intel nested=1" > "/etc/modprobe.d/kvm.conf"
+                echo "[i] Nested virtualization enabled"
+            else
+                echo "[i] Nested virtualization not enabled"
+            fi
         else
-            echo "[i] Nested virtualization not enabled"
+            echo "[i] Nested virtualization enabled prior to installation. Settings have not been modified."
         fi
     fi
     echo ""
@@ -88,6 +98,6 @@ if (($EUID != 0)); then
 fi
 
 #Calls for certain functions - parts of the whole environment initialization process
-install_zypper_packages
-install_zypper_patterns
+#install_zypper_packages
+#install_zypper_patterns
 configure_kvm
