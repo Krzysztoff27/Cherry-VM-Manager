@@ -2,13 +2,11 @@ import { Badge, Button, Card, Collapse, Group, Image, SimpleGrid, Stack, Text, T
 import { useElementSize, useLocalStorage } from "@mantine/hooks";
 import { IconChevronDown, IconChevronRight, IconHomeLink, IconHomeX, IconPlayerPlayFilled, IconPlayerStopFilled, IconScreenShare, IconScreenShareOff } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
-import Redirect from "../../components/Redirect/Redirect";
 import { showError } from "../../systems/notifications";
+import StateBadge from "../../components/StateBadge/StateBadge";
 
 const mergeObjectPropertiesToArray = (a, b) =>
     Object.keys({ ...a, ...b })?.map(key => ({...a[key], ...b[key]}));
-
-const firstLetterCapital = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 function VMCard({vm, to, navigate}){
     if(!vm) return;
@@ -54,15 +52,8 @@ function VMCard({vm, to, navigate}){
             </Card.Section>
 
             <Group justify="space-between" mt="md" mb="xs">
-                <Title order={4}>{firstLetterCapital(vm.group)} {vm.group_member_id}</Title>
-                <Badge 
-                    onClick={handleBadgeClick}
-                    color={vm.active ? 'suse-green' : 'red.6'} 
-                    variant={vm.active ? 'filled' : 'outline'} 
-                    leftSection={vm.active ? <IconPlayerPlayFilled size={10}/> : <IconPlayerStopFilled size={10}/>}
-                >
-                    {vm.active ? 'on' : 'off'}
-                </Badge>
+                <Title order={4} tt="capitalize">{vm.group} {vm.group_member_id}</Title>
+                <StateBadge machineState={vm} onClick={handleBadgeClick}/>
             </Group>
             <Stack gap='xs'>
                 <Group justify="start" gap='4px' align='center'>
@@ -115,7 +106,7 @@ function CardGroup({children, group}){
                     <IconChevronRight size={16} stroke={1.5}/>
                 }
             >
-                <Text>{firstLetterCapital(group)}</Text>
+                <Text tt="capitalize">{group}</Text>
             </Button>
 
             <Collapse in={opened}>
