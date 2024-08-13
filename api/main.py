@@ -36,4 +36,5 @@ if not SECRET_KEY or not ALGORITHM:
 
 import auth # run authentication
 import requests.auth_requests
-import requests.data_requests
+import requests.machine_data_requests
+import requests.network_conf_requests
