@@ -28,19 +28,23 @@ MachineId = int
 IntnetId = int
 
 class Coordinates(BaseModel):
-    x: int
-    y: int
+    x: float
+    y: float
 
 class Snapshot(BaseModel):
     nodes: list | None
     edges: list | None
     viewport: dict[str, int] | None
 
-IntnetConfiguration = dict[IntnetId, list[MachineId]]
+class Intnet(BaseModel):
+    id: IntnetId
+    machines: list[MachineId] | None
+
+IntnetConfiguration = dict[IntnetId, Intnet]
 NodesState = dict[NodeId, Coordinates]
 
 class CurrentConfiguration(BaseModel):
-    intnetConfiguration: IntnetConfiguration | None
+    intnets: IntnetConfiguration | None
     nodesState: NodesState | None
 
 ###############################
@@ -52,11 +56,23 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
     # TODO: Implement the logic to retrieve the current internal network state
     # ...
     # ? example return:
-    return {
-        1:  [1, 17],  2:  [2, 18],  3:  [3, 19],  4:  [4, 20],  
-        5:  [5, 21],  6:  [6, 22],  7:  [7, 23],  8:  [8, 24],  
-        9:  [9, 25],  10: [10, 26], 11: [11, 27], 12: [12, 28],
-        13: [13, 29], 14: [14, 30], 15: [15, 31], 16: [16, 32],
+    return{
+        1:  Intnet(id=1, machines=[1, 17]),  
+        2:  Intnet(id=2, machines=[2, 18]),  
+        3:  Intnet(id=3, machines=[3, 19]),  
+        4:  Intnet(id=4, machines=[4, 20]),  
+        5:  Intnet(id=5, machines=[5, 21]),  
+        6:  Intnet(id=6, machines=[6, 22]),  
+        7:  Intnet(id=7, machines=[7, 23]),  
+        8:  Intnet(id=8, machines=[8, 24]),  
+        9:  Intnet(id=9, machines=[9, 25]),  
+        10: Intnet(id=10, machines=[10, 26]),  
+        11: Intnet(id=11, machines=[11, 27]),  
+        12: Intnet(id=12, machines=[12, 28]),  
+        13: Intnet(id=13, machines=[13, 29]),  
+        14: Intnet(id=14, machines=[14, 30]),  
+        15: Intnet(id=15, machines=[15, 31]),  
+        16: Intnet(id=16, machines=[16, 32])
     }
 
 
@@ -70,7 +86,7 @@ def get_current_network_configuration(
     current_user: Annotated[User, Depends(get_current_user)]
 ):
     return CurrentConfiguration(
-        intnetConfiguration = get_current_intnet_state(),
+        intnets = get_current_intnet_state(),
         nodesState = current_state.read(),
     )
     
