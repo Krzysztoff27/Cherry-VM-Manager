@@ -3,7 +3,7 @@ import { useForm, isNotEmpty } from '@mantine/form';
 import React from 'react'
 import { notifications } from '@mantine/notifications';
 import post from '../../api/post.jsx';
-import { showError } from '../../systems/notifications.jsx';
+import { showError } from '../../handlers/notifications.jsx';
 import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage({ setToken }) {
@@ -16,10 +16,10 @@ export default function LoginPage({ setToken }) {
     })
 
     async function authenticate(values) {
-        post('/token', {
+        post('/token', new URLSearchParams({
             username: values.username,
             password: values.password,
-        })
+        }))
         .then(response => {
             if (!response.ok) return showError({title: 'Wystąpił bład podczas logowania', message: 'Niepoprawny login lub hasło.'});
             notifications.clean();

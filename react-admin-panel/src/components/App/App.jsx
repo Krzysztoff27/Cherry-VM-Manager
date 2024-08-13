@@ -32,6 +32,7 @@ function AppRoutes(){
     const authOptions = useMemo(() => cookies.token ? {
             headers: {
                 'accept': 'application/json',
+                'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + cookies.token,
             }
         } : null, [cookies.token]);

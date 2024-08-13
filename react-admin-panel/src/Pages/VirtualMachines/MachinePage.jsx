@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import get from "../../api/get";
 import { IconDeviceDesktop, IconDeviceDesktopOff, IconPlayerPlayFilled, IconPlayerStopFilled, IconServer, IconServerOff } from "@tabler/icons-react";
-import { showError } from "../../systems/notifications";
+import { showError } from "../../handlers/notifications";
 import StateBadge from "../../components/StateBadge/StateBadge";
 
 export default function MachinePage({authFetch, authOptions}) {
