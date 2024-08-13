@@ -84,7 +84,7 @@ logs
 *.sql
 *.sqlite
 *.sqlite3
-*db.json
+*local.json
 
 npm-debug.log*
 yarn-debug.log*
