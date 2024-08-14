@@ -3,15 +3,15 @@ import { useCookies } from 'react-cookie';
 import { Center, Loader } from '@mantine/core';
 import { Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import LoginPage from '../../Pages/Login/LoginPage.jsx';
-import MachineMainPage from '../../Pages/VirtualMachines/MachineMainPage.jsx';
-import MachinePage from '../../Pages/VirtualMachines/MachinePage.jsx';
+import LoginPage from '../../pages/Login/LoginPage.jsx';
+import MachineMainPage from '../../pages/VirtualMachines/MachineMainPage.jsx';
+import MachinePage from '../../pages/VirtualMachines/MachinePage.jsx';
 import Redirect from '../Redirect/Redirect.jsx';
 import Layout from '../Layout/Layout.jsx';
 
 import useFetch from '../../hooks/useFetch.jsx';
 import NavBar from '../NavBar/NavBar.jsx';
-import NetworkPanel from '../../Pages/NetworkPanel/NetworkPanel.jsx';
+import NetworkPanel from '../../pages/NetworkPanel/NetworkPanel.jsx';
 
 function App() {
     return (
