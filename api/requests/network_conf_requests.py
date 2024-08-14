@@ -32,20 +32,18 @@ class Coordinates(BaseModel):
     y: float
 
 class Snapshot(BaseModel):
-    nodes: list | None
-    edges: list | None
-    viewport: dict[str, int] | None
+    nodes: list = []
+    edges: list = []
+    viewport: dict[str, float] | None = None
 
 class Intnet(BaseModel):
     id: IntnetId
-    machines: list[MachineId] | None
+    machines: list[MachineId] = []
 
 IntnetConfiguration = dict[IntnetId, Intnet]
-NodesState = dict[NodeId, Coordinates]
 
-class CurrentConfiguration(BaseModel):
-    intnets: IntnetConfiguration | None
-    nodesState: NodesState | None
+class PanelState(Snapshot):
+    intnets: IntnetConfiguration | None = None
 
 ###############################
 # functions
@@ -56,7 +54,7 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
     # TODO: Implement the logic to retrieve the current internal network state
     # ...
     # ? example return:
-    return{
+    return {
         1:  Intnet(id=1, machines=[1, 17]),  
         2:  Intnet(id=2, machines=[2, 18]),  
         3:  Intnet(id=3, machines=[3, 19]),  
@@ -75,8 +73,6 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
         16: Intnet(id=16, machines=[16, 32])
     }
 
-
-
 ###############################
 # configuration requests
 ###############################
@@ -84,10 +80,10 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
 @app.get("/network/configuration")
 def get_current_network_configuration(
     current_user: Annotated[User, Depends(get_current_user)]
-):
-    return CurrentConfiguration(
+) -> PanelState:
+    return PanelState(
         intnets = get_current_intnet_state(),
-        nodesState = current_state.read(),
+        **current_state.read(),
     )
     
 
@@ -104,10 +100,10 @@ def apply_intnet_configuration_to_virtual_machines(
     
 @app.put("/network/configuration/panelstate", status_code=204)
 def save_panel_state(
-    nodes_state: NodesState,
+    panel_state: Snapshot,
     current_user: Annotated[User, Depends(get_current_user)],
 ):
-    current_state.write(jsonable_encoder(nodes_state))
+    current_state.write(jsonable_encoder(panel_state))
 
 ###############################
 # snapshot requests
