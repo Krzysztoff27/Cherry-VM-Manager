@@ -1,0 +1,36 @@
+.machineNode::before {
+    content: '';
+    background-image: url('/icons/pinned.svg');
+    background-size: contain;
+    position: absolute;
+    top: -16px;
+    width: 16px;
+    height: 16px;
+    
+    filter: invert(96%) sepia(99%) saturate(10%) hue-rotate(130deg) brightness(104%) contrast(100%);
+}
+
+.machineNode .body {
+    border-color: var(--mantine-color-dark-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.machineNode .label {
+    font-size: 12px;
+}
+
+
+div.customHandle {
+    width: 100%;
+    height: 100%;
+    background: blue;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 0;
+    transform: none;
+    border: none;
+    opacity: 0;
+}
