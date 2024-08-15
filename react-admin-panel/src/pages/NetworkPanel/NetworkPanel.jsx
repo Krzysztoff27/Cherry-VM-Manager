@@ -12,9 +12,7 @@ import NumberAllocator from '../../handlers/numberAllocator';
 import '@xyflow/react/dist/style.css';
 import styles from './NetworkPanel.module.css';
 
-import post from '../../api/post';
-import put from '../../api/put';
-import get from '../../api/get';
+import { post, put, get } from '../../api/requests';
 import { safeObjectValues } from '../../utils/misc';
 import { calcMiddlePosition, getIdFromNodeId, getNodeId } from '../../utils/reactFlow';
 
@@ -60,7 +58,7 @@ const getIntnetNode = (id, position) => ({
 })
 
 
-function Flow({ authFetch, authOptions, logout }) {
+function Flow({ authFetch, authOptions, errorHandler }) {
     const allocator = useRef(new NumberAllocator()).current;
     const [changed, setChanged] = useState(false);
     
@@ -108,16 +106,13 @@ function Flow({ authFetch, authOptions, logout }) {
 
     const takeSnapshot = useCallback(() => rfInstance ? rfInstance.toObject() : undefined, [rfInstance]);
 
-    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions);
-    const putFlowState = (snapshot) => put('/network/configuration/panelstate', JSON.stringify(snapshot), authOptions);
+    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions, errorHandler);
+    const putFlowState = (snapshot) => put('/network/configuration/panelstate', JSON.stringify(snapshot), authOptions, errorHandler);
 
     const saveCurrentFlowState = () => putFlowState(takeSnapshot());
 
     const resetFlow = useCallback(async () => { 
-        const response = await get('/network/configuration', authOptions);
-        if(!response.ok) return;
-
-        const flow = await response.json();
+        const flow = await get('/network/configuration', authOptions, errorHandler);
         if(!flow) return;
 
         const DEFAULT_VIEWPORT = {x: 0, y: 0, zoom: 1}
@@ -130,6 +125,9 @@ function Flow({ authFetch, authOptions, logout }) {
             (acc, { id, position }) => ({ ...acc, [id]: position }), {}
         ) ?? {};
 
+        /**
+         * creates nodes representing loaded virtual machines and applies their positions from API's database
+         */
         const createMachineNodes = () => {
             if(!machines) return;
 
@@ -140,8 +138,14 @@ function Flow({ authFetch, authOptions, logout }) {
             createNodes(machineList.map(machine => getMachineNode(machine, getPos(machine.id))))
         }
 
+        /**
+         * creates intnet nodes from API's database
+         */
         const displayIntnetNodes = () => createNodes(flow?.nodes?.filter?.(node => node.type === 'intnet'));
 
+        /**
+         * creates edges between nodes, based on current intnet configuration
+         */
         const createIntnetEdges = () => {
             if(!flow?.intnets) return;
 
@@ -163,7 +167,7 @@ function Flow({ authFetch, authOptions, logout }) {
         createIntnetEdges();
         
         allocator.setCurrent(Math.max(...Object.keys({...flow?.intnets})));
-    }, [machines]);
+    });
 
     const postIntnetConfiguration = useCallback(() => {
         const intnets = getEdges().reduce((acc, { source, target }) => {
@@ -184,7 +188,7 @@ function Flow({ authFetch, authOptions, logout }) {
         
     }, [edges])  
 
-    useEffect(() => resetFlow, [machines])
+    useEffect(() => {resetFlow()}, [machines])
 
     if (machinesLoading) return;
     if (machinesError) return;

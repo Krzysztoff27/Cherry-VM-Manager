@@ -11,7 +11,15 @@ const useFetch = (path, token = null, options = {}) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(fetchURL, options);
+                const response = await fetch(fetchURL, options)
+                    .catch(err => new Response(null, {
+                        status: 503,
+                        statusText: 'No response from the server',
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        }
+                    }));
+                    
                 if (!response.ok){
                     setData(null);
                     setError(response);

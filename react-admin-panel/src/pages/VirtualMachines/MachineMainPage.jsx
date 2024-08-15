@@ -1,8 +1,7 @@
-import { Badge, Button, Card, Collapse, Group, Image, SimpleGrid, Stack, Text, Title } from "@mantine/core";
+import { Button, Card, Collapse, Group, Image, SimpleGrid, Stack, Text, Title } from "@mantine/core";
 import { useElementSize, useLocalStorage } from "@mantine/hooks";
-import { IconChevronDown, IconChevronRight, IconHomeLink, IconHomeX, IconPlayerPlayFilled, IconPlayerStopFilled, IconScreenShare, IconScreenShareOff } from "@tabler/icons-react";
+import { IconChevronDown, IconChevronRight, IconHomeLink, IconHomeX, IconScreenShare, IconScreenShareOff } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
-import { showError } from "../../handlers/notifications";
 import StateBadge from "../../components/StateBadge/StateBadge";
 
 const mergeObjectPropertiesToArray = (a, b) =>
@@ -118,21 +117,13 @@ function CardGroup({children, group}){
     )
 }
 
-export default function MachineMainPage({authFetch}) {
+export default function MachineMainPage({authFetch, errorHandler}) {
     const navigate = useNavigate();
     const {loading: networkDataLoading, error: networkDataError, data: networkData} = authFetch('/vm/all/networkdata')
     const {loading: stateDataLoading, error: stateDataError, data: stateData} = authFetch('/vm/all/state')
 
-    const handleError = (err) => {
-        if(err?.status == 401) return navigate('/login');
-        showError({title: `Wystąpił bład ${err?.status ?? ''}`, message: 'Nie udało się pobrać informacji o maszynach', autoclose: 1000})
-    }
-
     if(networkDataLoading || stateDataLoading) return;
-    if(networkDataError || stateDataError) {
-        handleError(networkDataError || stateDataError);
-        return;
-    }
+    if(networkDataError || stateDataError) return errorHandler.error(networkDataError || stateDataError);
 
     const virtualMachines = mergeObjectPropertiesToArray(networkData, stateData);
     let cards = {};

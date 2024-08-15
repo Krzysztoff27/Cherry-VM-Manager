@@ -2,11 +2,9 @@ import { Button, Center, Divider, Fieldset, Group, PasswordInput, Space, Text, T
 import { useForm, isNotEmpty } from '@mantine/form';
 import React from 'react'
 import { notifications } from '@mantine/notifications';
-import post from '../../api/post.jsx';
-import { showError } from '../../handlers/notifications.jsx';
-import { useNavigate } from 'react-router-dom';
+import { post } from '../../api/requests';
 
-export default function LoginPage({ setToken }) {
+export default function LoginPage({ setToken, errorHandler }) {
     const form = useForm({
         mode: 'uncontrolled',
         validate: {
@@ -16,19 +14,15 @@ export default function LoginPage({ setToken }) {
     })
 
     async function authenticate(values) {
-        post('/token', new URLSearchParams({
+        const jsonResponse = await post('/token', new URLSearchParams({
             username: values.username,
             password: values.password,
-        }))
-        .then(response => {
-            if (!response.ok) return showError({title: 'Wystąpił bład podczas logowania', message: 'Niepoprawny login lub hasło.'});
-            notifications.clean();
-            return response.json();
-        })
-        .then(json => {
-            setToken(json.access_token)
-        })
-        .catch(_ => showError({title: 'Wystąpił bład podczas logowania'}));
+        }), undefined, errorHandler);
+
+        if(!jsonResponse?.access_token) return;
+
+        setToken(jsonResponse.access_token)
+        notifications.clean();
     }
 
     return (

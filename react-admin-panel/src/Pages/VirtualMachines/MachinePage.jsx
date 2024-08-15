@@ -1,29 +1,21 @@
-import { Badge, Grid, Group, List, ListItem, Paper, Progress, Space, Stack, Table, TableTbody, Text, Title } from "@mantine/core";
+import { Grid, Group, Paper, Progress, Stack, Table, Title } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import get from "../../api/get";
-import { IconDeviceDesktop, IconDeviceDesktopOff, IconPlayerPlayFilled, IconPlayerStopFilled, IconServer, IconServerOff } from "@tabler/icons-react";
-import { showError } from "../../handlers/notifications";
+import { get } from "../../api/requests";
+import { IconDeviceDesktop, IconDeviceDesktopOff, IconServer, IconServerOff } from "@tabler/icons-react";
+
 import StateBadge from "../../components/StateBadge/StateBadge";
 
-export default function MachinePage({authFetch, authOptions}) {
+export default function MachinePage({authFetch, authOptions, errorHandler}) {
     const {id} = useParams();
 
-    const {loading: loading, error: error, data: machine} = authFetch(`/vm/${id}/networkdata`);
+    const {loading, error, data: machine} = authFetch(`/vm/${id}/networkdata`);
     const [state, setState] = useState({loading: true});
-
-    const handleError = (err) => {
-        if(err?.status == 401) return navigate('/login');
-        showError({title: 'Nie udało się pobrać informacji o maszynie', message: 'Spróbuj odświeżyć stronę lub zalogować się ponownie'})
-    }
 
     const handleBadgeClick = () => {}
 
     const loadState = () => {
-        get(`vm/${id}/state`, authOptions)
-        .then(res => res.ok ? res.json() : handleError(res))
-        .then(json => setState(json))
-        .catch(err => handleError(err))
+        setState(get(`vm/${id}/state`, authOptions, errorHandler))
     }
 
     useEffect(() => {
@@ -32,7 +24,7 @@ export default function MachinePage({authFetch, authOptions}) {
     }, []);
 
     if (loading) return;
-    if (error) handleError(error);
+    if (error) return errorHandler.error(error); 
 
     return (
         <Grid h='100%'>
