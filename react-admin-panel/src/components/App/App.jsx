@@ -44,11 +44,14 @@ function AppRoutes(){
     
     if(loading) return <Center h='100vh'><Loader/></Center>
     if(error && location.pathname !== '/login') navigate('/login')
-    else if(user && location.pathname === '/login') navigate('/');
 
     return (
         <Routes>
-            <Route path='/login' element={<LoginPage token={cookies.token} setToken={setToken} errorHandler={errorHandler}/>}/>
+            <Route path='/login' element={
+                user && !error ? 
+                <Redirect to='/'/> :
+                <LoginPage token={cookies.token} setToken={setToken} errorHandler={errorHandler}/>
+            }/>
             <Route element={
                 <Layout navbar={
                     <NavBar logout={logout} user={user}/>

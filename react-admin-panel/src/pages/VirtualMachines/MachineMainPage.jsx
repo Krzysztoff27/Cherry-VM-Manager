@@ -123,7 +123,10 @@ export default function MachineMainPage({authFetch, errorHandler}) {
     const {loading: stateDataLoading, error: stateDataError, data: stateData} = authFetch('/vm/all/state')
 
     if(networkDataLoading || stateDataLoading) return;
-    if(networkDataError || stateDataError) return errorHandler.error(networkDataError || stateDataError);
+    if(networkDataError || stateDataError) {
+        errorHandler.handleErrorResponse(networkDataError || stateDataError);
+        return;
+    }
 
     const virtualMachines = mergeObjectPropertiesToArray(networkData, stateData);
     let cards = {};

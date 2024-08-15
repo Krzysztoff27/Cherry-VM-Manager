@@ -24,7 +24,10 @@ export default function MachinePage({authFetch, authOptions, errorHandler}) {
     }, []);
 
     if (loading) return;
-    if (error) return errorHandler.error(error); 
+    if (error){
+        errorHandler.handleErrorResponse(error); 
+        return;
+    }
 
     return (
         <Grid h='100%'>
