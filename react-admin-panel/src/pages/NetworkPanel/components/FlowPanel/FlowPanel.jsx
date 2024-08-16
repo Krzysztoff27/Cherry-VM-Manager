@@ -2,9 +2,10 @@ import { Button, NativeSelect } from "@mantine/core";
 import { Panel } from "@xyflow/react";
 import { useEffect, useState } from "react";
 import styles from './FlowPanel.module.css';
+import useFetch from "../../../../hooks/useFetch";
 
-export default function FlowPanel({ resetFlow, saveCurrentFlowState, unsavedChanges, authFetch }) {
-    const {data: snapshots} = authFetch('/network/snapshot/all');
+export default function FlowPanel({ resetFlow, saveCurrentFlowState, isDirty, authOptions }) {
+    const {data: snapshots} = useFetch('/network/snapshot/all', authOptions);
     const [snapshotSelectData, setSnapshotSelectData] = useState({defaultSnapshots: [], userSnapshots: []});
 
     useEffect(() => {
@@ -36,8 +37,8 @@ export default function FlowPanel({ resetFlow, saveCurrentFlowState, unsavedChan
                 </NativeSelect>
                 <Button
                     onClick={() => resetFlow(false)}
-                    display={!unsavedChanges ? 'none' : undefined}
-                    disabled={!unsavedChanges}
+                    display={!isDirty ? 'none' : undefined}
+                    disabled={!isDirty}
                     className={styles.resetButton}
                     variant='default'
                     color='gray'
@@ -47,16 +48,15 @@ export default function FlowPanel({ resetFlow, saveCurrentFlowState, unsavedChan
                 </Button>
                 <Button
                     onClick={saveCurrentFlowState}
-                    disabled={!unsavedChanges}
+                    disabled={!isDirty}
                     className={styles.saveButton}
                     variant='default'
                     miw={90}
                     maw={180}
                 >
-                    {unsavedChanges ? 'Zastosuj' : 'Zastosowano zmiany!'}
+                    {isDirty ? 'Zastosuj' : 'Zastosowano zmiany!'}
                 </Button>
             </Button.Group>
-
         </Panel>
     );
 }

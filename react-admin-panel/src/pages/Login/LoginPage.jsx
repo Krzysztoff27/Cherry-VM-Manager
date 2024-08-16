@@ -1,10 +1,12 @@
 import { Button, Center, Divider, Fieldset, Group, PasswordInput, Space, Text, TextInput } from '@mantine/core';
-import { useForm, isNotEmpty } from '@mantine/form';
-import React from 'react'
+import { isNotEmpty, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
+import React from 'react';
 import { post } from '../../api/requests';
+import useAuth from '../../hooks/useAuth';
 
-export default function LoginPage({ setToken, errorHandler }) {
+export default function LoginPage({ errorHandler }) {
+    const auth = useAuth();
     const form = useForm({
         mode: 'uncontrolled',
         validate: {
@@ -21,7 +23,7 @@ export default function LoginPage({ setToken, errorHandler }) {
 
         if(!jsonResponse?.access_token) return;
 
-        setToken(jsonResponse.access_token)
+        auth.setToken(jsonResponse.access_token)
         notifications.clean();
     }
 

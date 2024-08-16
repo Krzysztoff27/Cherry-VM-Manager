@@ -1,4 +1,4 @@
-import { Container } from '@mantine/core';
+import { Container, Text } from '@mantine/core';
 import { IconDeviceDesktop, IconServer2 } from '@tabler/icons-react';
 import { Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from '@xyflow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -15,6 +15,8 @@ import { noneOrEmpty, safeObjectValues } from '../../utils/misc';
 import { calcMiddlePosition, getIdFromNodeId, getNodeId } from '../../utils/reactFlow';
 
 import '@xyflow/react/dist/style.css';
+import useAuth from '../../hooks/useAuth';
+import useFetch from '../../hooks/useFetch';
 
 const NODE_TYPES = {
     machine: MachineNode,
@@ -65,11 +67,12 @@ const generateIntnetNode = (intnet, position) => ({
 })
 
 
-function Flow({ authFetch, authOptions, errorHandler }) {
+function Flow({ errorHandler }) {
+    const {authOptions} = useAuth();
     const allocator = useRef(new NumberAllocator()).current;
-    const [unsavedChanges, setUnsavedChanges] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
     
-    const { loading: machinesLoading, error: machinesError, data: machines } = authFetch('/vm/all/networkdata');
+    const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
     
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
@@ -81,7 +84,7 @@ function Flow({ authFetch, authOptions, errorHandler }) {
 
     const onNodesChange = useCallback((changes) => {
             setNodes((nds) => applyNodeChanges(changes, nds));
-            setUnsavedChanges(true);
+            setIsDirty(true);
         }, 
         [],
     );
@@ -92,7 +95,7 @@ function Flow({ authFetch, authOptions, errorHandler }) {
 
     const onEdgesChange = useCallback((changes) => {
             setEdges((eds) => applyEdgeChanges(changes, eds));
-            setUnsavedChanges(true);
+            setIsDirty(true);
         },
         [],
     );
@@ -204,7 +207,21 @@ function Flow({ authFetch, authOptions, errorHandler }) {
     const saveCurrentFlowState = (_) => {
         putFlowState(takeSnapshot());
         postIntnetConfiguration();
-        setUnsavedChanges(false);
+        setIsDirty(false);
+    }
+
+    const alertUserOfUnsaved = (e = null) => {
+        modals.openConfirmModal({
+            title: 'Potwierdzenie opuszczenia strony',
+            children: (
+                <Text size="sm">
+                    Masz niezapisane zmiany, które zostaną utracone, jeśli opuścisz tę stronę. Czy na pewno chcesz kontynuować?
+                </Text>
+            ),
+            labels: { confirm: 'Opuść stronę', cancel: 'Anuluj' },
+            confirmProps: { color: 'red' },
+        });
+        
     }
 
     useEffect(() => {resetFlow()}, [machines])
@@ -213,6 +230,14 @@ function Flow({ authFetch, authOptions, errorHandler }) {
     if (machinesError) return;
 
     return (
+        <>
+        {/* <ReactRouterPrompt when={isDirty}>
+            {({ isActive, onConfirm, onCancel }) => (
+                <div>
+                    TEST, TEST, TEST
+                </div>
+            )}
+        </ReactRouterPrompt> */}
         <Container h='96.5vh' fluid>
             <ReactFlow
                 colorMode='dark'
@@ -232,8 +257,8 @@ function Flow({ authFetch, authOptions, errorHandler }) {
                 <FlowPanel 
                     saveCurrentFlowState={saveCurrentFlowState} 
                     resetFlow={resetFlow} 
-                    unsavedChanges={unsavedChanges}
-                    authFetch={authFetch}
+                    isDirty={isDirty}
+                    authOptions={authOptions}
                     loadSnapshot={loadSnapshot}
                 />
                 <Controls />
@@ -241,6 +266,7 @@ function Flow({ authFetch, authOptions, errorHandler }) {
                 <Background />
             </ReactFlow>
         </Container>
+        </>
     )
 }
 

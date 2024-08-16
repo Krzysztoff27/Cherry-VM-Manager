@@ -22,7 +22,8 @@
     "react-cookie": "^7.1.4",
     "react-dom": "^18.3.1",
     "react-draggable": "^4.4.6",
-    "react-router-dom": "^6.24.0",
+    "react-router-dom": "^6.4",
+    "react-router-prompt": "^0.7.1",
     "styled-components": "^6.1.11",
     "use-local-storage": "^3.0.0"
   },

@@ -2,14 +2,17 @@ import { Stack } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import CardGroup from "./components/CardGroup/CardGroup.jsx";
 import MachineCard from "./components/MachineCard/MachineCard.jsx";
+import useAuth from "../../hooks/useAuth.jsx";
+import useFetch from "../../hooks/useFetch.jsx";
 
 const mergeObjectPropertiesToArray = (a, b) =>
     Object.keys({ ...a, ...b })?.map(key => ({...a[key], ...b[key]}));
 
-export default function MachineMainPage({authFetch, errorHandler}) {
+export default function MachineList({errorHandler}) {
+    const {authOptions} = useAuth();
     const navigate = useNavigate();
-    const {loading: networkDataLoading, error: networkDataError, data: networkData} = authFetch('/vm/all/networkdata')
-    const {loading: stateDataLoading, error: stateDataError, data: stateData} = authFetch('/vm/all/state')
+    const {loading: networkDataLoading, error: networkDataError, data: networkData} = useFetch('/vm/all/networkdata', authOptions)
+    const {loading: stateDataLoading, error: stateDataError, data: stateData} = useFetch('/vm/all/state', authOptions)
 
     if(networkDataLoading || stateDataLoading) return;
     if(networkDataError || stateDataError) {

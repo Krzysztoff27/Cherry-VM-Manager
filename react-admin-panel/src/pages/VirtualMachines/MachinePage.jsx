@@ -5,11 +5,14 @@ import { get } from "../../api/requests";
 import { IconDeviceDesktop, IconDeviceDesktopOff, IconServer, IconServerOff } from "@tabler/icons-react";
 
 import StateBadge from "../../components/StateBadge/StateBadge";
+import useAuth from "../../hooks/useAuth";
+import useFetch from "../../hooks/useFetch";
 
-export default function MachinePage({authFetch, authOptions, errorHandler}) {
+export default function MachinePage({errorHandler}) {
+    const {authOptions} = useAuth();
     const {id} = useParams();
 
-    const {loading, error, data: machine} = authFetch(`/vm/${id}/networkdata`);
+    const {loading, error, data: machine} = useFetch(`/vm/${id}/networkdata`, authOptions);
     const [state, setState] = useState({loading: true});
 
     const handleBadgeClick = () => {}

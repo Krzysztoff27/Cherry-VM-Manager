@@ -1,9 +1,11 @@
 import { ActionIcon, Stack, Tooltip } from '@mantine/core';
-import { IconDeviceDesktop, IconLogout, IconTerminal2, IconTopologyStar } from '@tabler/icons-react';
+import { IconDeviceDesktop, IconHome, IconLogout, IconTerminal2, IconTopologyStar } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 
 const categories = [
+    {icon: IconHome, label: 'Strona Główna', link: '/'},
     {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines'},
     {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops'},
     {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
@@ -33,7 +35,8 @@ function IconButton({to, label = null, icon, active}) {
     );
 }
 
-export default function NavBar({logout}) {
+export default function NavBar({}) {
+    const {logout} = useAuth();
     const location = useLocation();
     const [active, setActive] = useState();
     
