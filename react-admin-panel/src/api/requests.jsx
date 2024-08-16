@@ -17,7 +17,10 @@ const handleFetch = async (URL, options = {}, errorHandler) => {
                 headers: {'Content-Type': 'text/plain'},
             })
         );
-    const json = await response.json();
+
+    // handle no content reponses
+    const text = await response.text(); 
+    const json = text ? JSON.parse(text) : {};
 
     if(!response.ok) return errorHandler.handleErrorResponse(response, json);
     return json;

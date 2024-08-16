@@ -1,20 +1,20 @@
-import { Button, Container } from '@mantine/core';
-import { Background, Controls, ReactFlow, addEdge, MiniMap, Panel, applyEdgeChanges, applyNodeChanges, useReactFlow, ReactFlowProvider } from '@xyflow/react';
+import { Container } from '@mantine/core';
+import { IconDeviceDesktop, IconServer2 } from '@tabler/icons-react';
+import { Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from '@xyflow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { IconCheck, IconDeviceDesktop, IconDeviceFloppy, IconServer2 } from '@tabler/icons-react';
 
-import FloatingEdge from './components/Floating/FloatingEdge/FloatingEdge';
-import FloatingConnectionLine from './components/Floating/FloatingConnectionLine/FloatingConnectionLine';
-import MachineNode from './components/MachineNode/MachineNode';
-import IntnetNode from './components/IntnetNode/IntnetNode';
 import NumberAllocator from '../../handlers/numberAllocator';
+import FloatingConnectionLine from './components/Floating/FloatingConnectionLine/FloatingConnectionLine';
+import FloatingEdge from './components/Floating/FloatingEdge/FloatingEdge';
+import FlowPanel from './components/FlowPanel/FlowPanel';
+import IntnetNode from './components/IntnetNode/IntnetNode';
+import MachineNode from './components/MachineNode/MachineNode';
+
+import { get, post, put } from '../../api/requests';
+import { noneOrEmpty, safeObjectValues } from '../../utils/misc';
+import { calcMiddlePosition, getIdFromNodeId, getNodeId } from '../../utils/reactFlow';
 
 import '@xyflow/react/dist/style.css';
-import styles from './NetworkPanel.module.css';
-
-import { post, put, get } from '../../api/requests';
-import { safeObjectValues } from '../../utils/misc';
-import { calcMiddlePosition, getIdFromNodeId, getNodeId } from '../../utils/reactFlow';
 
 const NODE_TYPES = {
     machine: MachineNode,
@@ -31,8 +31,15 @@ const DEFAULT_EDGE_OPTIONS = {
     type: 'floating',
 }
 
+const generateNode = (type, data, position) => {
+    switch(type){
+        case MachineNode: return generateMachineNode(data, position);
+        case IntnetNode: return generateIntnetNode(data, position);
+        default: return {};
+    }
+}
 
-const getMachineNode = (machine, position) => ({
+const generateMachineNode = (machine, position) => ({
     id: getNodeId(NODE_TYPES.machine, machine.id),
     type: 'machine',
     position: position,
@@ -47,20 +54,20 @@ const getMachineNode = (machine, position) => ({
     },
 })
 
-const getIntnetNode = (id, position) => ({
-    id: getNodeId(NODE_TYPES.intnet, id),
+const generateIntnetNode = (intnet, position) => ({
+    id: getNodeId(NODE_TYPES.intnet, intnet.id),
     type: 'intnet',
-    intnet: id,
+    intnet: intnet.id,
     position: position,
     data: { 
-        label: `Intnet ${id}`
+        label: `Intnet ${intnet.id}`
     },
 })
 
 
 function Flow({ authFetch, authOptions, errorHandler }) {
     const allocator = useRef(new NumberAllocator()).current;
-    const [changed, setChanged] = useState(false);
+    const [unsavedChanges, setUnsavedChanges] = useState(false);
     
     const { loading: machinesLoading, error: machinesError, data: machines } = authFetch('/vm/all/networkdata');
     
@@ -74,7 +81,7 @@ function Flow({ authFetch, authOptions, errorHandler }) {
 
     const onNodesChange = useCallback((changes) => {
             setNodes((nds) => applyNodeChanges(changes, nds));
-            setChanged(true);
+            setUnsavedChanges(true);
         }, 
         [],
     );
@@ -85,7 +92,7 @@ function Flow({ authFetch, authOptions, errorHandler }) {
 
     const onEdgesChange = useCallback((changes) => {
             setEdges((eds) => applyEdgeChanges(changes, eds));
-            setChanged(true);
+            setUnsavedChanges(true);
         },
         [],
     );
@@ -95,7 +102,7 @@ function Flow({ authFetch, authOptions, errorHandler }) {
             if(target.startsWith('intnet')) return createEdge({source: source, target: target});
             
             const intnetId = allocator.getNext(); 
-            const intnetNode = getIntnetNode(intnetId, calcMiddlePosition(getNode(source).position, getNode(target).position));
+            const intnetNode = generateIntnetNode({id: intnetId}, calcMiddlePosition(getNode(source).position, getNode(target).position));
             
             createNodes(intnetNode);
             createEdge({source: target, target: intnetNode.id});
@@ -104,44 +111,44 @@ function Flow({ authFetch, authOptions, errorHandler }) {
         [setEdges]
     );
 
-    const takeSnapshot = useCallback(() => rfInstance ? rfInstance.toObject() : undefined, [rfInstance]);
+    const takeSnapshot = useCallback(() => {
+        const {edges: _, ...snapshot} = rfInstance.toObject() // remove edges
+        return snapshot;
+    });
 
-    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions, errorHandler);
-    const putFlowState = (snapshot) => put('/network/configuration/panelstate', JSON.stringify(snapshot), authOptions, errorHandler);
-
-    const saveCurrentFlowState = () => putFlowState(takeSnapshot());
-
-    const resetFlow = useCallback(async () => { 
+    const resetFlow = useCallback(async (resetViewport = true) => { 
         const flow = await get('/network/configuration', authOptions, errorHandler);
         if(!flow) return;
 
-        const DEFAULT_VIEWPORT = {x: 0, y: 0, zoom: 1}
-        setViewport({...DEFAULT_VIEWPORT, ...flow.viewport});
-        
+        if(resetViewport) setViewport({x: 0, y: 0, zoom: 1, ...flow.viewport});
+
+        const newPositionsAllocator = new NumberAllocator();
+        const generateNewPos = () => ({x: newPositionsAllocator.getNext() * 100, y: 0});
+
         /**
+         * 
          * @returns {Object} An object mapping node IDs to their positions.
         */
         const getSavedNodePositions = () => flow?.nodes?.reduce(
             (acc, { id, position }) => ({ ...acc, [id]: position }), {}
         ) ?? {};
-
-        /**
-         * creates nodes representing loaded virtual machines and applies their positions from API's database
+        
+        /** 
+         * 
+         * @param {Array} listOfNodesData list of objects containing parameters needed for the node creation (such as id)
+         * @param {MachineNode || IntnetNode} nodeType 
+         * @returns 
          */
-        const createMachineNodes = () => {
-            if(!machines) return;
+        const generateFlowNodes = (listOfNodesData = [], nodeType) => {
+            if(noneOrEmpty(listOfNodesData) || !nodeType) return;
 
             const positions = getSavedNodePositions();
-            const machineList = safeObjectValues(machines);
+            const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
 
-            const getPos = (id) => positions[getNodeId(NODE_TYPES.machine, id)]
-            createNodes(machineList.map(machine => getMachineNode(machine, getPos(machine.id))))
+            createNodes(listOfNodesData.map(node => 
+                generateNode(nodeType, node, getPos(node.id))
+            ));
         }
-
-        /**
-         * creates intnet nodes from API's database
-         */
-        const displayIntnetNodes = () => createNodes(flow?.nodes?.filter?.(node => node.type === 'intnet'));
 
         /**
          * creates edges between nodes, based on current intnet configuration
@@ -162,31 +169,43 @@ function Flow({ authFetch, authOptions, errorHandler }) {
         }
 
         setNodes([]);
-        createMachineNodes();
-        displayIntnetNodes();
+        generateFlowNodes(safeObjectValues(machines),     NODE_TYPES.machine);
+        generateFlowNodes(safeObjectValues(flow?.intnets), NODE_TYPES.intnet);
         createIntnetEdges();
         
         allocator.setCurrent(Math.max(...Object.keys({...flow?.intnets})));
     });
 
-    const postIntnetConfiguration = useCallback(() => {
-        const intnets = getEdges().reduce((acc, { source, target }) => {
-            const intnetId = getIdFromNodeId(target);
-            const machineId = getIdFromNodeId(source);
-    
+    const getIntnetConfFromCurrentState = () => 
+        getEdges().reduce((acc, { source, target }) => {
+            const [intnetId, machineId] = [getIdFromNodeId(target), getIdFromNodeId(source)];
+
             if (intnetId !== null && machineId !== null) {
-                acc[intnetId] = acc[intnetId] || { id: intnetId, machines: [] };
+                if(!acc[intnetId]) acc[intnetId] = { id: intnetId, machines: [] };
                 acc[intnetId].machines.push(machineId);
             }
-    
+
             return acc;
         }, {});
 
-        put('/network/configuration/intnets', JSON.stringify(intnets), authOptions);
-        
-        return eds;
-        
-    }, [edges])  
+    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions, errorHandler);
+    const putFlowState = (snapshot) => put('/network/configuration/panelstate', JSON.stringify(snapshot), authOptions, errorHandler);
+    const postIntnetConfiguration = () => put('/network/configuration/intnets', JSON.stringify(getIntnetConfFromCurrentState()), authOptions);
+
+    const loadSnapshot = async (id) => {
+        const snapshot = await get(`/network/snapshot/${id}`, undefined, errorHandler);
+        const flow = snapshot.data;
+
+        if (!flow) return;
+        setNodes(flow.nodes || []);
+        setEdges(flow.edges || []);
+    }
+
+    const saveCurrentFlowState = (_) => {
+        putFlowState(takeSnapshot());
+        postIntnetConfiguration();
+        setUnsavedChanges(false);
+    }
 
     useEffect(() => {resetFlow()}, [machines])
 
@@ -210,21 +229,13 @@ function Flow({ authFetch, authOptions, errorHandler }) {
                 defaultEdgeOptions={DEFAULT_EDGE_OPTIONS}
                 connectionLineComponent={FloatingConnectionLine}
             >
-                <Panel position="top-center">
-                    <Button 
-                        onClick={() => {
-                            saveCurrentFlowState();
-                            setChanged(false);
-                        }}
-                        disabled={!changed}
-                        variant='default' 
-                        leftSection={changed ? <IconDeviceFloppy size='22' stroke={1.5}/> : <IconCheck size='22' stroke={2}/>}
-                        className={styles.button}
-                        size='sm'
-                    >
-                        {changed ? 'Zapisz zmiany' : 'Zapisano!'}
-                    </Button>
-                </Panel>
+                <FlowPanel 
+                    saveCurrentFlowState={saveCurrentFlowState} 
+                    resetFlow={resetFlow} 
+                    unsavedChanges={unsavedChanges}
+                    authFetch={authFetch}
+                    loadSnapshot={loadSnapshot}
+                />
                 <Controls />
                 <MiniMap nodeStrokeWidth={3} pannable zoomable/>
                 <Background />

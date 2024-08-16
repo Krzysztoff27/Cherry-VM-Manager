@@ -1,4 +1,4 @@
-.button {
+.saveButton {
     transition: all 0.25s ease-out;
 
     &:disabled,
@@ -7,3 +7,7 @@
       color: white;
     }
   }
+
+.select * {
+    font-family: 'FontAwesome', var(--mantine-font-family);
+}
