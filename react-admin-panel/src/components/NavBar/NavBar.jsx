@@ -1,7 +1,7 @@
 import { ActionIcon, Stack, Tooltip } from '@mantine/core';
 import { IconDeviceDesktop, IconLogout, IconTerminal2, IconTopologyStar } from '@tabler/icons-react';
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const categories = [
     {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines'},
@@ -9,7 +9,7 @@ const categories = [
     {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
 ]
 
-function IconButton({onClick, label = null, icon, active}) {
+function IconButton({to, label = null, icon, active}) {
     return (
         <Tooltip 
             label={label} 
@@ -21,8 +21,9 @@ function IconButton({onClick, label = null, icon, active}) {
 
         >
             <ActionIcon
+                component={Link}
+                to={to}
                 variant={active ? 'filled' : 'default'}
-                onClick={onClick}
                 size='xl'
                 aria-label={label}
             >
@@ -38,12 +39,11 @@ export default function NavBar({logout}) {
     
     useEffect(() => setActive(categories.findIndex(cat => cat.link === location.pathname)), 
         [location.pathname]);
-    
-    const navigate = useNavigate();
+
     const mainLinks = categories.map((category, i) => (
         <IconButton
             key={i}
-            onClick={() => navigate(category.link)}
+            to={category.link}
             active={active === i}
             label={category.label}
             icon={<category.icon stroke={1.5} />}
