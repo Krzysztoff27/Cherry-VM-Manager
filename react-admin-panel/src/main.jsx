@@ -8,6 +8,7 @@ import '@mantine/notifications/styles.css';
 import './main.css';
 
 const theme = createTheme({
+  fontFamily: 'FontAwesome, Poppins',
   defaultRadius: 'md',
   colors: {
     'suse-green':
