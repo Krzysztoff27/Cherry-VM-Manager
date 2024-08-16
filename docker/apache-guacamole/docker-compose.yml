@@ -2,17 +2,16 @@ version: '3'
 
 services:
   guacd:
+    container_name: guacamole-guacd
     restart: always
     image: guacamole/guacd
+    networks:
+      - guacamole
 
-  guacamole-server:
-    env_file:
-      - ./credentials.env
+  guacamole:
+    container_name: guacamole-guacamole
     restart: always
     image: guacamole/guacamole
-    links:
-      - guacd
-      - database
     ports:
       - "8080:8080"
     environment:
@@ -21,10 +20,14 @@ services:
       - POSTGRESQL_DATABASE=${GUACAMOLE_DATABASE}
       - POSTGRESQL_USER=${GUACAMOLE_USER}
       - POSTGRESQL_PASSWORD=${GUACAMOLE_PASSWORD}
+    links:
+      - guacd
+      - database
+    networks:
+      - guacamole
 
   database:
-    env_file:
-      - ./credentials.env
+    container_name: guacamole-db
     restart: always
     image: postgres
     environment:
@@ -33,4 +36,15 @@ services:
       - POSTGRES_PASSWORD=${GUACAMOLE_PASSWORD}
     volumes:
       - ./db:/var/lib/postgresql/data:rw
-      - ./initdb.sql:/initdb.sql:ro
+      - ./initdb:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - guacamole
+
+networks:
+  guacamole:
+    driver: bridge
+    name: guacamole-network
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.30.0/24"

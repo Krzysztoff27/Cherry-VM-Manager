@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 
+###############################
+#       env variables
+###############################
+
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
 readonly LOGS_FILE="./logs/installation_logs_"$(date +%d-%m-%y_%H-%M-%S)".txt"
 readonly ZYPPER_PACKAGES="./dependencies/zypper_packages.txt"
 readonly ZYPPER_PATTERNS="./dependencies/zypper_patterns.txt"
+
+###############################
+#   non-installation functions
+###############################
 
 #Force script to exit on ERR occurence
 set -e
@@ -23,7 +31,10 @@ read_file(){
     done < "$1"
 }
 
-#Functions performing installation 
+###############################
+#   installation functions
+###############################
+
 #Zypper repos refresh and package installation
 install_zypper_packages(){
     read_file "$ZYPPER_PACKAGES"
@@ -56,7 +67,22 @@ install_zypper_patterns(){
     echo ""
 }
 
-configure_kvm(){
+create_user(){
+    echo -n '[i] Creating CherryWorker system user: '
+    useradd -r -M -s '/usr/bin/false' -c 'Cherry-VM-Manager system user' 'CherryWorker'
+    echo 'OK'
+    echo -n '[i] Creating CherryWorker home directory: '
+    mkdir /home/CherryWorker
+    chown CherryWorker:users /home/CherryWorker
+    chmod 700 /home/CherryWorker
+    echo 'OK'
+    echo -n '[i] Adding CherryWorker to system groups: '
+    usermod -a -G docker,libvirt CherryWorker
+    echo 'OK'
+    echo ""
+}
+
+configure_daemon_kvm(){
     #check for cpu manufacturer and nested virtualization support - available if turned on in BIOS first
     cpu_model=$(grep "model name" /proc/cpuinfo -m 1 | awk -F: '{print $2}';)
     if echo "$cpu_model" | grep -q "Intel"; then
@@ -94,14 +120,41 @@ configure_kvm(){
     echo ""
 }
 
-configure_libvirt(){
+configure_daemon_libvirt(){
     echo -n "[i] Enabling libvirt monolithic daemon to run on startup: "
-    systemctl enable libvirtd #Test for ERR throwing after fixing the error_handler() trap
+    systemctl enable libvirtd.service >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
     echo 'OK'
     echo -n "[i] Starting libvirt monolithic daemon: "
+    systemctl start libvirtd.service >> "$LOGS_FILE" 2>&1
     echo 'OK' #Test for ERR throwing after fixing the error_handler() trap
     echo ""
 }
+
+configure_daemon_docker(){
+    echo -n '[i] Enabling Docker daemon to run on startup: '
+    systemctl enable docker.service >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
+    echo 'OK'
+    echo -n '[i] Starting docker daemon: '
+    systemctl start docker.service >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
+    echo 'OK'
+    echo -n "[i] Creating directory structure (/opt/docker/cherry-vm-manager) and copying docker-compose files: "
+    mkdir -p /opt/docker/cherry-vm-manager
+    cp -r ../docker/. /opt/docker/cherry-vm-manager
+    echo 'OK'
+    echo ""
+}
+
+configure_container_guacamole(){
+    echo -n '[i] Creating initdb.sql SQL script for Apache Guacamole PostgreSQL db: '
+    runuser -u CherryWorker -- docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > /opt/docker/cherry-vm-manager/apache-guacamole/initdb/01-initdb.sql
+    echo 'OK'
+    echo ""
+}
+
+###############################
+#   actual installation
+###############################
+
 #Test to ensure that script is run with root priviliges
 if (($EUID != 0)); then
     echo "Insufficient priviliges! Please run the script with root rights."
@@ -109,7 +162,19 @@ if (($EUID != 0)); then
 fi
 
 #Calls for certain functions - parts of the whole environment initialization process
-install_zypper_packages
-install_zypper_patterns
-configure_kvm
-configure_libvirt
+
+#Parts invoked in one function to allow implementation of stage installation - each stage
+#will record its completion state and if error occurs and another installation is launched,
+#it will be able to continue from where it stopped previously - TO BE IMPLEMENTED
+installation(){
+    install_zypper_packages
+    install_zypper_patterns
+    create_user
+    configure_daemon_kvm
+    configure_daemon_libvirt
+    configure_daemon_docker
+    configure_container_guacamole
+}
+
+#Begin installation
+installation
