@@ -23,18 +23,8 @@ snapshots = JSONHandler(SNAPSHOTS_PATH)
 # classes & types
 ###############################
 
-NodeId = str
 MachineId = int
 IntnetId = int
-
-class Coordinates(BaseModel):
-    x: float
-    y: float
-
-class Snapshot(BaseModel):
-    nodes: list = []
-    edges: list = []
-    viewport: dict[str, float] | None = None
 
 class Intnet(BaseModel):
     id: IntnetId
@@ -42,8 +32,26 @@ class Intnet(BaseModel):
 
 IntnetConfiguration = dict[IntnetId, Intnet]
 
-class PanelState(Snapshot):
+
+class Coordinates(BaseModel):
+    x: float = 0
+    y: float = 0
+
+class Viewport(Coordinates):
+    zoom: float = 1
+
+class SnapshotData(BaseModel):
+    nodes: list = []
+    viewport: Viewport | None = None
+
+class PanelState(SnapshotData):
     intnets: IntnetConfiguration | None = None
+
+class Snapshot(BaseModel):
+    id: int
+    name: str = "Unnamed"
+    deletable: bool = True
+    data: SnapshotData | None = None
 
 ###############################
 # functions
@@ -100,7 +108,7 @@ def apply_intnet_configuration_to_virtual_machines(
     
 @app.put("/network/configuration/panelstate", status_code=204)
 def save_panel_state(
-    panel_state: Snapshot,
+    panel_state: SnapshotData,
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     current_state.write(jsonable_encoder(panel_state))
@@ -123,15 +131,26 @@ def create_network_snapshot(
 
     return snapshot
 
+@app.get("/network/snapshot/all")
+def get_all_snapshots(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> list[Snapshot]:
+    snapshots_list = snapshots.read()
+    
+    if not isinstance(snapshots_list, list): 
+        raise HTTPException(status_code=404, detail="Could not find the snapshots: Snapshot list is empty or undefined")
+    
+    return snapshots_list
+
 @app.get("/network/snapshot/{id}")
-def get_network_configuration_snapshot(
+def get_snapshot(
     id: int,
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> Snapshot:
     snapshots_list = snapshots.read()
 
     if not isinstance(snapshots_list, list): 
-        raise HTTPException(status_code=404, detail="Snapshot not found")
+        raise HTTPException(status_code=404, detail="Could not find the snapshot: Snapshot list is empty or undefined")
     if id < 0 or id >= len(snapshots_list):
         raise HTTPException(status_code=404, detail=f"Snapshot of id={id} not found")
 
@@ -149,7 +168,8 @@ def delete_network_configuration_snapshot(
     if id < 0 or id >= len(snapshots_list):
         raise HTTPException(status_code=404, detail=f"Snapshot of id={id} not found")
     
-    snapshots_list.pop(id)
+    deleted = snapshots_list.pop(id)
     snapshots.write(snapshots_list)
+    return deleted
 
 
