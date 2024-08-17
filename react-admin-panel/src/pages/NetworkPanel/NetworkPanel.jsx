@@ -69,10 +69,10 @@ const generateIntnetNode = (intnet, position) => ({
 })
 
 
-function Flow({ errorHandler }) {
+function Flow({ }) {
     const {authOptions} = useAuth();
     const allocator = useRef(new NumberAllocator()).current;
-    const [isDirty, setIsDirty] = useState(false);
+    const [isDirty, setIsDirty] = useState(true);
     
     const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
     
@@ -116,44 +116,39 @@ function Flow({ errorHandler }) {
         [setEdges]
     );
 
-    const takeSnapshot = useCallback(() => {
-        const {edges: _, ...snapshot} = rfInstance.toObject() // remove edges
-        return snapshot;
-    });
-
-    const resetFlow = useCallback(async (resetViewport = true) => { 
-        const flow = await get('/network/configuration', authOptions, errorHandler);
-        if(!flow) return;
-
-        if(resetViewport) setViewport({x: 0, y: 0, zoom: 1, ...flow.viewport});
-
-        const newPositionsAllocator = new NumberAllocator();
-        const generateNewPos = () => ({x: newPositionsAllocator.getNext() * 100, y: 0});
-
-        /**
+    
+    const newPositionsAllocator = new NumberAllocator();
+    const generateNewPos = () => ({x: newPositionsAllocator.getNext() * 100, y: 0});
+    /**
          * 
          * @returns {Object} An object mapping node IDs to their positions.
-        */
-        const getSavedNodePositions = () => flow?.nodes?.reduce(
-            (acc, { id, position }) => ({ ...acc, [id]: position }), {}
-        ) ?? {};
-        
-        /** 
+    */
+    const getPositionsFromNodeArr = (nds) => nds?.reduce(
+        (acc, { id, position }) => ({ ...acc, [id]: position }), {}
+    ) ?? {};
+
+    /** 
          * 
-         * @param {Array} listOfNodesData list of objects containing parameters needed for the node creation (such as id)
+         * @param {Array} data list of objects containing parameters needed for the node creation (such as id)
          * @param {MachineNode || IntnetNode} nodeType 
          * @returns 
          */
-        const generateFlowNodes = (listOfNodesData = [], nodeType) => {
-            if(noneOrEmpty(listOfNodesData) || !nodeType) return;
+    const generateFlowNodes = (nodeType, data = [], positions) => {
+        if(noneOrEmpty(data) || !nodeType) return;
 
-            const positions = getSavedNodePositions();
-            const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
+        const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
+        createNodes(data.map(node => 
+            generateNode(nodeType, node, getPos(node.id))
+        ));
+    }
 
-            createNodes(listOfNodesData.map(node => 
-                generateNode(nodeType, node, getPos(node.id))
-            ));
-        }
+    const generateMachineNodes = (positions) => generateFlowNodes(NODE_TYPES.machine, safeObjectValues(machines), positions);
+
+    const resetFlow = useCallback(async (resetViewport = true) => { 
+        const flow = await get('/network/configuration', authOptions);
+        if(!flow) return;
+
+        if(resetViewport) setViewport({x: 0, y: 0, zoom: 1, ...flow.viewport});
 
         /**
          * creates edges between nodes, based on current intnet configuration
@@ -173,9 +168,10 @@ function Flow({ errorHandler }) {
             )
         }
 
+        const positions = getPositionsFromNodeArr(flow?.nodes);
         setNodes([]);
-        generateFlowNodes(safeObjectValues(machines),     NODE_TYPES.machine);
-        generateFlowNodes(safeObjectValues(flow?.intnets), NODE_TYPES.intnet);
+        generateMachineNodes(positions);
+        generateFlowNodes(NODE_TYPES.intnet, safeObjectValues(flow?.intnets), positions);
         createIntnetEdges();
         
         allocator.setCurrent(Math.max(...Object.keys({...flow?.intnets})));
@@ -193,16 +189,24 @@ function Flow({ errorHandler }) {
             return acc;
         }, {});
 
-    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions, errorHandler);
-    const putFlowState = (snapshot) => put('/network/configuration/panelstate', JSON.stringify(snapshot), authOptions, errorHandler);
+    const putFlowState = (state) => put('/network/configuration/panelstate', JSON.stringify(state), authOptions);
     const postIntnetConfiguration = () => put('/network/configuration/intnets', JSON.stringify(getIntnetConfFromCurrentState()), authOptions);
+    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions);
+
+    const takeSnapshot = useCallback(() => rfInstance.toObject());
 
     const loadSnapshot = async (id) => {
-        const snapshot = await get(`/network/snapshot/${id}`, undefined, errorHandler);
+        const snapshot = await get(`/network/snapshot/${id}`, authOptions);
         const flow = snapshot.data;
+        
+        if (!flow || !flow.nodes) return;
 
-        if (!flow) return;
-        setNodes(flow.nodes || []);
+        setNodes([]);
+        const machinePositions = getPositionsFromNodeArr(flow.nodes.filter?.(node => node.type === 'machine') || []);
+        generateMachineNodes(machinePositions);
+
+        const intnetNodes = flow.nodes.filter(node => node.type === 'intnet');
+        createNodes(intnetNodes);
         setEdges(flow.edges || []);
     }
 
@@ -240,8 +244,9 @@ function Flow({ errorHandler }) {
                     saveCurrentFlowState={saveCurrentFlowState} 
                     resetFlow={resetFlow} 
                     isDirty={isDirty}
-                    authOptions={authOptions}
-                    loadSnapshot={loadSnapshot}
+                    takeSnapshot={takeSnapshot}
+                    postSnapshot={postSnapshot}
+                    snapshotSelectProps={{loadSnapshot, authOptions}}
                 />
                 <Controls />
                 <MiniMap nodeStrokeWidth={3} pannable zoomable/>

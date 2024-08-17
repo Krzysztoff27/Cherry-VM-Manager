@@ -1,62 +1,97 @@
-import { Button, NativeSelect } from "@mantine/core";
+import { Button, List, Stack, Text } from "@mantine/core";
 import { Panel } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useDisclosure } from "@mantine/hooks";
+import { IconPlus } from '@tabler/icons-react';
+import SnapshotSelect from "../SnapshotSelect/SnapshotSelect";
+import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 import styles from './FlowPanel.module.css';
-import useFetch from "../../../../hooks/useFetch";
+import TextInputModal from "../TextInputModal/TextInputModal";
+import { useState } from "react";
 
-export default function FlowPanel({ resetFlow, saveCurrentFlowState, isDirty, authOptions }) {
-    const {data: snapshots} = useFetch('/network/snapshot/all', authOptions);
-    const [snapshotSelectData, setSnapshotSelectData] = useState({defaultSnapshots: [], userSnapshots: []});
+export default function FlowPanel({ resetFlow, saveCurrentFlowState, isDirty, snapshotSelectProps, postSnapshot, takeSnapshot }) {
+    const [confirmationOpened, confirmation] = useDisclosure(false);
+    const [textInputOpened, textInput] = useDisclosure(false);
+    const [forceUpdate, setForceUpdate] = useState(0)
 
-    useEffect(() => {
-            const data = snapshots?.reduce(
-                (acc, snapshot) => {
-                    if(snapshot.deletable) acc.userSnapshots.push(<option value={snapshot.id}> {snapshot.name}</option>);
-                    else acc.defaultSnapshots.push(<option value={snapshot.id}>&#xf023; &nbsp;{snapshot.name}</option>);
-                    return acc;
-                }, {defaultSnapshots: [], userSnapshots: []}
-            );
-            setSnapshotSelectData(data)
-        }, [snapshots],
-    );
-    
+    const onRestoreButtonClick = () => confirmation.open();
+    const onRestoreModalCancel = () => confirmation.close();
+    const onRestoreModalConfirm = () => {
+        resetFlow();
+        confirmation.close();
+    }
+
+    const onAddSnapshotButtonClick = () => textInput.open();
+    const onAddSnapshotModalCancel = () => textInput.close();
+    const onAddSnapshotModalConfirm = async (name) => {
+        textInput.close();
+        await postSnapshot({name: name, data: takeSnapshot()});
+        setForceUpdate(val => ++val);
+    }
+
     return (
-        <Panel position="top-center">
-            <Button.Group>
-                <NativeSelect
-                    radius={0}
-                    w={268}
-                >
-                    <option>Załaduj migawkę</option>
-                    <optgroup label='Domyślne konfiguracje'>
-                        {...(snapshotSelectData?.defaultSnapshots ?? [])}
-                    </optgroup>
-                    <optgroup label='Zapisane migawki'>
-                        {...(snapshotSelectData?.userSnapshots ?? [])}
-                    </optgroup>
-                </NativeSelect>
-                <Button
-                    onClick={() => resetFlow(false)}
-                    display={!isDirty ? 'none' : undefined}
-                    disabled={!isDirty}
-                    className={styles.resetButton}
-                    variant='default'
-                    color='gray'
-                    w={90}
-                >
-                    Odrzuć
-                </Button>
-                <Button
-                    onClick={saveCurrentFlowState}
-                    disabled={!isDirty}
-                    className={styles.saveButton}
-                    variant='default'
-                    miw={90}
-                    maw={180}
-                >
-                    {isDirty ? 'Zastosuj' : 'Zastosowano zmiany!'}
-                </Button>
-            </Button.Group>
-        </Panel>
+        <>
+            <TextInputModal
+                opened={textInputOpened}
+                onCancel={onAddSnapshotModalCancel}
+                onConfirm={onAddSnapshotModalConfirm}
+                title='Tworzenie migawki'
+                content={
+                    <Stack gap='xs'>
+                        <Text size='sm'>W migawce zostanie zapisany obecny stan panelu:</Text>
+                        <List size='sm'>
+                            <List.Item>Obecne połączenia i sieci wewnętrzne</List.Item>
+                            <List.Item>Położenie maszyn na planszy</List.Item>
+                            <List.Item>Położenie sieci wewnętrznych na planszy</List.Item>
+                        </List>
+                    </Stack>
+                }
+                textInputProps={{
+                    withAsterisk: true,
+                    placeholder:"Wpisz nazwę migawki",
+                    description:"Uwaga - nazwa migawki nie podlega zmianie"
+                }}
+            />
+            <ConfirmationModal 
+                opened={confirmationOpened} 
+                onCancel={onRestoreModalCancel}
+                onConfirm={onRestoreModalConfirm}
+                title='Potwierdzenie operacji'
+                message='Wykonanie tej operacji odrzuci wszystkie dotychczasowe zmiany i przywróci obecnie działającą konfigurację. Czy napewno chcesz kontynuować?'
+                confirmButtonProps={{color: 'red.7'}}
+            />
+            <Panel position="top-center">
+                <Button.Group>
+                    <Button
+                        onClick={onAddSnapshotButtonClick}
+                        variant='default'
+                        size='sm'
+                        pl='xs'
+                        pr='9'
+                    >
+                        <IconPlus size={20}/>
+                    </Button>
+                    <SnapshotSelect {...snapshotSelectProps} forceUpdate={forceUpdate}/>
+                    <Button
+                        onClick={onRestoreButtonClick}
+                        display={!isDirty ? 'none' : undefined}
+                        disabled={!isDirty}
+                        className={styles.resetButton}
+                        variant='default'
+                        w={100}
+                    >
+                        Odrzuć
+                    </Button>
+                    <Button
+                        onClick={saveCurrentFlowState}
+                        disabled={!isDirty}
+                        className={styles.saveButton}
+                        variant='default'
+                        w={isDirty ? 100 : 200}
+                    >
+                        {isDirty ? 'Zastosuj' : 'Zastosowano zmiany!'}
+                    </Button>
+                </Button.Group>
+            </Panel>
+        </>
     );
 }

@@ -1,9 +1,10 @@
 .saveButton {
-    transition: all 0.25s ease-out;
+    transition: background-color 0.25s ease-out;
 
     &:disabled,
     &[data-disabled] {
       background-color: var(--mantine-color-suse-green-8);
+      border-color: var(--mantine-color-suse-green-9);
       color: white;
     }
   }
