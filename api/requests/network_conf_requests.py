@@ -47,11 +47,13 @@ class SnapshotData(BaseModel):
 class PanelState(SnapshotData):
     intnets: IntnetConfiguration | None = None
 
-class Snapshot(BaseModel):
-    id: int
+class SnapshotCreate(BaseModel):
     name: str = "Unnamed"
-    deletable: bool = True
     data: SnapshotData | None = None
+
+class Snapshot(SnapshotCreate):
+    id: int
+    deletable: bool = True
 
 ###############################
 # functions
@@ -119,14 +121,15 @@ def save_panel_state(
 
 @app.post("/network/snapshot", status_code=201)
 def create_network_snapshot(
-    snapshot: Snapshot,
+    snapshot: SnapshotCreate,
     current_user: Annotated[User, Depends(get_current_user)],
-):
+) -> Snapshot:
     snapshots_list = snapshots.read()
     if not isinstance(snapshots_list, list): 
         snapshots_list = []
 
-    snapshots_list.append(jsonable_encoder(snapshot))
+    snapshot = Snapshot(**jsonable_encoder(snapshot), id = len(snapshots_list))
+    snapshots_list.append(snapshot)
     snapshots.write(snapshots_list)
 
     return snapshot
