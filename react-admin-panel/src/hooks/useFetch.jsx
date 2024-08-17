@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { API_URL, validPath } from '../api/api.jsx';
 
-const useFetch = (path, options = {}) => {
+const useFetch = (path, options = undefined) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ const useFetch = (path, options = {}) => {
             }
         };
         fetchData();
-    }, [path]);
+    }, [path, options]);
 
     return { loading, error, data };
 }

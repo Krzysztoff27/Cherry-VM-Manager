@@ -11,7 +11,7 @@ const categories = [
     {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
 ]
 
-function IconButton({to, label = null, icon, active}) {
+function IconButton({label = null, icon, active, ...props}) {
     return (
         <Tooltip 
             label={label} 
@@ -23,8 +23,7 @@ function IconButton({to, label = null, icon, active}) {
 
         >
             <ActionIcon
-                component={Link}
-                to={to}
+                {...props}
                 variant={active ? 'filled' : 'default'}
                 size='xl'
                 aria-label={label}
@@ -36,7 +35,7 @@ function IconButton({to, label = null, icon, active}) {
 }
 
 export default function NavBar({}) {
-    const {logout} = useAuth();
+    const {logout, setToken} = useAuth();
     const location = useLocation();
     const [active, setActive] = useState();
     
@@ -46,6 +45,7 @@ export default function NavBar({}) {
     const mainLinks = categories.map((category, i) => (
         <IconButton
             key={i}
+            component={Link}
             to={category.link}
             active={active === i}
             label={category.label}

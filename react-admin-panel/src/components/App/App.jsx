@@ -3,7 +3,7 @@ import { Center } from "@mantine/core";
 
 import Layout from "../Layout/Layout.jsx"
 import LoginPage from '../../pages/Login/LoginPage.jsx';
-import Protected from "../Protected/Protected.jsx";
+import {Protected, ReverseProtected} from "../Protected/Protected.jsx";
 import MachineList from "../../pages/VirtualMachines/MachineList.jsx"
 import MachinePage from "../../pages/VirtualMachines/MachinePage.jsx"
 import NetworkPanel from "../../pages/NetworkPanel/NetworkPanel.jsx"
@@ -14,6 +14,7 @@ const errorHandler = new ErorrHandler();
 const router = createBrowserRouter(
     createRoutesFromElements(
         <Route path="/">
+            <Route exact path="/" element={<Center h={'70vh'}><h1>Strona powstaje...</h1></Center>}/>
             <Route element={<Protected/>}>
                 <Route element={<Layout/>}>
                     <Route path='/virtual-machines'     element={<MachineList errorHandler={errorHandler}/>}/>
@@ -22,8 +23,9 @@ const router = createBrowserRouter(
                     <Route path='/network-panel'        element={<NetworkPanel errorHandler={errorHandler}/>}/>    
                 </Route>
             </Route>
-            <Route exact path="/" element={<Center h={'70vh'}><h1>Strona powstaje...</h1></Center>}/>
-            <Route path="/login" element={<LoginPage />} />
+            <Route element={<ReverseProtected/>}>
+                <Route path="/login" element={<LoginPage />} />
+            </Route>
         </Route>
     )
 );
