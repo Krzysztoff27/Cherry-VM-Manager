@@ -3,6 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from typing import Annotated
 from pathlib import Path
+import re
 
 from main import app
 from auth import get_current_user, User
@@ -42,9 +43,14 @@ class Viewport(Coordinates):
 
 class SnapshotData(BaseModel):
     nodes: list = []
+    edges: list = []
+    viewport: Viewport | None = None
+    
+class FlowState(BaseModel):
+    nodes: list = []
     viewport: Viewport | None = None
 
-class PanelState(SnapshotData):
+class PanelState(FlowState):
     intnets: IntnetConfiguration | None = None
 
 class SnapshotCreate(BaseModel):
@@ -127,8 +133,10 @@ def create_network_snapshot(
     snapshots_list = snapshots.read()
     if not isinstance(snapshots_list, list): 
         snapshots_list = []
+    if not re.match(r'^[a-zA-Z][\w-]{2,15}$', snapshot.name):
+        raise HTTPException(status_code=400, detail="Invalid snapshot name. The name must be between 3 and 16 characters and start with a letter, followed by alphanumeric characters, underscores, or hyphens.")
 
-    snapshot = Snapshot(**jsonable_encoder(snapshot), id = len(snapshots_list))
+    snapshot = jsonable_encoder({**jsonable_encoder(snapshot), 'id': len(snapshots_list)})
     snapshots_list.append(snapshot)
     snapshots.write(snapshots_list)
 
