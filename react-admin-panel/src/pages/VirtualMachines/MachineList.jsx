@@ -4,12 +4,14 @@ import CardGroup from "./components/CardGroup/CardGroup.jsx";
 import MachineCard from "./components/MachineCard/MachineCard.jsx";
 import useAuth from "../../hooks/useAuth.jsx";
 import useFetch from "../../hooks/useFetch.jsx";
+import useErrorHandler from "../../hooks/useErrorHandler.jsx";
 
 const mergeObjectPropertiesToArray = (a, b) =>
     Object.keys({ ...a, ...b })?.map(key => ({...a[key], ...b[key]}));
 
-export default function MachineList({errorHandler}) {
+export default function MachineList() {
     const {authOptions} = useAuth();
+    const errorHandler = useErrorHandler();
     const navigate = useNavigate();
     const {loading: networkDataLoading, error: networkDataError, data: networkData} = useFetch('/vm/all/networkdata', authOptions)
     const {loading: stateDataLoading, error: stateDataError, data: stateData} = useFetch('/vm/all/state', authOptions)

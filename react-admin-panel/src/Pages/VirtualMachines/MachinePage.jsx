@@ -1,16 +1,19 @@
 import { Grid, Group, Paper, Progress, Stack, Table, Title } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { get } from "../../api/requests";
 import { IconDeviceDesktop, IconDeviceDesktopOff, IconServer, IconServerOff } from "@tabler/icons-react";
 
 import StateBadge from "../../components/StateBadge/StateBadge";
 import useAuth from "../../hooks/useAuth";
 import useFetch from "../../hooks/useFetch";
+import useApi from "../../hooks/useApi";
+import useErrorHandler from "../../hooks/useErrorHandler";
 
-export default function MachinePage({errorHandler}) {
+export default function MachinePage() {
+    const {get} = useApi();
     const {authOptions} = useAuth();
     const {id} = useParams();
+    const errorHandler = useErrorHandler();
 
     const {loading, error, data: machine} = useFetch(`/vm/${id}/networkdata`, authOptions);
     const [state, setState] = useState({loading: true});
@@ -18,7 +21,7 @@ export default function MachinePage({errorHandler}) {
     const handleBadgeClick = () => {}
 
     const loadState = () => {
-        setState(get(`vm/${id}/state`, authOptions, errorHandler))
+        setState(get(`vm/${id}/state`, authOptions))
     }
 
     useEffect(() => {

@@ -1,4 +1,5 @@
-export const API_URL = 'http://localhost:8000';
-export const validPath = (path = '') => path.startsWith('/') ? path : `/${path}`;
+const API_URL = 'http://localhost:8000';
+const validPath = (path = '') => path.startsWith('/') ? path : `/${path}`;
+export const getPath = (path) => API_URL ? `${API_URL}${validPath(path)}` : undefined;
 
-export default {API_URL, validPath};
+export default {getPath};

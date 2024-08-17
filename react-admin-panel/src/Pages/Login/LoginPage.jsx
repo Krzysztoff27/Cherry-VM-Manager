@@ -2,10 +2,11 @@ import { Button, Center, Divider, Fieldset, Group, PasswordInput, Space, Text, T
 import { isNotEmpty, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import React from 'react';
-import { post } from '../../api/requests';
 import useAuth from '../../hooks/useAuth';
+import useApi from '../../hooks/useApi';
 
-export default function LoginPage({ errorHandler }) {
+export default function LoginPage() {
+    const {post} = useApi();
     const auth = useAuth();
     const form = useForm({
         mode: 'uncontrolled',
@@ -19,7 +20,7 @@ export default function LoginPage({ errorHandler }) {
         const jsonResponse = await post('/token', new URLSearchParams({
             username: values.username,
             password: values.password,
-        }), undefined, errorHandler);
+        }));
 
         if(!jsonResponse?.access_token) return;
 

@@ -16,7 +16,7 @@ function useAuth() {
                 'Authorization': 'Bearer ' + cookies.token,
             }
         } : null;
-    }, [cookies.token]);
+    }, [token]);
 
     return {
         token,

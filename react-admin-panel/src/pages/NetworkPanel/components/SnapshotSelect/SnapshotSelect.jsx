@@ -2,9 +2,10 @@ import { NativeSelect } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useState } from "react";
 import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
-import { get } from "../../../../api/requests";
+import useApi from "../../../../hooks/useApi";
 
 export default function SnapshotSelect({authOptions, loadSnapshot, forceUpdate}) {
+    const {get} = useApi();
     const [snapshotSelectData, setSnapshotSelectData] = useState({ defaultSnapshots: [], userSnapshots: [] });
     const [value, setValue] = useState(-1);
     const [confirmationOpened, { open, close }] = useDisclosure(false);

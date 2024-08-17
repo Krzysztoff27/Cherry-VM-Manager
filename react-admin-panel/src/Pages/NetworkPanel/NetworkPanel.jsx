@@ -10,7 +10,6 @@ import FlowPanel from './components/FlowPanel/FlowPanel';
 import IntnetNode from './components/IntnetNode/IntnetNode';
 import MachineNode from './components/MachineNode/MachineNode';
 
-import { get, post, put } from '../../api/requests';
 import { noneOrEmpty, safeObjectValues } from '../../utils/misc';
 import { calcMiddlePosition, getIdFromNodeId, getNodeId } from '../../utils/reactFlow';
 
@@ -18,6 +17,7 @@ import '@xyflow/react/dist/style.css';
 import useAuth from '../../hooks/useAuth';
 import useFetch from '../../hooks/useFetch';
 import Prompt from '../../components/Prompt/Prompt';
+import useApi from '../../hooks/useApi';
 
 
 const NODE_TYPES = {
@@ -77,17 +77,19 @@ const extractPositionsFromNodes = (nodes) => nodes?.reduce(
 
 
 function Flow({ }) {
-    const {authOptions} = useAuth();
-    const allocator = useRef(new NumberAllocator()).current;
-    const [isDirty, setIsDirty] = useState(true);
-    
-    const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
+    const { authOptions } = useAuth();
+    const { get, post, put } = useApi();
     
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [rfInstance, setRfInstance] = useState(null);
     const { getNode, setViewport, getEdges } = useReactFlow();
+    
+    const [isDirty, setIsDirty] = useState(true);
+    const allocator = useRef(new NumberAllocator()).current;
 
+    const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
+    
     const addNodes = (...nodes) => setNodes(nds => [...nds, ...nodes.flat()]);
     const addEdgeToFlow = (edge) => setEdges(eds => addEdge(edge, eds));
 
@@ -137,6 +139,7 @@ function Flow({ }) {
 
         const positions = extractPositionsFromNodes(flow?.nodes);
         setNodes([]);
+        setEdges([]);
         createMachineNodes(positions);
         createFlowNodes(NODE_TYPES.intnet, safeObjectValues(flow?.intnets), positions);
         createIntnetEdges(flow?.intnets);
