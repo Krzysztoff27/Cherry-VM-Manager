@@ -78,7 +78,7 @@ $RECYCLE.BIN/
 # Logs and databases
 ############################
 
-#logs
+logs
 .tmp
 #*.log
 #*.sql
