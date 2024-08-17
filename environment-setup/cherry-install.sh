@@ -148,20 +148,12 @@ configure_daemon_docker(){
     echo ""
 }
 
-configure_container_guacamoile(){
+configure_container_guacamole(){
     echo -n '[i] Creating initdb.sql SQL script for Apache Guacamole PostgreSQL db: '
     runuser -u CherryWorker -- docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > /opt/docker/cherry-vm-manager/apache-guacamole/initdb/01-initdb.sql
     #Add automatic docker-compose -d startup
     echo 'OK'
     echo ""
-}
-
-configure_vm_networks(){
-    echo -n '[i] Creating a default NAT network for VMs and making it persistent: '
-    virsh net-define --file /opt/libvirt/cherry-vm-manager/networks/isolated-nat.xml >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
-    virsh net-autostart --network isolated-nat >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
-    virsh net-start --network isolated-nat >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
-    echo 'OK' 
 }
 
 ###############################
@@ -187,10 +179,8 @@ installation(){
     configure_daemon_libvirt
     configure_daemon_docker
     configure_container_guacamole
-    configure_vm_networks
 }
 
 #Begin installation
 #installation
 configure_daemon_libvirt
-configure_vm_networks
