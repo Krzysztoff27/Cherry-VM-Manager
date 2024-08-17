@@ -13,16 +13,16 @@ const errorHandler = new ErorrHandler();
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route path="/" >
-            <Route element={<Layout/>}>
-                <Route element={<Protected/>}>
+        <Route path="/">
+            <Route element={<Protected/>}>
+                <Route element={<Layout/>}>
                     <Route path='/virtual-machines'     element={<MachineList errorHandler={errorHandler}/>}/>
                     <Route path='/virtual-machines/:id' element={<MachinePage errorHandler={errorHandler}/>}/>
                     <Route path='/desktops'             element={<Center h={'70vh'}><h1>/desktops - Strona powstaje...</h1></Center>}/>
                     <Route path='/network-panel'        element={<NetworkPanel errorHandler={errorHandler}/>}/>    
                 </Route>
-                <Route exact path="/" element={<Center h={'70vh'}><h1>Strona powstaje...</h1></Center>}/>
             </Route>
+            <Route exact path="/" element={<Center h={'70vh'}><h1>Strona powstaje...</h1></Center>}/>
             <Route path="/login" element={<LoginPage />} />
         </Route>
     )
