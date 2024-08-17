@@ -5,7 +5,7 @@
 ###############################
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
-readonly LOGS_FILE="./logs/installation_logs_"$(date +%d-%m-%y_%H-%M-%S)".txt"
+readonly LOGS_FILE="./logs/cherry-install/"$(date +%d-%m-%y_%H-%M-%S)".txt"
 readonly ZYPPER_PACKAGES="./dependencies/zypper_packages.txt"
 readonly ZYPPER_PATTERNS="./dependencies/zypper_patterns.txt"
 
