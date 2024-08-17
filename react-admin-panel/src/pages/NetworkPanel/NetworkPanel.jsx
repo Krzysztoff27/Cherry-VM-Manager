@@ -35,15 +35,15 @@ const DEFAULT_EDGE_OPTIONS = {
     type: 'floating',
 }
 
-const generateNode = (type, data, position) => {
+const createNode = (type, data, position) => {
     switch(type){
-        case MachineNode: return generateMachineNode(data, position);
-        case IntnetNode: return generateIntnetNode(data, position);
+        case MachineNode: return createMachineNode(data, position);
+        case IntnetNode: return createIntnetNode(data, position);
         default: return {};
     }
 }
 
-const generateMachineNode = (machine, position) => ({
+const createMachineNode = (machine, position) => ({
     id: getNodeId(NODE_TYPES.machine, machine.id),
     type: 'machine',
     position: position,
@@ -58,7 +58,7 @@ const generateMachineNode = (machine, position) => ({
     },
 })
 
-const generateIntnetNode = (intnet, position) => ({
+const createIntnetNode = (intnet, position) => ({
     id: getNodeId(NODE_TYPES.intnet, intnet.id),
     type: 'intnet',
     intnet: intnet.id,
@@ -67,6 +67,13 @@ const generateIntnetNode = (intnet, position) => ({
         label: `Intnet ${intnet.id}`
     },
 })
+
+const newPositionsAllocator = new NumberAllocator();
+const generateNewPos = () => ({x: newPositionsAllocator.getNext() * 100, y: 0});
+
+const extractPositionsFromNodes = (nodes) => nodes?.reduce(
+    (acc, { id, position }) => ({ ...acc, [id]: position }), {}
+) ?? {};
 
 
 function Flow({ }) {
@@ -81,68 +88,46 @@ function Flow({ }) {
     const [rfInstance, setRfInstance] = useState(null);
     const { getNode, setViewport, getEdges } = useReactFlow();
 
-    const createNodes = (...nodes) => setNodes(nds => [...nds, ...nodes.flat()]);
-    const createEdge = (edge) => setEdges(eds => addEdge(edge, eds));
+    const addNodes = (...nodes) => setNodes(nds => [...nds, ...nodes.flat()]);
+    const addEdgeToFlow = (edge) => setEdges(eds => addEdge(edge, eds));
+
+    // NODES
 
     const onNodesChange = useCallback((changes) => {
             setNodes((nds) => applyNodeChanges(changes, nds));
             setIsDirty(true);
-        }, 
-        [],
+        }, [],
     );
 
-    const onNodesDelete = useCallback((nodes) => {
-        nodes.forEach(node => allocator.remove(node?.intnet));
+    const onNodesDelete = useCallback((deletedNodes) => {
+        deletedNodes.forEach(node => allocator.remove(node?.intnet));
     });
+
+    // EDGES
 
     const onEdgesChange = useCallback((changes) => {
             setEdges((eds) => applyEdgeChanges(changes, eds));
             setIsDirty(true);
-        },
-        [],
+        },[],
     );
+
+    // CONNECT
 
     const onConnect = useCallback(({ source, target }) => {
             if(source.startsWith('intnet')) return;
-            if(target.startsWith('intnet')) return createEdge({source: source, target: target});
+            if(target.startsWith('intnet')) return addEdgeToFlow({source: source, target: target});
             
             const intnetId = allocator.getNext(); 
-            const intnetNode = generateIntnetNode({id: intnetId}, calcMiddlePosition(getNode(source).position, getNode(target).position));
+            const intnetNode = createIntnetNode({id: intnetId}, calcMiddlePosition(getNode(source).position, getNode(target).position));
             
-            createNodes(intnetNode);
-            createEdge({source: target, target: intnetNode.id});
-            createEdge({source: source, target: intnetNode.id});
+            addNodes(intnetNode);
+            addEdgeToFlow({source: target, target: intnetNode.id});
+            addEdgeToFlow({source: source, target: intnetNode.id});
         }, 
         [setEdges]
-    );
+    );    
 
-    
-    const newPositionsAllocator = new NumberAllocator();
-    const generateNewPos = () => ({x: newPositionsAllocator.getNext() * 100, y: 0});
-    /**
-         * 
-         * @returns {Object} An object mapping node IDs to their positions.
-    */
-    const getPositionsFromNodeArr = (nds) => nds?.reduce(
-        (acc, { id, position }) => ({ ...acc, [id]: position }), {}
-    ) ?? {};
-
-    /** 
-         * 
-         * @param {Array} data list of objects containing parameters needed for the node creation (such as id)
-         * @param {MachineNode || IntnetNode} nodeType 
-         * @returns 
-         */
-    const generateFlowNodes = (nodeType, data = [], positions) => {
-        if(noneOrEmpty(data) || !nodeType) return;
-
-        const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
-        createNodes(data.map(node => 
-            generateNode(nodeType, node, getPos(node.id))
-        ));
-    }
-
-    const generateMachineNodes = (positions) => generateFlowNodes(NODE_TYPES.machine, safeObjectValues(machines), positions);
+    // FLOW
 
     const resetFlow = useCallback(async (resetViewport = true) => { 
         const flow = await get('/network/configuration', authOptions);
@@ -150,32 +135,73 @@ function Flow({ }) {
 
         if(resetViewport) setViewport({x: 0, y: 0, zoom: 1, ...flow.viewport});
 
-        /**
-         * creates edges between nodes, based on current intnet configuration
-         */
-        const createIntnetEdges = () => {
-            if(!flow?.intnets) return;
-
-            safeObjectValues(flow.intnets).forEach(
-                ({machines, id}) => machines ? 
-                    machines.forEach(machineId => 
-                        createEdge({
-                            source: getNodeId(NODE_TYPES.machine, machineId),
-                            target: getNodeId(NODE_TYPES.intnet, id),
-                        })
-                    )
-                : null,
-            )
-        }
-
-        const positions = getPositionsFromNodeArr(flow?.nodes);
+        const positions = extractPositionsFromNodes(flow?.nodes);
         setNodes([]);
-        generateMachineNodes(positions);
-        generateFlowNodes(NODE_TYPES.intnet, safeObjectValues(flow?.intnets), positions);
-        createIntnetEdges();
+        createMachineNodes(positions);
+        createFlowNodes(NODE_TYPES.intnet, safeObjectValues(flow?.intnets), positions);
+        createIntnetEdges(flow?.intnets);
         
-        allocator.setCurrent(Math.max(...Object.keys({...flow?.intnets})));
+        allocator.setCurrent(Math.max(...Object.keys(flow?.intnets || {})));
     });
+
+    const createFlowNodes = (nodeType, data = [], positions) => {
+        if(noneOrEmpty(data) || !nodeType) return;
+
+        const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
+        addNodes(data.map(node => 
+            createNode(nodeType, node, getPos(node.id))
+        ));
+    }
+
+    const createMachineNodes = (positions) => createFlowNodes(NODE_TYPES.machine, safeObjectValues(machines), positions);
+
+    const createIntnetEdges = (intnets) => {
+        if(!intnets) return;
+
+        safeObjectValues(intnets).forEach(
+            ({machines, id}) => machines ? 
+                machines.forEach(machineId => 
+                    addEdgeToFlow({
+                        source: getNodeId(NODE_TYPES.machine, machineId),
+                        target: getNodeId(NODE_TYPES.intnet, id),
+                    })
+                )
+            : null,
+        )
+    }
+
+    const saveFlowState = (_) => {
+        putFlowState(takeSnapshot());
+        putIntnetConfiguration();
+        setIsDirty(false);
+    }
+
+    // SNAPSHOTS
+
+    const takeSnapshot = useCallback(() => rfInstance.toObject(), [rfInstance]);
+
+    const loadSnapshot = async (id) => {
+        const snapshot = await get(`/network/snapshot/${id}`, authOptions);
+        const flow = snapshot.data;
+        
+        if (!flow || !flow.nodes) return;
+
+        setNodes([]);
+        const machinePositions = extractPositionsFromNodes(flow.nodes.filter?.(node => node.type === 'machine') || []);
+        createMachineNodes(machinePositions);
+
+        const intnetNodes = flow.nodes.filter(node => node.type === 'intnet');
+        addNodes(intnetNodes);
+        setEdges(flow.edges || []);
+    }
+
+    // SEND REQUESTS
+
+    const putFlowState = (state) => put('/network/configuration/panelstate', JSON.stringify(state), authOptions);
+    const putIntnetConfiguration = () => put('/network/configuration/intnets', JSON.stringify(getIntnetConfFromCurrentState()), authOptions);
+    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions);
+
+    // INTNET CONFIG
 
     const getIntnetConfFromCurrentState = () => 
         getEdges().reduce((acc, { source, target }) => {
@@ -188,33 +214,6 @@ function Flow({ }) {
 
             return acc;
         }, {});
-
-    const putFlowState = (state) => put('/network/configuration/panelstate', JSON.stringify(state), authOptions);
-    const postIntnetConfiguration = () => put('/network/configuration/intnets', JSON.stringify(getIntnetConfFromCurrentState()), authOptions);
-    const postSnapshot = (snapshot) => post('/network/snapshot', JSON.stringify(snapshot), authOptions);
-
-    const takeSnapshot = useCallback(() => rfInstance.toObject());
-
-    const loadSnapshot = async (id) => {
-        const snapshot = await get(`/network/snapshot/${id}`, authOptions);
-        const flow = snapshot.data;
-        
-        if (!flow || !flow.nodes) return;
-
-        setNodes([]);
-        const machinePositions = getPositionsFromNodeArr(flow.nodes.filter?.(node => node.type === 'machine') || []);
-        generateMachineNodes(machinePositions);
-
-        const intnetNodes = flow.nodes.filter(node => node.type === 'intnet');
-        createNodes(intnetNodes);
-        setEdges(flow.edges || []);
-    }
-
-    const saveCurrentFlowState = (_) => {
-        putFlowState(takeSnapshot());
-        postIntnetConfiguration();
-        setIsDirty(false);
-    }
 
     useEffect(() => {resetFlow()}, [machines])
 
@@ -241,7 +240,7 @@ function Flow({ }) {
                 connectionLineComponent={FloatingConnectionLine}
             >
                 <FlowPanel 
-                    saveCurrentFlowState={saveCurrentFlowState} 
+                    saveFlowState={saveFlowState} 
                     resetFlow={resetFlow} 
                     isDirty={isDirty}
                     takeSnapshot={takeSnapshot}
