@@ -2,14 +2,15 @@ version: '3'
 
 services:
   guacd:
-    container_name: guacamole-guacd
+    container_name: cvmm-guacamole-guacd
     restart: always
     image: guacamole/guacd
     networks:
-      - guacamole
+      guacamole:
+        ipv4_address: 172.16.100.2
 
   guacamole:
-    container_name: guacamole-guacamole
+    container_name: cvmm-guacamole-guacamole
     restart: always
     image: guacamole/guacamole
     ports:
@@ -24,10 +25,11 @@ services:
       - guacd
       - database
     networks:
-      - guacamole
+      guacamole:
+        ipv4_address: 172.16.100.3
 
   database:
-    container_name: guacamole-db
+    container_name: cvmm-guacamole-db
     restart: always
     image: postgres
     environment:
@@ -38,7 +40,8 @@ services:
       - ./db:/var/lib/postgresql/data:rw
       - ./initdb:/docker-entrypoint-initdb.d/:ro
     networks:
-      - guacamole
+      guacamole:
+        ipv4_address: 172.16.100.4
 
 networks:
   guacamole:
@@ -47,4 +50,5 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: "172.16.30.0/24"
+        - subnet: "172.16.100.0/24"
+          gateway: "172.16.100.1"
