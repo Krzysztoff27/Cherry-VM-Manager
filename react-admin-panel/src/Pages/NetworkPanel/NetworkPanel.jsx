@@ -1,4 +1,4 @@
-import { Container, Text } from '@mantine/core';
+import { Container } from '@mantine/core';
 import { IconDeviceDesktop, IconServer2 } from '@tabler/icons-react';
 import { Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from '@xyflow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -17,6 +17,8 @@ import { calcMiddlePosition, getIdFromNodeId, getNodeId } from '../../utils/reac
 import '@xyflow/react/dist/style.css';
 import useAuth from '../../hooks/useAuth';
 import useFetch from '../../hooks/useFetch';
+import Prompt from '../../components/Prompt/Prompt';
+
 
 const NODE_TYPES = {
     machine: MachineNode,
@@ -210,20 +212,6 @@ function Flow({ errorHandler }) {
         setIsDirty(false);
     }
 
-    const alertUserOfUnsaved = (e = null) => {
-        modals.openConfirmModal({
-            title: 'Potwierdzenie opuszczenia strony',
-            children: (
-                <Text size="sm">
-                    Masz niezapisane zmiany, które zostaną utracone, jeśli opuścisz tę stronę. Czy na pewno chcesz kontynuować?
-                </Text>
-            ),
-            labels: { confirm: 'Opuść stronę', cancel: 'Anuluj' },
-            confirmProps: { color: 'red' },
-        });
-        
-    }
-
     useEffect(() => {resetFlow()}, [machines])
 
     if (machinesLoading) return;
@@ -231,13 +219,7 @@ function Flow({ errorHandler }) {
 
     return (
         <>
-        {/* <ReactRouterPrompt when={isDirty}>
-            {({ isActive, onConfirm, onCancel }) => (
-                <div>
-                    TEST, TEST, TEST
-                </div>
-            )}
-        </ReactRouterPrompt> */}
+        <Prompt when={isDirty}/>
         <Container h='96.5vh' fluid>
             <ReactFlow
                 colorMode='dark'
