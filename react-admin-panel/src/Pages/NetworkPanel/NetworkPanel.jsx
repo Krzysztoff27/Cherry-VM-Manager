@@ -85,7 +85,13 @@ function Flow({ }) {
     const [rfInstance, setRfInstance] = useState(null);
     const { getNode, setViewport, getEdges } = useReactFlow();
     
-    const [isDirty, setIsDirty] = useState(true);
+    /**
+     * [isDirty]
+     * true - unsaved changes
+     * false - no unsaved changes
+     * null - no unsaved changes and just loaded
+     */
+    const [isDirty, setIsDirty] = useState(null);
     const allocator = useRef(new NumberAllocator()).current;
 
     const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
@@ -97,7 +103,7 @@ function Flow({ }) {
 
     const onNodesChange = useCallback((changes) => {
             setNodes((nds) => applyNodeChanges(changes, nds));
-            setIsDirty(true);
+            if(changes && !changes.every(e => e.type === 'dimensions')) setIsDirty(true);
         }, [],
     );
 
@@ -138,6 +144,7 @@ function Flow({ }) {
         if(resetViewport) setViewport({x: 0, y: 0, zoom: 1, ...flow.viewport});
 
         const positions = extractPositionsFromNodes(flow?.nodes);
+        
         setNodes([]);
         setEdges([]);
         createMachineNodes(positions);
@@ -196,6 +203,7 @@ function Flow({ }) {
         const intnetNodes = flow.nodes.filter(node => node.type === 'intnet');
         addNodes(intnetNodes);
         setEdges(flow.edges || []);
+        setIsDirty(true);
     }
 
     // SEND REQUESTS
@@ -218,7 +226,10 @@ function Flow({ }) {
             return acc;
         }, {});
 
-    useEffect(() => {resetFlow()}, [machines])
+    useEffect(() => {
+        resetFlow()
+        setIsDirty(null);
+    }, [machines])
 
     if (machinesLoading) return;
     if (machinesError) return;

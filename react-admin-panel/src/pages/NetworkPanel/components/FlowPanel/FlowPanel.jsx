@@ -8,7 +8,7 @@ import styles from './FlowPanel.module.css';
 import TextInputModal from "../TextInputModal/TextInputModal";
 import { useState } from "react";
 
-export default function FlowPanel({ resetFlow, saveCurrentFlowState, isDirty, snapshotSelectProps, postSnapshot, takeSnapshot }) {
+export default function FlowPanel({ resetFlow, saveFlowState, isDirty, snapshotSelectProps, postSnapshot, takeSnapshot }) {
     const [confirmationOpened, confirmation] = useDisclosure(false);
     const [textInputOpened, textInput] = useDisclosure(false);
     const [forceUpdate, setForceUpdate] = useState(0)
@@ -82,13 +82,17 @@ export default function FlowPanel({ resetFlow, saveCurrentFlowState, isDirty, sn
                         Odrzuć
                     </Button>
                     <Button
-                        onClick={saveCurrentFlowState}
+                        onClick={saveFlowState}
                         disabled={!isDirty}
-                        className={styles.saveButton}
+                        classNames={{
+                            root: isDirty === null ? null : styles.saveButton,
+                            label: styles.saveButtonLabel
+                        }}
                         variant='default'
                         w={isDirty ? 100 : 200}
+                        p={0}
                     >
-                        {isDirty ? 'Zastosuj' : 'Zastosowano zmiany!'}
+                        {isDirty === null ? 'Brak wykrytych zmian' : isDirty ? 'Zapisz' : 'Zapisano zmiany!'}
                     </Button>
                 </Button.Group>
             </Panel>
