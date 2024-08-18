@@ -1,4 +1,5 @@
 import { Container } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { IconDeviceDesktop, IconServer2 } from '@tabler/icons-react';
 import { Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from '@xyflow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -95,7 +96,7 @@ function Flow({ }) {
     const allocator = useRef(new NumberAllocator()).current;
 
     const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
-    
+
     const addNodes = (...nodes) => setNodes(nds => [...nds, ...nodes.flat()]);
     const addEdgeToFlow = (edge) => setEdges(eds => addEdge(edge, eds));
 
@@ -135,57 +136,6 @@ function Flow({ }) {
         [setEdges]
     );    
 
-    // FLOW
-
-    const resetFlow = useCallback(async (resetViewport = true) => { 
-        const flow = await get('/network/configuration', authOptions);
-        if(!flow) return;
-
-        if(resetViewport) setViewport({x: 0, y: 0, zoom: 1, ...flow.viewport});
-
-        const positions = extractPositionsFromNodes(flow?.nodes);
-        
-        setNodes([]);
-        setEdges([]);
-        createMachineNodes(positions);
-        createFlowNodes(NODE_TYPES.intnet, safeObjectValues(flow?.intnets), positions);
-        createIntnetEdges(flow?.intnets);
-        
-        allocator.setCurrent(Math.max(...Object.keys(flow?.intnets || {})));
-    });
-
-    const createFlowNodes = (nodeType, data = [], positions) => {
-        if(noneOrEmpty(data) || !nodeType) return;
-
-        const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
-        addNodes(data.map(node => 
-            createNode(nodeType, node, getPos(node.id))
-        ));
-    }
-
-    const createMachineNodes = (positions) => createFlowNodes(NODE_TYPES.machine, safeObjectValues(machines), positions);
-
-    const createIntnetEdges = (intnets) => {
-        if(!intnets) return;
-
-        safeObjectValues(intnets).forEach(
-            ({machines, id}) => machines ? 
-                machines.forEach(machineId => 
-                    addEdgeToFlow({
-                        source: getNodeId(NODE_TYPES.machine, machineId),
-                        target: getNodeId(NODE_TYPES.intnet, id),
-                    })
-                )
-            : null,
-        )
-    }
-
-    const saveFlowState = (_) => {
-        putFlowState(takeSnapshot());
-        putIntnetConfiguration();
-        setIsDirty(false);
-    }
-
     // SNAPSHOTS
 
     const takeSnapshot = useCallback(() => rfInstance.toObject(), [rfInstance]);
@@ -224,12 +174,82 @@ function Flow({ }) {
             }
 
             return acc;
-        }, {});
+        }, 
+    {});
 
-    useEffect(() => {
+    // FLOW
+
+    const resetFlow = useCallback(async (resetViewport = true) => 
+        new Promise(async (resolve, reject) => {
+            try {
+                const flow = await get('/network/configuration', authOptions);
+                if (!flow) return reject('Flow is undefined');
+    
+                if (resetViewport) setViewport({x: 0, y: 0, zoom: 1, ...flow.viewport});
+    
+                const positions = extractPositionsFromNodes(flow?.nodes);
+    
+                setNodes([]);
+                setEdges([]);
+                createMachineNodes(positions);
+                createFlowNodes(NODE_TYPES.intnet, safeObjectValues(flow?.intnets), positions);
+                createIntnetEdges(flow?.intnets);
+    
+                allocator.setCurrent(Math.max(...Object.keys(flow?.intnets || {})));
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
+        }), [machines]
+    );
+
+    const initFlow = useCallback(() => {
         resetFlow()
-        setIsDirty(null);
-    }, [machines])
+            .then(() => {               
+                notifications.show({
+                    id: 'flow-init',
+                    color: 'suse-green',
+                    title: 'Załadowano konfigurację sieciową',
+                    message: `Pomyślnie utworzono reprezentację obecnej konfiguracji sieci wewnętrznych i maszyn.`
+                })
+                setIsDirty(null);
+            })
+            .catch((error) => console.error(error));
+    }, [resetFlow])
+
+    const createFlowNodes = (nodeType, data = [], positions) => {
+        if(noneOrEmpty(data) || !nodeType) return;
+        const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
+        addNodes(data.map(node => 
+            createNode(nodeType, node, getPos(node.id))
+        ));
+    }
+
+    const createMachineNodes = (positions) => createFlowNodes(NODE_TYPES.machine, safeObjectValues(machines), positions);
+
+    const createIntnetEdges = (intnets) => {
+        if(!intnets) return;
+
+        safeObjectValues(intnets).forEach(
+            ({machines, id}) => machines ? 
+                machines.forEach(machineId => 
+                    addEdgeToFlow({
+                        source: getNodeId(NODE_TYPES.machine, machineId),
+                        target: getNodeId(NODE_TYPES.intnet, id),
+                    })
+                )
+            : null,
+        )
+    }
+
+    const applyNetworkConfig = (_) => {
+        const stateResponse = putFlowState(takeSnapshot());
+        const networkConfigResponse = putIntnetConfiguration();
+        
+        setIsDirty(false);
+    }
+
+    useEffect(initFlow, [machines])
 
     if (machinesLoading) return;
     if (machinesError) return;
@@ -254,7 +274,7 @@ function Flow({ }) {
                 connectionLineComponent={FloatingConnectionLine}
             >
                 <FlowPanel 
-                    saveFlowState={saveFlowState} 
+                    applyNetworkConfig={applyNetworkConfig} 
                     resetFlow={resetFlow} 
                     isDirty={isDirty}
                     takeSnapshot={takeSnapshot}

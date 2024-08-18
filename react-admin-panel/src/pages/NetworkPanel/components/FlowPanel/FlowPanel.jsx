@@ -7,8 +7,9 @@ import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 import styles from './FlowPanel.module.css';
 import TextInputModal from "../TextInputModal/TextInputModal";
 import { useState } from "react";
+import { notifications } from "@mantine/notifications";
 
-export default function FlowPanel({ resetFlow, saveFlowState, isDirty, snapshotSelectProps, postSnapshot, takeSnapshot }) {
+export default function FlowPanel({ resetFlow, applyNetworkConfig, isDirty, snapshotSelectProps, postSnapshot, takeSnapshot }) {
     const [confirmationOpened, confirmation] = useDisclosure(false);
     const [textInputOpened, textInput] = useDisclosure(false);
     const [forceUpdate, setForceUpdate] = useState(0)
@@ -16,16 +17,30 @@ export default function FlowPanel({ resetFlow, saveFlowState, isDirty, snapshotS
     const onRestoreButtonClick = () => confirmation.open();
     const onRestoreModalCancel = () => confirmation.close();
     const onRestoreModalConfirm = () => {
-        resetFlow();
         confirmation.close();
+        resetFlow()
+        .then(() => notifications.show({
+            id: 'flow-reset',
+            color: 'suse-green',
+            title: 'Przywrócono konfigurację sieciową',
+            message: `Pomyślnie przywrócono obecny stan konfiguracji sieciowej maszyn.`
+        }))
     }
 
     const onAddSnapshotButtonClick = () => textInput.open();
     const onAddSnapshotModalCancel = () => textInput.close();
     const onAddSnapshotModalConfirm = async (name) => {
         textInput.close();
-        await postSnapshot({name: name, data: takeSnapshot()});
+
+        const response = await postSnapshot({name: name, data: takeSnapshot()});
         setForceUpdate(val => ++val);
+
+        if(response) notifications.show({
+            id: 'snapshot-create',
+            color: 'suse-green',
+            title: `Utworzono nową migawkę - "${name}"`,
+            message: `Pomyślnie zapisano obecną konfigurację sieciową do migawki "${name}"`
+        })
     }
 
     return (
@@ -82,7 +97,7 @@ export default function FlowPanel({ resetFlow, saveFlowState, isDirty, snapshotS
                         Odrzuć
                     </Button>
                     <Button
-                        onClick={saveFlowState}
+                        onClick={applyNetworkConfig}
                         disabled={!isDirty}
                         classNames={{
                             root: isDirty === null ? null : styles.saveButton,
