@@ -1,0 +1,7 @@
+The installation script finished the job without any errors.
+Now you should be able to access the Cherry Admin Panel to control the Cherry VM Manager stack.
+
+!WARNING!
+No virtual machines have been initialized yet. 
+To use predefined OpenSUSE virtual machines run vm-install.sh script.
+!WARNING!
