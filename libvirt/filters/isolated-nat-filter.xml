@@ -1,0 +1,47 @@
+<filter name='isolated-nat-filter' chain='ipv4'>
+    <!-- Allow outgoing traffic from VMs to the external network -->
+    <rule action='accept' direction='out' priority='500'>
+      <outbound/>
+      <tcp/>
+    </rule>
+    <rule action='accept' direction='out' priority='500'>
+      <outbound/>
+      <udp/>
+    </rule>
+    <rule action='accept' direction='out' priority='500'>
+      <outbound/>
+      <icmp/>
+    </rule>
+  
+    <!-- Allow incoming traffic from the external network to VMs (for established connections) -->
+    <rule action='accept' direction='in' priority='500'>
+      <inbound state='est'/>
+      <tcp/>
+    </rule>
+    <rule action='accept' direction='in' priority='500'>
+      <inbound state='est'/>
+      <udp/>
+    </rule>
+    <rule action='accept' direction='in' priority='500'>
+      <inbound state='est'/>
+      <icmp/>
+    </rule>
+  
+    <!-- Allow communication between cvmm-nat-bridge and Docker bridge -->
+    <rule action='accept' direction='inout' priority='600'>
+      <inbound ip='172.16.100.0/24'/>
+      <outbound ip='192.168.100.0/24'/>
+    </rule>
+    <rule action='accept' direction='inout' priority='600'>
+      <inbound ip='192.168.100.0/24'/>
+      <outbound ip='172.16.100.0/24'/>
+    </rule>
+  
+    <!-- Drop all traffic between VMs on the same subnet -->
+    <rule action='drop' direction='inout' priority='1000'>
+      <inbound/>
+      <outbound/>
+      <mac srcmacaddr='$MAC'/>
+    </rule>
+</filter>
+  

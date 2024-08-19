@@ -1,0 +1,42 @@
+<domain type='kvm'>
+    <name>opensuse-leap-15.6</name>
+    <memory unit='MiB'>2048</memory>
+    <vcpu placement='static'>1</vcpu>
+    
+    <os>
+      <type arch='x86_64' machine='pc-i440fx-2.9'>hvm</type>
+      <boot dev='hd'/>
+      <boot dev='cdrom'/>
+    </os>
+  
+    <devices>
+      <disk type='file' device='disk'>
+        <driver name='qemu' type='qcow2'/>
+        <source file='/var/lib/libvirt/images/opensuse-vm.qcow2'/>
+        <target dev='vda' bus='virtio'/>
+      </disk>
+  
+      <disk type='file' device='cdrom'>
+        <driver name='qemu' type='raw'/>
+        <source file='/opt/libvirt/cherry-vm-manager/iso/openSUSE-Leap-15.6.iso'/>
+        <target dev='hdc' bus='ide'/>
+        <readonly/>
+      </disk>
+  
+      <interface type='network'>
+        <source network='isolated-nat'/>
+        <model type='virtio'/>
+      </interface>
+  
+      <graphics type='vnc' port='-1' autoport='yes'>
+        <listen type='address' address='0.0.0.0'/>
+      </graphics>
+  
+      <input type='mouse' bus='ps2'/>
+      <input type='keyboard' bus='ps2'/>
+      <video>
+        <model type='vga'/>
+      </video>
+    </devices>
+  </domain>
+  

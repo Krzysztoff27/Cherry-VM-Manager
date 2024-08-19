@@ -8,7 +8,8 @@
       </dhcp>
     </ip>
     <dns>
-        <forwarder address="8.8.8.8"/>
-        <forwarder address="8.8.4.4"/>
+      <forwarder addr='8.8.8.8'/>
+      <forwarder addr='8.8.4.4'/>
     </dns>
+    <filterref filter='isolated-nat-filter'/>
 </network>
