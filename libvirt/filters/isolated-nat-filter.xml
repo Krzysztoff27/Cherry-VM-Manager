@@ -44,4 +44,3 @@
       <mac srcmacaddr='$MAC'/>
     </rule>
 </filter>
-  
