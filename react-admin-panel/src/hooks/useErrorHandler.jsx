@@ -7,6 +7,7 @@ const useErrorHandler = (defaultOptions = {}) => {
 
     const showErrorNotification = (options) => {
         const notificationOptions = {
+            id: 'albatrosy',
             withCloseButton: true,
             loading: false,
             autoClose: 10000,
@@ -20,8 +21,16 @@ const useErrorHandler = (defaultOptions = {}) => {
         notifications.show(notificationOptions);
     };
 
-    const handleErrorResponse = async (response = new Response(), data = {}) => {
-        const options = { id: response?.status ?? 'albatrosy' };
+    const scriptError = (error, notificationOptions = {}) => {
+        showErrorNotification({
+            title: 'Wystąpił błąd',
+            message: `${error.name}: ${error.message}`,
+            ...notificationOptions,
+        })
+    }
+
+    const requestResponseError = async (response = new Response(), data = {}) => {
+        const options = { id: response?.status };
 
         switch (response?.status) {
             case 400:
@@ -49,6 +58,15 @@ const useErrorHandler = (defaultOptions = {}) => {
                         });
                 }
                 break;
+            case 409:
+                switch (data?.detail) {
+                    case 'Snapshot with this name already exists':
+                        showErrorNotification({
+                            ...options,
+                            title: 'Nie udało się stworzyć migawki',
+                            message: 'Migawka o tej nazwie już istnieje.'
+                        })
+                }
             case 503:
                 showErrorNotification({
                     ...options,
@@ -68,7 +86,7 @@ const useErrorHandler = (defaultOptions = {}) => {
         }
     };
 
-    return { handleErrorResponse };
+    return { scriptError, requestResponseError };
 };
 
 export default useErrorHandler;

@@ -23,7 +23,3 @@
 		box-shadow: 0 0 0 0 #42424200;
 	}
 }
-
-.select * {
-    font-family: 'FontAwesome', var(--mantine-font-family);
-}

@@ -18,7 +18,7 @@ const handleFetch = async (URL, options = {}, errorHandler) => {
     const text = await response.text(); 
     const json = text ? JSON.parse(text) : {};
 
-    if(!response.ok) return errorHandler.handleErrorResponse(response, json);
+    if(!response.ok) return errorHandler.requestResponseError(response, json);
     return json;
 }
 

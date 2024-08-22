@@ -22,7 +22,7 @@ export default function MachineList() {
 
     if(networkDataLoading || stateDataLoading) return;
     if(networkDataError || stateDataError) {
-        errorHandler.handleErrorResponse(networkDataError || stateDataError);
+        errorHandler.requestResponseError(networkDataError || stateDataError);
         return;
     }
 

@@ -24,7 +24,7 @@ export default class ErrorHandler {
         notifications.show(notificationOptions);
     };
 
-    handleErrorResponse = async (response = new Response(), data = {}) => {
+    requestResponseError = async (response = new Response(), data = {}) => {
         const {token, setToken} = useAuth();
         const options = {id: response?.status ?? 'albatrosy'}
 
