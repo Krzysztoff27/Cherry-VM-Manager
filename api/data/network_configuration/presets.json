@@ -1,0 +1,34 @@
+[
+    {
+        "id": 0, 
+        "name": "DesktopX - SerwerX",
+        "data": {
+            "getIntnet": "group_member_id",
+            "getPosX": "group_member_id * 100",
+            "getPosY": "group === 'desktop' ? 0 : 300"
+        }
+    },
+    {
+        "id": 1,
+        "name": "Wspólna Sieć",
+        "data": {
+            "variables": {
+                "distance": "1000",
+                "r": "(Math.log(machinesLength) * distance) / (2 * Math.PI)",
+                "getAngle": "(i) => 2 * Math.PI * i / machinesLength"
+            },
+            "getIntnet": "1",
+            "getPosX": "(getAngle(i) < Math.PI/2 || getAngle(i) > 3/2 * Math.PI ? 1 : -1) * Math.sqrt((r ** 2) * (1 - Math.sin(getAngle(i)) ** 2))",
+            "getPosY": "-Math.sin(getAngle(i)) * r"
+        }
+    },
+    {
+        "id": 2,
+        "name": "Sieci Typu Maszyn",
+        "data" : {
+            "getIntnet": "group === 'desktop' ? 1 : group === 'serwer' ? 2 : 3",
+            "getPosX": "group_member_id * 250",
+            "getPosY": "group === 'desktop' ? 0 : 500"
+        }
+    }
+]

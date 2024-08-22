@@ -16,9 +16,11 @@ from handlers.json_handler import JSONHandler
 
 CURRENT_STATE_PATH = Path('data/network_configuration/current_state.local.json')
 SNAPSHOTS_PATH = Path('data/network_configuration/snapshots.local.json')
+PRESETS_PATH = Path('data/network_configuration/presets.json')
 
 current_state = JSONHandler(CURRENT_STATE_PATH) 
 snapshots = JSONHandler(SNAPSHOTS_PATH) 
+presets = JSONHandler(PRESETS_PATH) 
 
 ###############################
 # classes & types
@@ -40,26 +42,32 @@ class Coordinates(BaseModel):
 
 class Viewport(Coordinates):
     zoom: float = 1
-
-class SnapshotData(BaseModel):
-    nodes: list = []
-    edges: list = []
-    viewport: Viewport | None = None
     
 class FlowState(BaseModel):
     nodes: list = []
     viewport: Viewport | None = None
 
-class PanelState(FlowState):
+class NetworkConfiguration(FlowState):
     intnets: IntnetConfiguration | None = None
 
-class SnapshotCreate(BaseModel):
+class SnapshotCreate(NetworkConfiguration):
     name: str = "Unnamed"
-    data: SnapshotData | None = None
 
 class Snapshot(SnapshotCreate):
     id: int
-    deletable: bool = True
+
+class PresetData(BaseModel):
+    variables: dict[str, str] | None = None
+    getIntnet: str = ""
+    getPosX: str = ""
+    getPosY: str = ""
+
+class PresetCreate(BaseModel):
+    name: str = "Unnamed"
+    data: PresetData = {}
+
+class Preset(PresetCreate):
+    id: int
 
 ###############################
 # functions
@@ -89,6 +97,17 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
         16: Intnet(id=16, machines=[16, 32])
     }
 
+def isIndexInList(_list, index):
+    return index >= 0 and index < len(_list)
+
+def validateIndexInList(_list, index, element_name: str = 'element'):
+     if not isIndexInList(_list, index):
+        raise HTTPException(status_code=404, detail=f"{element_name} not found")
+
+def validateJSONList(_list, list_name: str = 'list'):
+    if not isinstance(_list, list): 
+        raise HTTPException(status_code=404, detail=f"List \"{list_name}\" is empty or undefined")
+
 ###############################
 # configuration requests
 ###############################
@@ -96,8 +115,8 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
 @app.get("/network/configuration")
 def get_current_network_configuration(
     current_user: Annotated[User, Depends(get_current_user)]
-) -> PanelState:
-    return PanelState(
+) -> NetworkConfiguration:
+    return NetworkConfiguration(
         intnets = get_current_intnet_state(),
         **current_state.read(),
     )
@@ -115,11 +134,11 @@ def apply_intnet_configuration_to_virtual_machines(
     return
     
 @app.put("/network/configuration/panelstate", status_code=204)
-def save_panel_state(
-    panel_state: SnapshotData,
+def save_flow_state(
+    flow_state: FlowState,
     current_user: Annotated[User, Depends(get_current_user)],
 ):
-    current_state.write(jsonable_encoder(panel_state))
+    current_state.write(jsonable_encoder(flow_state))
 
 ###############################
 # snapshot requests
@@ -133,8 +152,10 @@ def create_network_snapshot(
     snapshots_list = snapshots.read()
     if not isinstance(snapshots_list, list): 
         snapshots_list = []
-    if not re.match(r'^[a-zA-Z][\w-]{2,15}$', snapshot.name):
-        raise HTTPException(status_code=400, detail="Invalid snapshot name. The name must be between 3 and 16 characters and start with a letter, followed by alphanumeric characters, underscores, or hyphens.")
+    if not re.match(r'^[a-zA-Z][\w\-\ ]{2,15}$', snapshot.name):
+        raise HTTPException(status_code=400, detail="Invalid snapshot name. The name must be between 3 and 16 characters and start with a letter, followed by alphanumeric characters, spaces, underscores, or hyphens.")
+    if any(s['name'] == snapshot.name for s in snapshots_list):
+        raise HTTPException(status_code=409, detail="Snapshot with this name already exists")
 
     snapshot = jsonable_encoder({**jsonable_encoder(snapshot), 'id': len(snapshots_list)})
     snapshots_list.append(snapshot)
@@ -145,12 +166,9 @@ def create_network_snapshot(
 @app.get("/network/snapshot/all")
 def get_all_snapshots(
     current_user: Annotated[User, Depends(get_current_user)],
-) -> list[Snapshot]:
+) -> list:
     snapshots_list = snapshots.read()
-    
-    if not isinstance(snapshots_list, list): 
-        raise HTTPException(status_code=404, detail="Could not find the snapshots: Snapshot list is empty or undefined")
-    
+    if not isinstance(snapshots_list, list): return []
     return snapshots_list
 
 @app.get("/network/snapshot/{id}")
@@ -159,13 +177,10 @@ def get_snapshot(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> Snapshot:
     snapshots_list = snapshots.read()
-
-    if not isinstance(snapshots_list, list): 
-        raise HTTPException(status_code=404, detail="Could not find the snapshot: Snapshot list is empty or undefined")
-    if id < 0 or id >= len(snapshots_list):
-        raise HTTPException(status_code=404, detail=f"Snapshot of id={id} not found")
-
+    validateJSONList(snapshots_list, 'snapshots')
+    validateIndexInList(snapshots_list, id, 'snapshot')
     return snapshots_list[id]
+    
 
 @app.delete("/network/snapshot/{id}", status_code=204)
 def delete_network_configuration_snapshot(
@@ -173,14 +188,31 @@ def delete_network_configuration_snapshot(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     snapshots_list = snapshots.read()
-
-    if not isinstance(snapshots_list, list): 
-        raise HTTPException(status_code=404, detail="Snapshot not found")
-    if id < 0 or id >= len(snapshots_list):
-        raise HTTPException(status_code=404, detail=f"Snapshot of id={id} not found")
+    validateJSONList(snapshots_list, 'snapshots')
+    validateIndexInList(snapshots_list, id, 'snapshot')   
     
     deleted = snapshots_list.pop(id)
     snapshots.write(snapshots_list)
     return deleted
 
+###############################
+# preset requests
+###############################
 
+@app.get("/network/preset/all")
+def get_all_snapshots(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> list:
+    presets_list = presets.read()
+    if not isinstance(presets_list, list): return []
+    return presets_list
+
+@app.get("/network/preset/{id}")
+def get_network_configuration_preset(
+    id: int,
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> Preset:
+    presets_list = presets.read()
+    validateJSONList(presets_list, 'presets')
+    validateIndexInList(presets_list, id, 'preset')
+    return presets_list[id]
