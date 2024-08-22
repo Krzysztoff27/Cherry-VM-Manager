@@ -31,7 +31,7 @@ export default function MachinePage() {
 
     if (loading) return;
     if (error){
-        errorHandler.requestResponseError(error); 
+        errorHandler.handleErrorResponse(error); 
         return;
     }
 
