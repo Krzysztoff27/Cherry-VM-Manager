@@ -1,0 +1,25 @@
+.saveButton {
+    animation: pulse 2s infinite;
+    transition: background-color 0.25s ease-out;
+
+    &:disabled,
+    &[data-disabled] {
+        background-color: var(--mantine-color-suse-green-8);
+        border-color: var(--mantine-color-suse-green-9);
+        color: white;
+    }
+}
+
+@keyframes pulse {
+	0% {
+		box-shadow: 0 0 0 0 #424242cd;
+	}
+
+	70% {
+		box-shadow: 0 0 0 10px #42424200;
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 #42424200;
+	}
+}
