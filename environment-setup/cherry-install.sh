@@ -118,7 +118,7 @@ configure_daemon_kvm(){
             if [[ "$enable_nested" == 'y' ]]; then
                 modprobe -r kvm_"$cpu_producer"
                 modprobe kvm_"$cpu_producer" nested=1
-                echo 'options kvm_intel nested=1' > '/etc/modprobe.d/kvm.conf'
+                echo "options kvm_"$cpu_producer" nested=1" > '/etc/modprobe.d/kvm.conf'
                 printf '[i] Nested virtualization enabled.\n'
             else
                 printf '[i] Nested virtualization not enabled.\n'
