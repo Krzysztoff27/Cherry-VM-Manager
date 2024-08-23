@@ -5,23 +5,37 @@
 ###############################
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
-readonly LOGS_FILE="./logs/cherry-install/"$(date +%d-%m-%y_%H-%M-%S)".txt"
+readonly LOGS_DIRECTORY="./logs/cherry-install/"
+readonly LOGS_FILE=""$LOGS_DIRECTORY""$(date +%d-%m-%y_%H-%M-%S)".txt"
 readonly ZYPPER_PACKAGES="./dependencies/zypper_packages.txt"
 readonly ZYPPER_PATTERNS="./dependencies/zypper_patterns.txt"
 
 ###############################
-#   non-installation functions
+#  non-installation functions
 ###############################
 
+#Create logs directory
+mkdir -p "$LOGS_DIRECTORY"
+
+#Redirect stderr output to the logs file globally
+exec 2> "$LOGS_FILE"
+
 #Force script to exit on ERR occurence
-set -e
+set -eE
 
 #Error handler to call on ERR occurence and print an error message
-error_handler(){
-    echo "An error occured! Error code: $?"
-    echo -e "See the installation_logs.txt file for specific information.\n"
+err_handler(){
+    printf 'ERR'
+    printf "\n[!] An error occured!\nSee the $LOGS_FILE for specific information.\n"
 }
-trap "error_handler" ERR
+trap 'err_handler' ERR
+
+#Error handler to call on SIGINT occurence and print an error message
+sigint_handler(){
+    printf '\n[!] Installation terminated manually!\n'
+    exit 1
+}
+trap 'sigint_handler' SIGINT
 
 #Universal function to read dependenies names from a file
 read_file(){
@@ -35,125 +49,134 @@ read_file(){
 #   installation functions
 ###############################
 
-#Zypper repos refresh and package installation
 install_zypper_packages(){
     read_file "$ZYPPER_PACKAGES"
-    index=1
-    echo "[Stage I] - Zypper packages installation"
-    echo -n "["$index"] Refreshing zypper repositories: "
-    zypper -n refresh >> "$LOGS_FILE" 2>&1 #/dev/null 2>&1
-    echo 'OK'
+    printf '\n[i] Disabling PackageKit to prevent Zypper errors: '
+    systemctl -q stop packagekit
+    systemctl -q disable packagekit
+    printf 'OK\n'
+    printf '\n[i] Refreshing zypper repositories: '
+    zypper -n -q refresh > "$LOGS_FILE"
+    printf 'OK\n'
     for line in "${packages[@]}"; do
-        clean_line=$(echo "$line" | tr -cd '[:alnum:][=-=]')
-        ((index++))
-        echo -n "["$index"] Installing "$clean_line": "
-        zypper -n install -t package "$clean_line" >> "$LOGS_FILE" 2>&1  #/dev/null 2>&1
-        echo 'OK'
+        clean_line="${line//[^[:alnum:]-]/}"
+        printf "[i] Installing $clean_line: "
+        zypper -n -q install -t package "$clean_line" 
+        printf 'OK\n'
     done
-    echo ""
 }
 
 install_zypper_patterns(){
     read_file "$ZYPPER_PATTERNS"
-    index=1
-    echo "[Stage II] - Zypper patterns installation"
     for line in "${packages[@]}"; do
-        clean_line=$(echo "$line" | tr -cd '[:alnum:][=_=]')
-        echo -n "["$index"] Installing "$clean_line": "
-        ((index++))
-        zypper -n install -t pattern "$clean_line" >> "$LOGS_FILE" 2>&1  #/dev/null 2>&1
-        echo 'OK'
+        clean_line="${line//[^[:alnum:]_]/}"
+        printf "[i] Installing $clean_line: "
+        zypper -n -q install -t pattern "$clean_line"
+        printf 'OK\n'
     done
-    echo ""
 }
 
 create_user(){
-    echo -n '[i] Creating CherryWorker system user: '
+    printf '\n[i] Creating CherryWorker system user: '
     useradd -r -M -s '/usr/bin/false' -c 'Cherry-VM-Manager system user' 'CherryWorker'
-    echo 'OK'
-    echo -n '[i] Creating CherryWorker home directory: '
+    printf 'OK\n'
+    printf '[i] Creating CherryWorker home directory: '
     mkdir /home/CherryWorker
     chown CherryWorker:users /home/CherryWorker
     chmod 700 /home/CherryWorker
-    echo 'OK'
-    echo -n '[i] Adding CherryWorker to system groups: '
+    printf 'OK\n'
+    printf '[i] Adding CherryWorker to system groups: '
     usermod -a -G docker,libvirt CherryWorker
-    echo 'OK'
-    echo ""
+    printf 'OK\n'
 }
 
+#Function to check for nested virtualization support and state on the host system.
+#For nested-v to work it needs to be specified in the kvm daemon settings prior to enabling libvirt service
+#and kvm kernel modules need to be reloaded.
 configure_daemon_kvm(){
-    #check for cpu manufacturer and nested virtualization support - available if turned on in BIOS first
     cpu_model=$(grep "model name" /proc/cpuinfo -m 1 | awk -F: '{print $2}';)
-    if echo "$cpu_model" | grep -q "Intel"; then
+    if echo "$cpu_model" | grep -q -i "Intel"; then
         cpu_producer='intel'
         if (grep -q "vmx" /proc/cpuinfo); then
             nested_support=true
         fi
-    elif echo "$cpu_model" | grep -q "AMD"; then
+    elif echo "$cpu_model" | grep -q -i "AMD"; then
         cpu_producer='amd'
         if (grep -q "svm" /proc/cpuinfo); then
             nested_support=true
         fi
     else
-        echo "Unrecognized CPU, cannot proceed with KVM configuration." > "$LOGS_FILE" 
-        exit 125 
+        printf '\nUnrecognized CPU, cannot proceed with KVM configuration.' > "$LOGS_FILE"
+        exit 1 
     fi
+
     nested_state=$(cat /sys/module/kvm_"$cpu_producer"/parameters/nested)
-    #allow to turn nested virtualization on during installation for better vm performance
-    #check whether nested virtualization was turned on before installation
     if [[ "$nested_support" == true ]]; then
+        printf '\n'
         if [[ "$nested_state" != 'Y' ]]; then
-            read -p "[?] Detected nested virtualization support. Enable? (y/n): " enable_nested
+            read -p '[?] Detected nested virtualization support. Enable? (y/n): ' enable_nested
             if [[ "$enable_nested" == 'y' ]]; then
                 modprobe -r kvm_"$cpu_producer"
-                modprobe kvm_"$cpu_producer" nested=1 #reload kvm kernel module with nv enabled
-                echo "options kvm_intel nested=1" > "/etc/modprobe.d/kvm.conf"
-                echo "[i] Nested virtualization enabled."
+                modprobe kvm_"$cpu_producer" nested=1
+                echo 'options kvm_intel nested=1' > '/etc/modprobe.d/kvm.conf'
+                printf '[i] Nested virtualization enabled.\n'
             else
-                echo "[i] Nested virtualization not enabled."
+                printf '[i] Nested virtualization not enabled.\n'
             fi
         else
-            echo "[i] Nested virtualization enabled prior to installation. Settings have not been modified."
+            printf '[i] Nested virtualization enabled prior to installation. Settings have not been modified.\n'
         fi
     fi
-    echo ""
 }
 
 configure_daemon_libvirt(){
-    echo -n "[i] Enabling libvirt monolithic daemon to run on startup: "
-    systemctl enable libvirtd.service >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
-    echo 'OK'
-    echo -n "[i] Starting libvirt monolithic daemon: "
-    systemctl start libvirtd.service >> "$LOGS_FILE" 2>&1
-    echo 'OK' #Test for ERR throwing after fixing the error_handler() trap
-    echo -n "[i] Creating directory structure (/opt/libvirt/cherry-vm-manager) and copying virtual infrastructure .xml files: "
+    printf '\n[i] Enabling libvirt monolithic daemon to run on startup: '
+    systemctl -q enable libvirtd.service
+    printf 'OK\n'
+    printf '[i] Starting libvirt monolithic daemon: '
+    systemctl -q start libvirtd.service 
+    printf 'OK\n'
+    printf '[i] Creating directory structure (/opt/libvirt/cherry-vm-manager) and copying virtual infrastructure .xml files: '
     mkdir -p /opt/libvirt/cherry-vm-manager
-    cp -r ../libvirt/. /opt/libvirt/cherry-vm-manager
-    echo 'OK'
-    echo ""
+    cp -r ../libvirt/. /opt/libvirt/cherry-vm-manager #modify file structure
+    printf 'OK\n'
 }
 
 configure_daemon_docker(){
-    echo -n '[i] Enabling docker daemon to run on startup: '
-    systemctl enable docker.service >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
-    echo 'OK'
-    echo -n '[i] Starting docker daemon: '
-    systemctl start docker.service >> "$LOGS_FILE" 2>&1 #Test for ERR throwing after fixing the error_handler() trap
-    echo 'OK'
-    echo -n "[i] Creating directory structure (/opt/docker/cherry-vm-manager) and copying docker-compose files: "
+    printf '\n[i] Enabling docker daemon to run on startup: '
+    systemctl -q enable docker.service 
+    printf 'OK\n'
+    printf '[i] Starting docker daemon: '
+    systemctl -q start docker.service 
+    printf 'OK\n'
+    printf '[i] Creating directory structure (/opt/docker/cherry-vm-manager) and copying docker-compose files: '
     mkdir -p /opt/docker/cherry-vm-manager
-    cp -r ../docker/. /opt/docker/cherry-vm-manager
-    echo 'OK'
-    echo ""
+    cp -r ../docker/. /opt/docker/cherry-vm-manager #modify file structure
+    printf 'OK\n'
 }
 
 configure_container_guacamole(){
-    echo -n '[i] Creating initdb.sql SQL script for Apache Guacamole PostgreSQL db: '
-    runuser -u CherryWorker -- docker run --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > /opt/docker/cherry-vm-manager/apache-guacamole/initdb/01-initdb.sql
-    #Add automatic docker-compose -d startup
-    echo 'OK'
-    echo ""
+    printf '\n[i] Creating initdb.sql SQL script for Apache Guacamole PostgreSQL db: '
+    runuser -u CherryWorker -- docker run -q --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > /opt/docker/cherry-vm-manager/apache-guacamole/initdb/01-initdb.sql #modify file structure
+    printf 'OK\n'
+    printf '[i] Starting apache-guacamole docker stack: '
+    runuser -u CherryWorker -- docker-compose -f /opt/docker/cherry-vm-manager/apache-guacamole/docker-compose.yml up -d > "$LOGS_FILE"
+    printf 'OK\n'
+}
+
+print_begin_notice(){
+    printf "$(cat ./messages/begin_notice.txt)"
+    printf '[?] Continue (y/n): '
+    read -n 1 -p '' continue_installation
+        if [[ "$continue_installation" != 'y' ]]; then
+            printf '\n[!] Installation aborted! Exiting.\n'
+            exit 1
+        fi
+    printf '\n'
+}
+
+print_finish_notice(){
+    printf "$(cat ./messages/finish_notice.txt)\n"
 }
 
 ###############################
@@ -172,6 +195,7 @@ fi
 #will record its completion state and if error occurs and another installation is launched,
 #it will be able to continue from where it stopped previously - TO BE IMPLEMENTED
 installation(){
+    print_begin_notice
     install_zypper_packages
     install_zypper_patterns
     create_user
@@ -179,8 +203,7 @@ installation(){
     configure_daemon_libvirt
     configure_daemon_docker
     configure_container_guacamole
+    print_finish_notice
 }
 
-#Begin installation
-#installation
-configure_daemon_libvirt
+installation

@@ -1,3 +1,4 @@
+ 
 The installation script finished the job without any errors.
 Now you should be able to access the Cherry Admin Panel to control the Cherry VM Manager stack.
 
