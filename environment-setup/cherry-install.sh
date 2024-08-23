@@ -1,12 +1,23 @@
 #!/usr/bin/env bash
 
 ###############################
+#      root rights check
+###############################
+
+#Test to ensure that script is executed with root priviliges
+if ((EUID != 0)); then
+    echo "Insufficient priviliges! Please run the script with root rights."
+    exit
+fi
+
+###############################
 #       env variables
 ###############################
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
 readonly LOGS_DIRECTORY="./logs/cherry-install/"
-readonly LOGS_FILE=""$LOGS_DIRECTORY""$(date +%d-%m-%y_%H-%M-%S)".txt"
+LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).txt"
+readonly LOGS_FILE
 readonly ZYPPER_PACKAGES="./dependencies/zypper_packages.txt"
 readonly ZYPPER_PATTERNS="./dependencies/zypper_patterns.txt"
 
@@ -114,11 +125,11 @@ configure_daemon_kvm(){
     if [[ "$nested_support" == true ]]; then
         printf '\n'
         if [[ "$nested_state" != 'Y' ]]; then
-            read -p '[?] Detected nested virtualization support. Enable? (y/n): ' enable_nested
+            read -r -p '[?] Detected nested virtualization support. Enable? (y/n): ' enable_nested
             if [[ "$enable_nested" == 'y' ]]; then
                 modprobe -r kvm_"$cpu_producer"
                 modprobe kvm_"$cpu_producer" nested=1
-                echo "options kvm_"$cpu_producer" nested=1" > '/etc/modprobe.d/kvm.conf'
+                echo "options kvm_$cpu_producer nested=1" > '/etc/modprobe.d/kvm.conf'
                 printf '[i] Nested virtualization enabled.\n'
             else
                 printf '[i] Nested virtualization not enabled.\n'
@@ -167,7 +178,7 @@ configure_container_guacamole(){
 print_begin_notice(){
     printf "$(cat ./messages/begin_notice.txt)"
     printf '[?] Continue (y/n): '
-    read -n 1 -p '' continue_installation
+    read -r -n 1 -p '' continue_installation
         if [[ "$continue_installation" != 'y' ]]; then
             printf '\n[!] Installation aborted! Exiting.\n'
             exit 1
@@ -182,12 +193,6 @@ print_finish_notice(){
 ###############################
 #   actual installation
 ###############################
-
-#Test to ensure that script is run with root priviliges
-if (($EUID != 0)); then
-    echo "Insufficient priviliges! Please run the script with root rights."
-    exit
-fi
 
 #Calls for certain functions - parts of the whole environment initialization process
 
