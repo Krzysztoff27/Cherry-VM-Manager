@@ -6,7 +6,7 @@
 
 #Test to ensure that script is executed with root priviliges
 if ((EUID != 0)); then
-    echo "Insufficient priviliges! Please run the script with root rights."
+    printf 'Insufficient priviliges! Please run the script with root rights.'
     exit
 fi
 
@@ -15,14 +15,16 @@ fi
 ###############################
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
-readonly LOGS_DIRECTORY="./logs/cherry-install/"
-LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).txt"
+readonly LOGS_DIRECTORY='./logs/cherry-install/'
+LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).log"
 readonly LOGS_FILE
-readonly ZYPPER_PACKAGES="./dependencies/zypper_packages.txt"
-readonly ZYPPER_PATTERNS="./dependencies/zypper_patterns.txt"
+readonly ZYPPER_PACKAGES='./dependencies/zypper_packages.txt'
+readonly ZYPPER_PATTERNS='./dependencies/zypper_patterns.txt'
+readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt'
+readonly DIR_DOCKER='/opt/cherry-vm-manager/docker'
 
 ###############################
-#  non-installation functions
+#      utility functions
 ###############################
 
 #Create logs directory
@@ -31,7 +33,7 @@ mkdir -p "$LOGS_DIRECTORY"
 #Redirect stderr output to the logs file globally
 exec 2> "$LOGS_FILE"
 
-#Force script to exit on ERR occurence
+#Force script to call err_handler exit on ERR occurence
 set -eE
 
 #Error handler to call on ERR occurence and print an error message
@@ -62,10 +64,14 @@ read_file(){
 
 install_zypper_packages(){
     read_file "$ZYPPER_PACKAGES"
-    printf '\n[i] Disabling PackageKit to prevent Zypper errors: '
-    systemctl -q stop packagekit
-    systemctl -q disable packagekit
-    printf 'OK\n'
+    if systemctl list-unit-files | grep -q '^packagekit\.service'; then
+        printf '\n[i] Disabling PackageKit to prevent Zypper errors: '
+        systemctl -q stop packagekit
+        systemctl -q disable packagekit
+        printf 'OK\n'
+    else
+        printf '\n[i] PackageKit not detected. Settings have not been modified.'
+    fi
     printf '\n[i] Refreshing zypper repositories: '
     zypper -n -q refresh > "$LOGS_FILE"
     printf 'OK\n'
@@ -147,9 +153,9 @@ configure_daemon_libvirt(){
     printf '[i] Starting libvirt monolithic daemon: '
     systemctl -q start libvirtd.service 
     printf 'OK\n'
-    printf '[i] Creating directory structure (/opt/libvirt/cherry-vm-manager) and copying virtual infrastructure .xml files: '
-    mkdir -p /opt/libvirt/cherry-vm-manager
-    cp -r ../libvirt/. /opt/libvirt/cherry-vm-manager #modify file structure
+    printf "[i] Creating directory structure ($DIR_LIBVIRT) and copying vm infrastructure .xml files: "
+    mkdir -p "$DIR_LIBVIRT"
+    cp -r ../libvirt/. "$DIR_LIBVIRT"
     printf 'OK\n'
 }
 
@@ -160,18 +166,18 @@ configure_daemon_docker(){
     printf '[i] Starting docker daemon: '
     systemctl -q start docker.service 
     printf 'OK\n'
-    printf '[i] Creating directory structure (/opt/docker/cherry-vm-manager) and copying docker-compose files: '
-    mkdir -p /opt/docker/cherry-vm-manager
-    cp -r ../docker/. /opt/docker/cherry-vm-manager #modify file structure
+    printf "[i] Creating directory structure ($DIR_DOCKER) and copying docker files: "
+    mkdir -p "$DIR_DOCKER"
+    cp -r ../docker/. "$DIR_DOCKER"
     printf 'OK\n'
 }
 
 configure_container_guacamole(){
     printf '\n[i] Creating initdb.sql SQL script for Apache Guacamole PostgreSQL db: '
-    runuser -u CherryWorker -- docker run -q --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > /opt/docker/cherry-vm-manager/apache-guacamole/initdb/01-initdb.sql #modify file structure
+    runuser -u CherryWorker -- docker run -q --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > "$DIR_DOCKER/apache-guacamole/initdb/01-initdb.sql"
     printf 'OK\n'
     printf '[i] Starting apache-guacamole docker stack: '
-    runuser -u CherryWorker -- docker-compose -f /opt/docker/cherry-vm-manager/apache-guacamole/docker-compose.yml up -d > "$LOGS_FILE"
+    runuser -u CherryWorker -- docker-compose -f "$DIR_DOCKER/apache-guacamole/docker-compose.yml" up -d > "$LOGS_FILE"
     printf 'OK\n'
 }
 
