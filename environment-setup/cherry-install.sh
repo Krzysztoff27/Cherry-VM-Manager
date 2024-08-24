@@ -23,6 +23,12 @@ readonly ZYPPER_PATTERNS='./dependencies/zypper_patterns.txt'
 readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt'
 readonly DIR_DOCKER='/opt/cherry-vm-manager/docker'
 
+#Color definitions for distinguishable status codes
+readonly GREEN='\033[0;32m'
+readonly RED='\033[0;31m'
+readonly YELLOW='\033[0;33m'
+readonly NC='\033[0m'
+
 ###############################
 #      utility functions
 ###############################
@@ -38,17 +44,24 @@ set -eE
 
 #Error handler to call on ERR occurence and print an error message
 err_handler(){
-    printf 'ERR'
-    printf "\n[!] An error occured!\nSee the $LOGS_FILE for specific information.\n"
+    printf "${RED}ERR${NC}"
+    printf "\n${RED}[!]${NC} An error occured!\nSee the $LOGS_FILE for specific information.\n"
 }
 trap 'err_handler' ERR
 
 #Error handler to call on SIGINT occurence and print an error message
 sigint_handler(){
-    printf '\n[!] Installation terminated manually!\n'
+    printf '\n[!] Script terminated manually!\n'
     exit 1
 }
 trap 'sigint_handler' SIGINT
+
+#Return OK status only if previous command returned 0 code, otherwise err_handler is invoked
+ok_handler(){
+    if [ $? == 0 ]; then
+        printf "${GREEN}OK${NC}\n"
+    fi
+}
 
 #Universal function to read dependenies names from a file
 read_file(){
@@ -68,18 +81,18 @@ install_zypper_packages(){
         printf '\n[i] Disabling PackageKit to prevent Zypper errors: '
         systemctl -q stop packagekit
         systemctl -q disable packagekit
-        printf 'OK\n'
+        ok_handler
     else
         printf '\n[i] PackageKit not detected. Settings have not been modified.'
     fi
     printf '\n[i] Refreshing zypper repositories: '
     zypper -n -q refresh > "$LOGS_FILE"
-    printf 'OK\n'
+    ok_handler
     for line in "${packages[@]}"; do
         clean_line="${line//[^[:alnum:]-]/}"
         printf "[i] Installing $clean_line: "
         zypper -n -q install -t package "$clean_line" 
-        printf 'OK\n'
+        ok_handler
     done
 }
 
@@ -89,22 +102,22 @@ install_zypper_patterns(){
         clean_line="${line//[^[:alnum:]_]/}"
         printf "[i] Installing $clean_line: "
         zypper -n -q install -t pattern "$clean_line"
-        printf 'OK\n'
+        ok_handler
     done
 }
 
 create_user(){
     printf '\n[i] Creating CherryWorker system user: '
     useradd -r -M -s '/usr/bin/false' -c 'Cherry-VM-Manager system user' 'CherryWorker'
-    printf 'OK\n'
+    ok_handler
     printf '[i] Creating CherryWorker home directory: '
     mkdir /home/CherryWorker
     chown CherryWorker:users /home/CherryWorker
     chmod 700 /home/CherryWorker
-    printf 'OK\n'
+    ok_handler
     printf '[i] Adding CherryWorker to system groups: '
     usermod -a -G docker,libvirt CherryWorker
-    printf 'OK\n'
+    ok_handler
 }
 
 #Function to check for nested virtualization support and state on the host system.
@@ -149,43 +162,61 @@ configure_daemon_kvm(){
 configure_daemon_libvirt(){
     printf '\n[i] Enabling libvirt monolithic daemon to run on startup: '
     systemctl -q enable libvirtd.service
-    printf 'OK\n'
+    ok_handler
     printf '[i] Starting libvirt monolithic daemon: '
     systemctl -q start libvirtd.service 
-    printf 'OK\n'
+    ok_handler
     printf "[i] Creating directory structure ($DIR_LIBVIRT) and copying vm infrastructure .xml files: "
     mkdir -p "$DIR_LIBVIRT"
     cp -r ../libvirt/. "$DIR_LIBVIRT"
-    printf 'OK\n'
+    ok_handler
 }
 
 configure_daemon_docker(){
     printf '\n[i] Enabling docker daemon to run on startup: '
     systemctl -q enable docker.service 
-    printf 'OK\n'
+    ok_handler
     printf '[i] Starting docker daemon: '
     systemctl -q start docker.service 
-    printf 'OK\n'
+    ok_handler
     printf "[i] Creating directory structure ($DIR_DOCKER) and copying docker files: "
     mkdir -p "$DIR_DOCKER"
     cp -r ../docker/. "$DIR_DOCKER"
-    printf 'OK\n'
+    ok_handler
 }
 
 configure_container_guacamole(){
     printf '\n[i] Creating initdb.sql SQL script for Apache Guacamole PostgreSQL db: '
     runuser -u CherryWorker -- docker run -q --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > "$DIR_DOCKER/apache-guacamole/initdb/01-initdb.sql"
-    printf 'OK\n'
+    ok_handler
     printf '[i] Starting apache-guacamole docker stack: '
     runuser -u CherryWorker -- docker-compose -f "$DIR_DOCKER/apache-guacamole/docker-compose.yml" up -d > "$LOGS_FILE"
-    printf 'OK\n'
+    ok_handler
+}
+
+create_vm_networks(){
+    printf '\n[i] Disabling libvirt default network stack: '
+    virsh net-undefine --network default > "$LOGS_FILE"
+    virsh net-destroy --network default > "$LOGS_FILE"
+    ok_handler
+    printf '\n[i] Creating a default NAT network for VMs and making it persistent: '
+    virsh net-define --file /opt/libvirt/cherry-vm-manager/networks/isolated-nat.xml  > "$LOGS_FILE"
+    virsh net-start --network isolated-nat  > "$LOGS_FILE"
+    virsh net-autostart --network isolated-nat > "$LOGS_FILE"
+    ok_handler 
+}
+
+create_vm_firewall(){
+    printf '\n[i] Creating network filter to restrict communication between VMs on a shared NAT network: '
+    virsh nwfilter-define --file /opt/libvirt/cherry-vm-manager/filters/isolated-nat-filter.xml  > "$LOGS_FILE"
+    ok_handler
 }
 
 print_begin_notice(){
-    printf "$(cat ./messages/begin_notice.txt)"
-    printf '[?] Continue (y/n): '
-    read -r -n 1 -p '' continue_installation
-        if [[ "$continue_installation" != 'y' ]]; then
+    printf "$(cat ./messages/cherry-install_begin.txt)"
+    printf '\n[?] Continue (y/n): '
+    read -r -n 1 -p '' continue_execution
+        if [[ "$continue_execution" != 'y' ]]; then
             printf '\n[!] Installation aborted! Exiting.\n'
             exit 1
         fi
@@ -193,11 +224,11 @@ print_begin_notice(){
 }
 
 print_finish_notice(){
-    printf "$(cat ./messages/finish_notice.txt)\n"
+    printf "$(cat ./messages/cherry-install_finish.txt)\n"
 }
 
 ###############################
-#   actual installation
+#       installation
 ###############################
 
 #Calls for certain functions - parts of the whole environment initialization process
@@ -207,14 +238,15 @@ print_finish_notice(){
 #it will be able to continue from where it stopped previously - TO BE IMPLEMENTED
 installation(){
     print_begin_notice
-    install_zypper_packages
-    install_zypper_patterns
+    #install_zypper_packages
+    #install_zypper_patterns
     create_user
     configure_daemon_kvm
     configure_daemon_libvirt
     configure_daemon_docker
     configure_container_guacamole
+    create_vm_firewall
+    create_vm_networks
     print_finish_notice
 }
-
 installation
