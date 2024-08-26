@@ -1,5 +1,4 @@
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, Routes } from "react-router-dom";
-import { Center } from "@mantine/core";
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router-dom";
 
 import Layout from "../Layout/Layout.jsx"
 import LoginPage from '../../pages/Login/LoginPage.jsx';
@@ -8,13 +7,18 @@ import MachineList from "../../pages/VirtualMachines/MachineList.jsx"
 import MachinePage from "../../pages/VirtualMachines/MachinePage.jsx"
 import NetworkPanel from "../../pages/NetworkPanel/NetworkPanel.jsx"
 import Desktops from "../../pages/Desktops/Desktops.jsx";
+import Home from "../../pages/Home/Home.jsx";
+import { Center } from "@mantine/core";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route path="/">
-            <Route exact path="/" element={<Center h={'70vh'}><h1>Strona powstaje...</h1></Center>}/>
+        <Route path='/'>
+            <Route exact path='/' element={<Home/>}/>
+            <Route path='/credits'          element={<Center h='70vh' style={{fontSize: 32}}>Work in progress...</Center>}/>
+            <Route path='/copyright'        element={<Center h='70vh' style={{fontSize: 32}}>Work in progress...</Center>}/>
             <Route element={<Protected/>}>
                 <Route element={<Layout/>}>
+                    <Route path='/home'                 element={<Home/>}/>
                     <Route path='/virtual-machines'     element={<MachineList/>}/>
                     <Route path='/virtual-machines/:id' element={<MachinePage/>}/>
                     <Route path='/desktops'             element={<Desktops/>}/>
@@ -22,7 +26,7 @@ const router = createBrowserRouter(
                 </Route>
             </Route>
             <Route element={<ReverseProtected/>}>
-                <Route path="/login" element={<LoginPage />} />
+                <Route path='/login' element={<LoginPage />} />
             </Route>
         </Route>
     )
