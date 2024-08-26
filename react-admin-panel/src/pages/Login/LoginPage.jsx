@@ -1,4 +1,4 @@
-import { Button, Center, Divider, Fieldset, Group, PasswordInput, Space, Text, TextInput } from '@mantine/core';
+import { Avatar, Button, Center, Divider, Fieldset, Group, PasswordInput, Space, Text, TextInput } from '@mantine/core';
 import { isNotEmpty, useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import React from 'react';
@@ -32,9 +32,12 @@ export default function LoginPage() {
         <Center h={'100vh'}>
             <Fieldset w='400'>
                 <form onSubmit={form.onSubmit(authenticate)}>
-                    <Text size="xl" fw={500}>
-                        Cherry Admin Panel
-                    </Text>
+                    <Group align='flex-end' pt='xs'>
+                        <Avatar src='/icons/cherry_admin_panel.webp' radius={0}/>
+                        <Text size="xl" fw={500}>
+                            Cherry Admin Panel
+                        </Text>
+                    </Group>
                     <Space h="sm" />
                     <Divider label="Log in with an authorized server account" />
                     <Space h="sm" />
