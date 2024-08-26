@@ -89,7 +89,7 @@ export default function MachineList() {
                                 p='sm' 
                                 bg='dark.6'
                             >
-                                <Title pl='xs' order={2}>Stanowisko {memberId}</Title>
+                                <Title pl='xs' order={2}>Station {memberId}</Title>
                             </Paper>
                             <Group grow>
                                 {pair}

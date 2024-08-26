@@ -23,7 +23,7 @@ const useErrorHandler = (defaultOptions = {}) => {
 
     const scriptError = (error, notificationOptions = {}) => {
         showErrorNotification({
-            title: 'Wystąpił błąd',
+            title: 'Error occured',
             message: `${error.name}: ${error.message}`,
             ...notificationOptions,
         })
@@ -36,8 +36,8 @@ const useErrorHandler = (defaultOptions = {}) => {
             case 400:
                 showErrorNotification({
                     ...options,
-                    title: 'Niepoprawne żądanie',
-                    message: 'Serwer nie był w stanie spełnić żądania',
+                    title: 'Improper request',
+                    message: 'API service denied the request due to client error.',
                 });
                 break;
             case 401:
@@ -46,15 +46,15 @@ const useErrorHandler = (defaultOptions = {}) => {
                     case 'Incorrect username or password':
                         showErrorNotification({
                             ...options,
-                            title: 'Logowanie nie powiodło się',
-                            message: 'Niepoprawny login lub hasło.',
+                            title: 'Login failed',
+                            message: data?.detail,
                         });
                         break;
                     default:
                         showErrorNotification({
                             ...options,
-                            title: 'Sesja wygasła',
-                            message: 'Proszę ponownie zalogować się do panelu.',
+                            title: 'Session expired',
+                            message: 'Please log in to the panel again.',
                         });
                 }
                 break;
@@ -70,16 +70,16 @@ const useErrorHandler = (defaultOptions = {}) => {
             case 503:
                 showErrorNotification({
                     ...options,
-                    title: 'Wystąpił błąd',
-                    message: 'Usługa API nie odpowiada.',
+                    title: 'Error occured',
+                    message: 'API service is not responding.',
                 });
                 break;
 
             default:
                 showErrorNotification({
                     ...options,
-                    title: 'Wystąpił błąd',
-                    message: data?.detail || 'Nieznany błąd',
+                    title: 'Error occured',
+                    message: data?.detail || 'Unknown error code.',
                 });
                 
                 console.error('Unhandled error response:', response, data);

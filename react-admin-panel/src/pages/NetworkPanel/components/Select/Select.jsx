@@ -50,7 +50,7 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceUpda
                 opened={confirmationOpened} 
                 onCancel={onModalCancel}
                 onConfirm={onModalConfirm}
-                title='Potwierdzenie operacji' 
+                title='Confirm loading configuration' 
                 confirmButtonProps={{color: 'red.7'}}
             />
             <NativeSelect
@@ -59,11 +59,11 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceUpda
                 radius={0}
                 w={268}
             >
-                <option value='null'>Załaduj migawkę</option>
-                <optgroup label='Konfiguracje domyślne'>
+                <option value='null'>Load configuration</option>
+                <optgroup label='Default Presets'>
                     {...presetComponents}
                 </optgroup>
-                <optgroup label='Zapisane migawki'>
+                <optgroup label='Saved Snapshots'>
                     {...snapshotComponents}
                 </optgroup>
             </NativeSelect>

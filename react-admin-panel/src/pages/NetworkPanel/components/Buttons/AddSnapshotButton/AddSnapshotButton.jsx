@@ -4,7 +4,7 @@ import TextInputModal from "../../TextInputModal/TextInputModal";
 import { notifications } from "@mantine/notifications";
 import { Button, List, Stack, Text } from "@mantine/core";
 
-export default function AddSnapshotButton({postSnapshot = async () => {}, setForceUpdate = () => {}}) {
+export default function AddSnapshotButton({ postSnapshot = async () => { }, setForceUpdate = () => { } }) {
     const [opened, { open, close }] = useDisclosure();
 
     const onClick = () => open();
@@ -18,8 +18,8 @@ export default function AddSnapshotButton({postSnapshot = async () => {}, setFor
         notifications.show({
             id: 'snapshot-create',
             color: 'suse-green',
-            title: `Utworzono nową migawkę - "${name}"`,
-            message: `Pomyślnie zapisano obecną konfigurację sieciową do migawki "${name}"`
+            title: `New snapshot created - "${name}"`,
+            message: `Current configuration was successfuly saved to the snapshot "${name}"`
         })
     }
 
@@ -29,21 +29,21 @@ export default function AddSnapshotButton({postSnapshot = async () => {}, setFor
                 opened={opened}
                 onCancel={onCancel}
                 onConfirm={onConfirm}
-                title='Tworzenie migawki'
+                title='New snapshot'
                 content={
                     <Stack gap='xs'>
-                        <Text size='sm'>W migawce zostanie zapisany obecny stan panelu:</Text>
+                        <Text size='sm'>The snapshot will save the current state of the panel:</Text>
                         <List size='sm'>
-                            <List.Item>Obecne połączenia i sieci wewnętrzne</List.Item>
-                            <List.Item>Położenie maszyn na planszy</List.Item>
-                            <List.Item>Położenie sieci wewnętrznych na planszy</List.Item>
+                            <List.Item>Current connections and internal networks</List.Item>
+                            <List.Item>Position of machines in the flow</List.Item>
+                            <List.Item>Position of internal networks in the flow</List.Item>
                         </List>
                     </Stack>
                 }
                 textInputProps={{
                     withAsterisk: true,
-                    placeholder: "Wpisz nazwę migawki",
-                    description: "Uwaga - nazwa migawki nie podlega zmianie"
+                    placeholder: 'Enter the snapshot\'s name',
+                    description: 'Note: The name cannot be changed.'
                 }}
             />
             <Button

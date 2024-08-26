@@ -55,7 +55,7 @@ const createMachineNode = (machine, position) => ({
         label: `${machine.group} ${machine.group_member_id}`,
         icon: (
             machine.group === 'desktop' ? IconDeviceDesktop :
-                machine.group === 'serwer' ? IconServer2 : null
+                machine.group === 'server' ? IconServer2 : null
         ),
     },
 })
@@ -161,7 +161,7 @@ function Flow({ }) {
                 }, {});
             }
             catch (error) {
-                scriptError(error, { title: `Wystąpił błąd w algorytmie konfiguracji "${preset.name}"`, id: 'preset-error' });
+                scriptError(error, { title: `Error occured while executing the configuration preset "${preset.name}"`, id: 'preset-error' });
                 return {};
             }
         }
@@ -198,9 +198,8 @@ function Flow({ }) {
                 })
             }
             catch (error) {
-                scriptError(error, { title: `Wystąpił błąd w algorytmie konfiguracji "${preset.name}"`, id: 'preset-error' })
+                scriptError(error, { title: `Error occured while executing the configuration preset "${preset.name}"`, id: 'preset-error' });
             }
-
         })
 
         safeObjectValues(intnets).forEach(intnet => {
@@ -275,8 +274,8 @@ function Flow({ }) {
                 notifications.show({
                     id: 'flow-init',
                     color: 'suse-green',
-                    title: 'Załadowano konfigurację sieciową',
-                    message: `Pomyślnie utworzono reprezentację obecnej konfiguracji sieci wewnętrznych i maszyn.`
+                    title: 'Network configuration loaded',
+                    message: `Successfully created a representation of the current configuration of present internal networks and machines.`
                 })
                 setIsDirty(null);
             })
@@ -314,8 +313,8 @@ function Flow({ }) {
         if(stateResponse) notifications.show({
             id: 'flow-init',
             color: 'suse-green',
-            title: 'Zapisano obecny stan panelu',
-            message: `Pomyślnie zapisano pozycje maszyn na planszy.`
+            title: 'Saved current panel state',
+            message: `Current positions of the nodes in the flow have been successfully saved.`
         })
 
         const networkConfigResponse = putIntnetConfiguration();
@@ -323,8 +322,8 @@ function Flow({ }) {
         if(networkConfigResponse) notifications.show({
             id: 'flow-init',
             color: 'suse-green',
-            title: 'Zastosowano konfigurację sieciową',
-            message: `Pomyślnie zastosowano konfigurację sieci w maszynach wirtualnych.`
+            title: 'Saved intnet configuration',
+            message: `Network configuration of the intnets and virtual machines has been successfully updated and saved.`
         })
 
         setIsDirty(false);

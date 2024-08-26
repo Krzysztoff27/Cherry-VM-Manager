@@ -14,7 +14,7 @@ export default function ApplyButton({applyNetworkConfig = () => {}, isDirty}) {
             w={isDirty ? 100 : 200}
             p={0}
         >
-            {isDirty === null ? 'Brak wykrytych zmian' : isDirty ? 'Zastosuj' : 'Zastosowano zmiany!'}
+            {isDirty === null ? 'No changes detected' : isDirty ? 'Save' : 'Changes saved!'}
         </Button>
     )
 }

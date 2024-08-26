@@ -12,11 +12,11 @@ export default function ConfirmationModal({modalProps, opened, message, title, c
             <Stack>
                 <Title order={4}>{title}</Title>
                 <Text size='sm'>
-                    {message ?? 'Wykonanie tej operacji odrzuci wszystkie dotychczasowe zmiany. Czy napewno chcesz kontynuować?'}
+                    {message ?? 'Performing this action will discard all current changes. Are you sure you want to continue?'}
                 </Text>
                 <SimpleGrid cols={2} grow='true'>
-                    <Button onClick={onCancel} variant='light' color='gray' radius='sm' data-autofocus {...cancelButtonProps}>Powróć</Button>
-                    <Button onClick={onConfirm} variant='light' color="gray" radius='sm' {...confirmButtonProps}>Potwierdź</Button>
+                    <Button onClick={onCancel} variant='light' color='gray' radius='sm' data-autofocus {...cancelButtonProps}>Cancel</Button>
+                    <Button onClick={onConfirm} variant='light' color="gray" radius='sm' {...confirmButtonProps}>Confirm</Button>
                 </SimpleGrid>
             </Stack>
         </Modal>

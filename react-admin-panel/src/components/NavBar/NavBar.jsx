@@ -5,10 +5,10 @@ import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 
 const categories = [
-    {icon: IconHome, label: 'Strona Główna', link: '/'},
-    {icon: IconTerminal2, label: 'Maszyny Wirtualne', link: '/virtual-machines'},
-    {icon: IconDeviceDesktop, label: 'Komputery', link: '/desktops'},
-    {icon: IconTopologyStar, label: 'Panel Sieci', link: '/network-panel'},
+    {icon: IconHome, label: 'Home page', link: '/'},
+    {icon: IconTerminal2, label: 'Virtual Machines', link: '/virtual-machines'},
+    {icon: IconDeviceDesktop, label: 'Desktops', link: '/desktops'},
+    {icon: IconTopologyStar, label: 'Network Panel', link: '/network-panel'},
 ]
 
 function IconButton({label = null, icon, active, ...props}) {
@@ -66,7 +66,7 @@ export default function NavBar({}) {
                 {mainLinks}
             </Stack>
             <Stack>
-                <IconButton onClick={logout} label='Wyloguj się' icon={<IconLogout  stroke={1.5} />}/>
+                <IconButton onClick={logout} label='Log out' icon={<IconLogout  stroke={1.5} />}/>
             </Stack>
         </Stack>
     )

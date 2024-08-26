@@ -10,9 +10,9 @@ export default function TextInputModal({modalProps, opened, title, content = '',
         },
         validate: {
             input: (value) => {
-                if(!value || value?.length < 3) return 'Nazwa migawki musi mieć przynajmniej 3 znaki.'
-                if(value.length > 16) return 'Nazwa migawki nie może mieć więcej niż 16 znaków.'
-                if(!(/^[a-zA-Z0-9][\w-]*$/.test(value))) return 'Nazwa migawki może składać się jedynie z liter, cyfr, myślników i znaków podkreślenia oraz musi zaczynać się literą lub cyfrą.'
+                if(!value || value?.length < 3) return 'Snapshot name must be at least 3 characters long.'
+                if(value.length > 16) return 'Snapshot name must not be longer than 16 characters.'
+                if(!(/^[a-zA-Z0-9][\w\-\ ]*$/.test(value))) return 'Snapshot name can only contain alphanumeric characters, spaces, hyphens and underlines and must start with the alphanumeric character.'
             }
         }
     })
@@ -40,7 +40,7 @@ export default function TextInputModal({modalProps, opened, title, content = '',
                         radius='sm' 
                         data-autofocus
                     >
-                        Potwierdź
+                        Confirm
                     </Button>
                 </Stack>
             </form>
