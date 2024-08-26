@@ -2,8 +2,6 @@
 import useFetch from '../../hooks/useFetch.jsx';
 import useAuth from '../../hooks/useAuth.jsx';
 import { Navigate, Outlet } from 'react-router-dom';
-import { LoadingOverlay } from '@mantine/core';
-import Loading from '../Loading/Loading.jsx';
 
 export const Protected = () => {
     const { authOptions } = useAuth();

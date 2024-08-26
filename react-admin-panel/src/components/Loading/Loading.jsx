@@ -1,4 +1,4 @@
-import { Center, Loader, Stack, Text, Title } from '@mantine/core'
+import { Loader, Stack, Title } from '@mantine/core'
 import React from 'react'
 
 export default function Loading() {
