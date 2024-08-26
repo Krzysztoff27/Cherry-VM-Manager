@@ -15,8 +15,8 @@ export default function RestoreButton({resetFlow = () => {}, isDirty}) {
         .then(() => notifications.show({
             id: 'flow-reset',
             color: 'suse-green',
-            title: 'Przywrócono konfigurację sieciową',
-            message: `Pomyślnie przywrócono obecny stan konfiguracji sieciowej maszyn.`
+            title: 'Network configuration restored',
+            message: `The network configuration was successfuly restored.`
         }))
     }
     
@@ -26,8 +26,8 @@ export default function RestoreButton({resetFlow = () => {}, isDirty}) {
                 opened={opened} 
                 onCancel={onCancel}
                 onConfirm={onConfirm}
-                title='Potwierdzenie operacji'
-                message='Wykonanie tej operacji odrzuci wszystkie dotychczasowe zmiany i przywróci obecnie działającą konfigurację. Czy napewno chcesz kontynuować?'
+                title='Confirm restoration'
+                message='Performing this action will discard all current changes and revert to the currently active configuration. Are you sure you want to continue?'
                 confirmButtonProps={{color: 'red.7'}}
             />
             <Button
@@ -37,7 +37,7 @@ export default function RestoreButton({resetFlow = () => {}, isDirty}) {
                 variant='default'
                 w={100}
             >
-                Odrzuć
+                Discard
             </Button>
         </>
     )

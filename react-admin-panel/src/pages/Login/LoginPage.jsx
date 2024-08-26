@@ -33,30 +33,30 @@ export default function LoginPage() {
             <Fieldset w='400'>
                 <form onSubmit={form.onSubmit(authenticate)}>
                     <Text size="xl" fw={500}>
-                        Wiśniowy Panel Kontrolny
+                        Cherry Admin Panel
                     </Text>
                     <Space h="sm" />
-                    <Divider label="Zaloguj się dopuszczonym kontem serwerowym" />
+                    <Divider label="Log in with an authorized server account" />
                     <Space h="sm" />
                     <TextInput
-                        label="Nazwa użytkownika"
+                        label="Username"
                         description=" "
-                        placeholder="Wpisz login"
+                        placeholder="Enter your username"
                         withAsterisk
                         key={form.key('username')}
                         {...form.getInputProps('username')}
                     />
                     <Space h="sm" />
                     <PasswordInput
-                        label="Hasło"
+                        label="Password"
                         description=" "
-                        placeholder="Wpisz hasło"
+                        placeholder="Enter your password"
                         withAsterisk
                         key={form.key('password')}
                         {...form.getInputProps('password')}
                     />
                     <Group justify="flex-end" mt="md">
-                        <Button type="submit">Zaloguj się</Button>
+                        <Button type="submit">Sign in</Button>
                     </Group>
                 </form>
             </Fieldset>

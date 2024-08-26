@@ -64,7 +64,7 @@ export default function MachineCard({machine, to, navigate}){
                 mt="md" 
                 radius="md" 
             >
-                Połącz się z tą maszyną
+                Connect to this machine
             </Button>
         </Card>
         

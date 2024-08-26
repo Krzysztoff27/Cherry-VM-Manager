@@ -11,7 +11,7 @@ export default function CardGroup({children, group}){
         <Stack ref={ref}>
             <Button 
                 onClick={toggle} 
-                aria-label={`${opened ? 'Zwiń' : 'Rozwiń'} grupę maszyn wirtualnych.`}
+                aria-label={`${opened ? 'Collapse' : 'Expand'} the virtual machine group.`}
                 variant='default' 
                 fullWidth
                 justify='left'

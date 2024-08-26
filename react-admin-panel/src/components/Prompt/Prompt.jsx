@@ -14,14 +14,12 @@ export default function Prompt({when}) {
                         blur: 3,
                     }}
                 >
-                    <Stack>
-                        <Title order={5}>Potwierdzenie opuszczenia strony</Title>
-                        <Text size="sm">
-                            Masz niezapisane zmiany, które zostaną utracone, jeśli opuścisz tę stronę. Czy na pewno chcesz kontynuować?
-                        </Text>
-                        <SimpleGrid cols={2} grow='true'>
-                            <Button onClick={onCancel} variant='light' color='gray' radius='sm' data-autofocus>Powróć</Button>
-                            <Button onClick={onConfirm} variant='light' color="red.9" radius='sm'>Opuść stronę</Button>
+                    <Stack gap='xs'>
+                        <Text size='xl' fw={600}>You're leaving the page</Text>
+                        <Text size="sm">You have unsaved changes that will be permanently lost if you leave this page. Are you sure you want to continue?</Text>
+                        <SimpleGrid mt='xs' cols={2} grow='true'>
+                            <Button onClick={onCancel} variant='light' color='gray' radius='sm' data-autofocus>Return</Button>
+                            <Button onClick={onConfirm} variant='light' color="red.9" radius='sm'>Leave page</Button>
                         </SimpleGrid>
                     </Stack>
                 </Modal>

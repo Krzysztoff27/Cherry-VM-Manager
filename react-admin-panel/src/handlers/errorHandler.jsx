@@ -34,7 +34,7 @@ export default class ErrorHandler {
                 this.showErrorNotification({
                     ...options,
                     title: 'Niepoprawne żądanie',
-                    message: 'Serwer nie był w stanie spełnić żądania'
+                    message: 'server nie był w stanie spełnić żądania'
                 })
             case 401:
                 if(token) setToken(null);

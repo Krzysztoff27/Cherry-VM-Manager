@@ -44,10 +44,10 @@ export default function MachinePage() {
                             <Group align="center">
                                 {
                                     machine.group === 'desktop' ? state.active ? <IconDeviceDesktop size='40'/> : <IconDeviceDesktopOff size='40'/> :
-                                    machine.group === 'serwer'  ? state.active ? <IconServer size='40'/> : <IconServerOff size='40'/> : null
+                                    machine.group === 'server'  ? state.active ? <IconServer size='40'/> : <IconServerOff size='40'/> : null
                                 }
                                 <Title order={1} align="center">
-                                    Maszyna {machine.id}
+                                    Machine {machine.id}
                                 </Title>
                             </Group>
                             
@@ -56,15 +56,15 @@ export default function MachinePage() {
                         <Table fz='lg' withRowBorders={false} striped>
                             <Table.Tbody>
                                 <Table.Tr>
-                                    <Table.Td ta='right' fw={500} w='12.5%'>Grupa: </Table.Td>
+                                    <Table.Td ta='right' fw={500} w='12.5%'>Type: </Table.Td>
                                     <Table.Td tt="capitalize">{`${machine.group} (${machine.group_member_id})`}</Table.Td>
                                 </Table.Tr>
                                 <Table.Tr>
-                                    <Table.Td ta='right' fw={500}>Domena: </Table.Td>
+                                    <Table.Td ta='right' fw={500}>Domain: </Table.Td>
                                     <Table.Td><a href={`http://${machine.domain}`} target='_blank'>{machine.domain}</a></Table.Td>
                                 </Table.Tr>
                                 <Table.Tr>
-                                    <Table.Td ta='right' fw={500}>Adres: </Table.Td>
+                                    <Table.Td ta='right' fw={500}>Adress: </Table.Td>
                                     <Table.Td><a href={`http://172.16.100.1:${machine.port}`} target='_blank'>172.16.100.1:{machine.port}</a></Table.Td>
                                 </Table.Tr>
                             </Table.Tbody>
@@ -75,7 +75,7 @@ export default function MachinePage() {
             <Grid.Col span={6}>
                 <Paper p='md' withBorder>
                     <Stack>
-                        <Title order={3}>Stan maszyny</Title>
+                        <Title order={3}>Machine state</Title>
                         <Paper radius='md' withBorder>
                             <Table>
                                 <Table.Tbody>

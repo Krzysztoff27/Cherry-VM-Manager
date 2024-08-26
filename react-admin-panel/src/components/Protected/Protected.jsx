@@ -6,18 +6,17 @@ import { Navigate, Outlet } from 'react-router-dom';
 export const Protected = () => {
     const { authOptions } = useAuth();
     const { loading, data: user } = useFetch('user', authOptions);
-    
-    if(loading) return;
 
-    return user ? <Outlet/> : <Navigate to="/login"/>;
+    if (loading) return;
+
+    return user ? <Outlet /> : <Navigate to="/login" />;
 }
 
 export const ReverseProtected = () => {
     const { authOptions, token } = useAuth();
     const { loading, error, data: user } = useFetch('user', authOptions);
-    
-    if(loading) return;
-    return error || !user || !token ? <Outlet/> : <Navigate to="/virtual-machines"/>
+
+    return error || !user || !token ? <Outlet /> : <Navigate to="/virtual-machines" />
 }
 
-export default {Protected, ReverseProtected};
+export default { Protected, ReverseProtected };
