@@ -2,4 +2,3 @@ This script will perform a semi-automatic installation of Cherry VM Manager.
 During the installation you will be asked to select certain options regarding configuration.
 
 It is not recommended to run the installation without reading the documentation first!
-

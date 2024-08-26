@@ -1,0 +1,6 @@
+
+The removal script has finished its job. All statuses should be returned as OK.
+
+If any of the tasks failed to run succesfully, their status was returned as ERR.
+In that case, components of the CVMM stack that were not removed should be deleted manually. 
+
