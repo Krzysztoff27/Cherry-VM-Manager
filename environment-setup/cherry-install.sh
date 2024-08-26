@@ -6,7 +6,7 @@
 
 #Test to ensure that script is executed with root priviliges
 if ((EUID != 0)); then
-    printf 'Insufficient priviliges! Please run the script with root rights.'
+    printf '[!] Insufficient priviliges! Please run the script with root rights.'
     exit
 fi
 
@@ -20,14 +20,17 @@ LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).log"
 readonly LOGS_FILE
 readonly ZYPPER_PACKAGES='./dependencies/zypper_packages.txt'
 readonly ZYPPER_PATTERNS='./dependencies/zypper_patterns.txt'
-readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt'
-readonly DIR_DOCKER='/opt/cherry-vm-manager/docker'
+readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt/'
+readonly DIR_DOCKER='/opt/cherry-vm-manager/docker/'
 
 #Color definitions for distinguishable status codes
 readonly GREEN='\033[0;32m'
 readonly RED='\033[0;31m'
 readonly YELLOW='\033[0;33m'
 readonly NC='\033[0m'
+
+#URI for virsh operations performed on the system session of qemu by CherryWorker
+readonly VIRSH_DEFAULT_CONNECTION_URI='qemu:///system'
 
 ###############################
 #      utility functions
@@ -45,7 +48,7 @@ set -eE
 #Error handler to call on ERR occurence and print an error message
 err_handler(){
     printf "${RED}ERR${NC}"
-    printf "\n${RED}[!]${NC} An error occured!\nSee the $LOGS_FILE for specific information.\n"
+    printf "\n[!] ${RED}An error occured!${NC}\nSee the $LOGS_FILE for specific information.\n"
 }
 trap 'err_handler' ERR
 
@@ -75,15 +78,32 @@ read_file(){
 #   installation functions
 ###############################
 
+disable_network_manager(){
+    if systemctl -q is-active NetworkManager; then
+        printf '\n[!] NetworkManager is currently managing network connections on the host OS.'
+        printf '\n[!] In order to install Cherry VM Manager switch to wicked and run the cherry-install.sh script again.\n'
+        exit 1
+    else
+        if systemctl -q is-active wicked; then
+        printf '\n[i] Wicked is currently managing network connections on the host OS.'
+        printf '\n[i] Settings have not been modified.\n'
+        else
+            printf '\n[!] Unrecognized network manager on the host OS.'
+            printf '\n[!] In order to install Cherry VM Manager switch to wicked and run the cherry-install.sh script again.\n'
+            exit 1
+        fi
+    fi
+}
+
 install_zypper_packages(){
     read_file "$ZYPPER_PACKAGES"
-    if systemctl list-unit-files | grep -q '^packagekit\.service'; then
+    if systemctl -q is-active packagekit; then
         printf '\n[i] Disabling PackageKit to prevent Zypper errors: '
         systemctl -q stop packagekit
         systemctl -q disable packagekit
         ok_handler
     else
-        printf '\n[i] PackageKit not detected. Settings have not been modified.'
+        printf '\n[i] PackageKit inactive or not present. Settings have not been modified.'
     fi
     printf '\n[i] Refreshing zypper repositories: '
     zypper -n -q refresh > "$LOGS_FILE"
@@ -116,7 +136,7 @@ create_user(){
     chmod 700 /home/CherryWorker
     ok_handler
     printf '[i] Adding CherryWorker to system groups: '
-    usermod -a -G docker,libvirt CherryWorker
+    usermod -a -G docker,libvirt,kvm CherryWorker
     ok_handler
 }
 
@@ -160,7 +180,7 @@ configure_daemon_kvm(){
 }
 
 configure_daemon_libvirt(){
-    printf '\n[i] Enabling libvirt monolithic daemon to run on startup: '
+    printf '[i] Enabling libvirt monolithic daemon to run on startup: '
     systemctl -q enable libvirtd.service
     ok_handler
     printf '[i] Starting libvirt monolithic daemon: '
@@ -187,28 +207,28 @@ configure_daemon_docker(){
 
 configure_container_guacamole(){
     printf '\n[i] Creating initdb.sql SQL script for Apache Guacamole PostgreSQL db: '
-    runuser -u CherryWorker -- docker run -q --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > "$DIR_DOCKER/apache-guacamole/initdb/01-initdb.sql"
+    runuser -u CherryWorker -- docker run -q --rm guacamole/guacamole /opt/guacamole/bin/initdb.sh --postgresql > "${DIR_DOCKER}apache-guacamole/initdb/01-initdb.sql"
     ok_handler
     printf '[i] Starting apache-guacamole docker stack: '
-    runuser -u CherryWorker -- docker-compose -f "$DIR_DOCKER/apache-guacamole/docker-compose.yml" up -d > "$LOGS_FILE"
+    runuser -u CherryWorker -- docker-compose -f "${DIR_DOCKER}apache-guacamole/docker-compose.yml" up -d > "$LOGS_FILE"
     ok_handler
 }
 
 create_vm_networks(){
-    printf '\n[i] Disabling libvirt default network stack: '
-    virsh net-undefine --network default > "$LOGS_FILE"
-    virsh net-destroy --network default > "$LOGS_FILE"
+    printf '\n[i] Disabling libvirt default network stack on host OS: '
+    runuser -u CherryWorker -- virsh net-undefine --network default > "$LOGS_FILE"
+    runuser -u CherryWorker -- virsh net-destroy --network default > "$LOGS_FILE"
     ok_handler
     printf '\n[i] Creating a default NAT network for VMs and making it persistent: '
-    virsh net-define --file /opt/libvirt/cherry-vm-manager/networks/isolated-nat.xml  > "$LOGS_FILE"
-    virsh net-start --network isolated-nat  > "$LOGS_FILE"
-    virsh net-autostart --network isolated-nat > "$LOGS_FILE"
+    runuser -u CherryWorker -- virsh net-define --file "${DIR_LIBVIRT}networks/isolated-nat.xml" > "$LOGS_FILE"
+    runuser -u CherryWorker -- virsh net-start --network isolated-nat > "$LOGS_FILE"
+    runuser -u CherryWorker -- virsh net-autostart --network isolated-nat > "$LOGS_FILE"
     ok_handler 
 }
 
 create_vm_firewall(){
     printf '\n[i] Creating network filter to restrict communication between VMs on a shared NAT network: '
-    virsh nwfilter-define --file /opt/libvirt/cherry-vm-manager/filters/isolated-nat-filter.xml  > "$LOGS_FILE"
+    runuser -u CherryWorker -- virsh nwfilter-define --file "${DIR_LIBVIRT}filters/isolated-nat-filter.xml" > "$LOGS_FILE"
     ok_handler
 }
 
@@ -238,13 +258,14 @@ print_finish_notice(){
 #it will be able to continue from where it stopped previously - TO BE IMPLEMENTED
 installation(){
     print_begin_notice
+    disable_network_manager
     #install_zypper_packages
     #install_zypper_patterns
     create_user
     configure_daemon_kvm
     configure_daemon_libvirt
-    configure_daemon_docker
-    configure_container_guacamole
+    #configure_daemon_docker
+    #configure_container_guacamole
     create_vm_firewall
     create_vm_networks
     print_finish_notice

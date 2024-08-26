@@ -6,7 +6,7 @@
 
 #Test to ensure that script is executed with root priviliges
 if ((EUID != 0)); then
-    printf 'Insufficient priviliges! Please run the script with root rights.'
+    printf '[!] Insufficient priviliges! Please run the script with root rights.'
     exit
 fi
 
@@ -20,8 +20,8 @@ LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).log"
 readonly LOGS_FILE
 readonly ZYPPER_PACKAGES='./dependencies/zypper_packages.txt'
 readonly ZYPPER_PATTERNS='./dependencies/zypper_patterns.txt'
-readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt'
-readonly DIR_DOCKER='/opt/cherry-vm-manager/docker'
+readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt/'
+readonly DIR_DOCKER='/opt/cherry-vm-manager/docker/'
 
 #Color definitions for distinguishable status codes
 readonly GREEN='\033[0;32m'
@@ -157,6 +157,10 @@ remove_vm_firewall(){
     printf '\n[i] Removing network filter to restrict inter VM communication: '
     virsh nwfilter-undefine isolated-nat-filter > "$LOGS_FILE"
     ok_handler
+}
+
+final_cleanup(){
+    rm  --interactive=never -r -f '/opt/cherry-vm-manager/'
 }
 
 print_begin_notice(){
