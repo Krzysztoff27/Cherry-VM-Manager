@@ -44,8 +44,8 @@ async def get_all_vms_network_data(
         1: MachineNetworkData(id=1, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
         2: MachineNetworkData(id=2, group='desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
         # ...
-        17: MachineNetworkData(id=17, group='serwer',  group_member_id=1, port=1501, domain='serwer1.wisniowa.oedu.pl'),
-        18: MachineNetworkData(id=18, group='serwer',  group_member_id=2, port=1502, domain='serwer2.wisniowa.oedu.pl'),
+        17: MachineNetworkData(id=17, group='server',  group_member_id=1, port=1501, domain='server1.wisniowa.oedu.pl'),
+        18: MachineNetworkData(id=18, group='server',  group_member_id=2, port=1502, domain='server2.wisniowa.oedu.pl'),
         # ...
     }
     
@@ -62,8 +62,8 @@ async def get_all_vms_state(
         1: MachineState(id=1, group='desktop', active=True, group_member_id=1, cpu=42, ram_used=3462, ram_max=4096),
         2: MachineState(id=2, group='desktop', active=False, group_member_id=2),
         # ...
-        17: MachineState(id=17, group='serwer',  active=False, group_member_id=1),
-        18: MachineState(id=18, group='serwer',  active=True, group_member_id=2, cpu=97, ram_used=1094, ram_max=4096),
+        17: MachineState(id=17, group='server',  active=False, group_member_id=1),
+        18: MachineState(id=18, group='server',  active=True, group_member_id=2, cpu=97, ram_used=1094, ram_max=4096),
         # ...
     }
 

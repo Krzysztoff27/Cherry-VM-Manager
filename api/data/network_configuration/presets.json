@@ -1,7 +1,7 @@
 [
     {
         "id": 0, 
-        "name": "DesktopX - SerwerX",
+        "name": "DesktopX - serverX",
         "data": {
             "getIntnet": "group_member_id",
             "getPosX": "group_member_id * 100",
@@ -26,7 +26,7 @@
         "id": 2,
         "name": "Sieci Typu Maszyn",
         "data" : {
-            "getIntnet": "group === 'desktop' ? 1 : group === 'serwer' ? 2 : 3",
+            "getIntnet": "group === 'desktop' ? 1 : group === 'server' ? 2 : 3",
             "getPosX": "group_member_id * 250",
             "getPosY": "group === 'desktop' ? 0 : 500"
         }
