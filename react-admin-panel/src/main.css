@@ -4,117 +4,231 @@ a {
 }
 
 /* Poppins */
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 900;
-    src: url('/fonts/Poppins/Poppins-Black.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 900;
+        src: url('/fonts/Poppins/Poppins-Black.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 900;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-BlackItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 900;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-BlackItalic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: bold;
-    src: url('/fonts/Poppins/Poppins-Bold.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: bold;
+        src: url('/fonts/Poppins/Poppins-Bold.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: bold;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-BoldItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: bold;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-BoldItalic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 800;
-    src: url('/fonts/Poppins/Poppins-ExtraBold.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 800;
+        src: url('/fonts/Poppins/Poppins-ExtraBold.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 800;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-ExtraBoldItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 800;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-ExtraBoldItalic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 200;
-    src: url('/fonts/Poppins/Poppins-ExtraLight.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 200;
+        src: url('/fonts/Poppins/Poppins-ExtraLight.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 200;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-ExtraLightItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 200;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-ExtraLightItalic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-Italic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-Italic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 300;
-    src: url('/fonts/Poppins/Poppins-Light.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 300;
+        src: url('/fonts/Poppins/Poppins-Light.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 300;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-LightItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 300;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-LightItalic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 500;
-    src: url('/fonts/Poppins/Poppins-Medium.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 500;
+        src: url('/fonts/Poppins/Poppins-Medium.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 500;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-MediumItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 500;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-MediumItalic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    src: url('/fonts/Poppins/Poppins-Regular.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        src: url('/fonts/Poppins/Poppins-Regular.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 600;
-    src: url('/fonts/Poppins/Poppins-SemiBold.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 600;
+        src: url('/fonts/Poppins/Poppins-SemiBold.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 600;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-SemiBoldItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 600;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-SemiBoldItalic.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 100;
-    src: url('/fonts/Poppins/Poppins-Thin.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 100;
+        src: url('/fonts/Poppins/Poppins-Thin.otf') format('opentype');
+    }
 
-@font-face {
-    font-family: 'Poppins';
-    font-weight: 100;
-    font-style: italic;
-    src: url('/fonts/Poppins/Poppins-ThinItalic.otf') format('opentype');
-}
+    @font-face {
+        font-family: 'Poppins';
+        font-weight: 100;
+        font-style: italic;
+        src: url('/fonts/Poppins/Poppins-ThinItalic.otf') format('opentype');
+    }
+
+/* Aileron */
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-Black.otf') format('opentype');
+        font-weight: 900;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-BlackItalic.otf') format('opentype');
+        font-weight: 900;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-Bold.otf') format('opentype');
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-BoldItalic.otf') format('opentype');
+        font-weight: 700;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-Heavy.otf') format('opentype');
+        font-weight: 800;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-HeavyItalic.otf') format('opentype');
+        font-weight: 800;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-Italic.otf') format('opentype');
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-Light.otf') format('opentype');
+        font-weight: 300;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-LightItalic.otf') format('opentype');
+        font-weight: 300;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-Regular.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-SemiBold.otf') format('opentype');
+        font-weight: 600;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-SemiBoldItalic.otf') format('opentype');
+        font-weight: 600;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-Thin.otf') format('opentype');
+        font-weight: 100;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-ThinItalic.otf') format('opentype');
+        font-weight: 100;
+        font-style: italic;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-UltraLight.otf') format('opentype');
+        font-weight: 200;
+        font-style: normal;
+    }
+
+    @font-face {
+        font-family: 'Aileron';
+        src: url('/fonts/Aileron/Aileron-UltraLightItalic.otf') format('opentype');
+        font-weight: 200;
+        font-style: italic;
+    }

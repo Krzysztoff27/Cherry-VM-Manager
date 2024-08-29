@@ -1,0 +1,35 @@
+.background {
+    position: fixed;
+    width: 100%;
+    height: 90%;
+    z-index: -1;
+
+    font-family: Aileron;
+    font-weight: 1000;
+    font-size: 35rem;
+    color: var(--mantine-color-dark-6);
+}
+
+.center {
+    display: flex;
+    flex-direction: column;
+    padding-top: 17.5%;
+    
+    justify-content: center;
+    align-items: center;
+    gap: var(--mantine-spacing-xl);
+}
+
+.title {
+    font-size: 3rem;
+    margin: 0;
+    margin-bottom: -1rem;
+}
+
+.message{
+    font-size: var(--mantine-font-size-xl);
+    text-align: center;
+    text-wrap: balance;
+    width: 40%;
+    color: var(--mantine-color-dimmed	)
+}

@@ -7,8 +7,7 @@ const handleFetch = async (URL, options = {}, errorHandler) => {
     }
 
     const response = await fetch(URL, fetchOptions)
-        .catch(_ => 
-            new Response(JSON.stringify({detail: 'No response from the server'}), {
+        .catch(e => new Response(JSON.stringify({detail: 'No response from the server'}), {
                 status: 503,
                 headers: {'Content-Type': 'text/plain'},
             })

@@ -1,12 +1,11 @@
-import { Button, Divider, Group, Paper, Stack, Title } from "@mantine/core";
+import { Button, Group, Paper, Stack, Title } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 import CardGroup from "./components/CardGroup/CardGroup.jsx";
 import MachineCard from "./components/MachineCard/MachineCard.jsx";
 import useAuth from "../../hooks/useAuth.jsx";
 import useFetch from "../../hooks/useFetch.jsx";
 import useErrorHandler from "../../hooks/useErrorHandler.jsx";
-import { IconLayoutBottombarFilled, IconLayoutGridFilled, IconLayoutListFilled, IconRelationManyToManyFilled } from "@tabler/icons-react";
-import { useState } from "react";
+import { IconLayoutGridFilled, IconRelationManyToManyFilled } from "@tabler/icons-react";
 import { useLocalStorage } from "@mantine/hooks";
 
 const mergeObjectPropertiesToArray = (a, b) =>
@@ -15,16 +14,13 @@ const mergeObjectPropertiesToArray = (a, b) =>
 export default function MachineList() {
     const [layout, setLayout] = useLocalStorage({key: `machineListLayout`, defaultValue: 'grid'});
     const {authOptions} = useAuth();
-    const errorHandler = useErrorHandler();
+    const {requestResponseError} = useErrorHandler();
     const navigate = useNavigate();
     const {loading: networkDataLoading, error: networkDataError, data: networkData} = useFetch('/vm/all/networkdata', authOptions)
     const {loading: stateDataLoading, error: stateDataError, data: stateData} = useFetch('/vm/all/state', authOptions)
 
     if(networkDataLoading || stateDataLoading) return;
-    if(networkDataError || stateDataError) {
-        errorHandler.requestResponseError(networkDataError || stateDataError);
-        return;
-    }
+    if(networkDataError || stateDataError) throw (networkDataError || stateDataError);
 
     const virtualMachines = mergeObjectPropertiesToArray(networkData, stateData);
 

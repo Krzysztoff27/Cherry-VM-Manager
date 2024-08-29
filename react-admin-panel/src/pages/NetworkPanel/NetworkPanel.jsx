@@ -339,10 +339,7 @@ function Flow({ }) {
     useEffect(initFlow, [machines])
 
     if (machinesLoading) return;
-    if (machinesError) {
-        requestResponseError(machinesError);
-        return;
-    }
+    if (machinesError) throw machinesError;
 
     return (
         <>

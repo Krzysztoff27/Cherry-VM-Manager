@@ -1,5 +1,5 @@
 import { getPath } from "../api/api";
-import handleFetch from "../api/handleFetch";
+import handleFetch from "../handlers/handleFetch";
 import useErrorHandler from "./useErrorHandler";
 
 export const useApi = () => {

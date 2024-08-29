@@ -1,9 +1,17 @@
 import { notifications } from "@mantine/notifications";
 import { IconX } from "@tabler/icons-react";
 import useAuth from "../hooks/useAuth";
+import errors from "../assets/data/responseErrors.json";
 
 const useErrorHandler = (defaultOptions = {}) => {
     const { token, setToken } = useAuth();
+
+    const getError = (code = 'default', detail = '') => {
+        let error = errors[code] ?? errors['default'];
+        if(error.variants && detail) error = error.variants.find(variant => variant.message === detail) || error;
+
+        return error;
+    }
 
     const showErrorNotification = (options) => {
         const notificationOptions = {
@@ -29,61 +37,16 @@ const useErrorHandler = (defaultOptions = {}) => {
         })
     }
 
-    const requestResponseError = async (response = new Response(), data = {}) => {
-        const options = { id: response?.status };
+    const requestResponseError = async (response = new Response(), body = {}) => {
+        const code = response?.status;
+        const error = getError(code, body.detail);
+        const message = error.messageOverride ? error.message : body.detail || error.message;
 
-        switch (response?.status) {
-            case 400:
-                showErrorNotification({
-                    ...options,
-                    title: 'Improper request',
-                    message: 'API service denied the request due to client error.',
-                });
-                break;
-            case 401:
-                if (token) setToken(null);
-                switch (data?.detail) {
-                    case 'Incorrect username or password':
-                        showErrorNotification({
-                            ...options,
-                            title: 'Login failed',
-                            message: data?.detail,
-                        });
-                        break;
-                    default:
-                        showErrorNotification({
-                            ...options,
-                            title: 'Session expired',
-                            message: 'Please log in to the panel again.',
-                        });
-                }
-                break;
-            case 409:
-                switch (data?.detail) {
-                    case 'Snapshot with this name already exists':
-                        showErrorNotification({
-                            ...options,
-                            title: 'Nie udało się stworzyć migawki',
-                            message: 'Migawka o tej nazwie już istnieje.'
-                        })
-                }
-            case 503:
-                showErrorNotification({
-                    ...options,
-                    title: 'Error occured',
-                    message: 'API service is not responding.',
-                });
-                break;
-
-            default:
-                showErrorNotification({
-                    ...options,
-                    title: 'Error occured',
-                    message: data?.detail || 'Unknown error code.',
-                });
-                
-                console.error('Unhandled error response:', response, data);
-        }
+        showErrorNotification({
+            id: `${code}-${Date.now()}`,
+            title: error.title,
+            message: message,
+        })
     };
 
     return { scriptError, requestResponseError };

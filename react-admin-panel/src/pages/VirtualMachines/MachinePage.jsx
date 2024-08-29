@@ -30,10 +30,7 @@ export default function MachinePage() {
     }, []);
 
     if (loading) return;
-    if (error){
-        errorHandler.handleErrorResponse(error); 
-        return;
-    }
+    if (error) throw error;
 
     return (
         <Grid h='100%'>
