@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { getPath } from '../api/api.jsx';
+import useApi from "./useApi";
 
 const useFetch = (path, options = undefined) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+    const {getPath} = useApi();
+
     const fetchURL = getPath(path);
 
     useEffect(() => {

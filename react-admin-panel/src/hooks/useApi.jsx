@@ -1,9 +1,12 @@
-import { getPath } from "../api/api";
 import handleFetch from "../handlers/handleFetch";
 import useErrorHandler from "./useErrorHandler";
 
 export const useApi = () => {
     const errorHandler = useErrorHandler();
+    const API_URL = import.meta.env.VITE_API_BASE_URL;
+
+    const validPath = (path = '') => path.startsWith('/') ? path : `/${path}`;
+    const getPath = (path) => API_URL ? `${API_URL}${validPath(path)}` : undefined;
 
     const get = async (path, options = {}) => 
         await handleFetch(getPath(path), options, errorHandler);
@@ -22,7 +25,7 @@ export const useApi = () => {
                 body: body,
             }, errorHandler);
 
-    return { get, post, put };
+    return { getPath, get, post, put };
 };
 
 export default useApi;
