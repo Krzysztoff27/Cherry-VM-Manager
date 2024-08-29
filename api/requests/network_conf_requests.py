@@ -102,11 +102,11 @@ def isIndexInList(_list, index):
 
 def validateIndexInList(_list, index, element_name: str = 'element'):
      if not isIndexInList(_list, index):
-        raise HTTPException(status_code=404, detail=f"{element_name} not found")
+        raise HTTPException(status_code=404, detail=f"{element_name} not found.")
 
 def validateJSONList(_list, list_name: str = 'list'):
     if not isinstance(_list, list): 
-        raise HTTPException(status_code=404, detail=f"List \"{list_name}\" is empty or undefined")
+        raise HTTPException(status_code=404, detail=f"List \"{list_name}\" is empty or undefined.")
 
 ###############################
 # configuration requests
