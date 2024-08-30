@@ -7,13 +7,11 @@ import StateBadge from "../../components/StateBadge/StateBadge";
 import useAuth from "../../hooks/useAuth";
 import useFetch from "../../hooks/useFetch";
 import useApi from "../../hooks/useApi";
-import useErrorHandler from "../../hooks/useErrorHandler";
 
 export default function MachinePage() {
     const {get} = useApi();
     const {authOptions} = useAuth();
     const {id} = useParams();
-    const errorHandler = useErrorHandler();
 
     const {loading, error, data: machine} = useFetch(`/vm/${id}/networkdata`, authOptions);
     const [state, setState] = useState({loading: true});

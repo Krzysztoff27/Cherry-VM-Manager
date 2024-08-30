@@ -1,13 +1,10 @@
 import { notifications } from "@mantine/notifications";
 import { IconX } from "@tabler/icons-react";
-import useAuth from "../hooks/useAuth";
-import errors from "../assets/data/responseErrors.json";
+import errors from "../assets/data/errorResponses.json";
 
 const useErrorHandler = (defaultOptions = {}) => {
-    const { token, setToken } = useAuth();
-
-    const getError = (code = 'default', detail = '') => {
-        let error = errors[code] ?? errors['default'];
+    const getError = (code = 'default-notification', detail = '') => {
+        let error = errors[code] ?? errors['default-notification'];
         if(error.variants && detail) error = error.variants.find(variant => variant.message === detail) || error;
 
         return error;
@@ -40,7 +37,7 @@ const useErrorHandler = (defaultOptions = {}) => {
     const requestResponseError = async (response = new Response(), body = {}) => {
         const code = response?.status;
         const error = getError(code, body.detail);
-        const message = error.messageOverride ? error.message : body.detail || error.message;
+        const message = (error.detailOverride ? undefined : body.detail) || error.notification || error.message;
 
         showErrorNotification({
             id: `${code}-${Date.now()}`,

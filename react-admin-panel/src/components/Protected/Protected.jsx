@@ -7,20 +7,22 @@ import Loading from '../Loading/Loading.jsx';
 export const Protected = () => {
     const location = useLocation();
     const { authOptions } = useAuth();
-    const { loading, data: user } = useFetch('user', authOptions);
+    const { error, loading, data: user } = useFetch('user', authOptions);
 
     if (loading) return <Loading/>;
-
-    return user ? <Outlet /> : <Navigate to={location.pathname === '/home' ? '/' : '/login'} />;
+    if (!error && user) return <Outlet />;
+    
+    if (error.status === 401) return <Navigate to={location.pathname === '/home' ? '/' : '/login'} />;
+    throw error;
 }
 
 export const ReverseProtected = () => {
-    const { authOptions, token } = useAuth();
+    const { authOptions } = useAuth();
     const { loading, error, data: user } = useFetch('user', authOptions);
 
-    if (user) return <Navigate to="/virtual-machines"/>
     if (loading) return <Loading/>;
-    if (error && error.status !== 401) throw error; 
+    if (error?.status >= 500) throw error; 
+    if (user) return <Navigate to="/virtual-machines"/>
 
     return <Outlet /> 
 }

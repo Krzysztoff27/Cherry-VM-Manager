@@ -80,7 +80,7 @@ const extractPositionsFromNodes = (nodes) => nodes?.reduce(
 
 function Flow({ }) {
     const { authOptions } = useAuth();
-    const { scriptError, requestResponseError } = useErrorHandler();
+    const { scriptError } = useErrorHandler();
     const { get, post, put } = useApi();
 
     const [nodes, setNodes] = useState([]);

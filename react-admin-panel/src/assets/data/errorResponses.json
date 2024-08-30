@@ -1,0 +1,95 @@
+{
+    "default-notification": {
+        "code": null,
+        "title": "Unknown error occured",
+        "notification": "Please contact with the development team to resolve the issue."
+    },
+    "default-boundary": {
+        "code": -69,
+        "title": "Something very very bad has happened",
+        "message": "Our error handler could not handle the error that occured. That's how you know it's serious. Don't worry, 5000 emails have been sent to the development team."
+    },
+    "400": {
+        "code": 400,
+        "title": "Bad Request",
+        "message": "The server couldn't process your request due to client error. Please check your input and try again.",
+        "notification": "Your request could not be processed due to an error. Please verify your input and try again."
+    },
+    "401": {
+        "variants": [
+            {
+                "title": "Login failed",
+                "notification": "Incorrect username or password."
+            },
+            {
+                "title": "Session expired",
+                "notification": "Please log in to the panel again."
+            }
+        ],
+        "code": 401,
+        "title": "Unauthorized",
+        "message": "You are not authorized to access this resource. If you were previously logged in, your session may have expired. Please log in again to continue.",
+        "notification": "You are not authorized to access this resource. Please log in to continue."
+    },
+    "403": {
+        "code": 403,
+        "title": "Access Denied",
+        "message": "Your account doesn't have the necessary permissions to access this resource. Please check your user group membership.",
+        "notification": "Your account doesn't have the necessary permissions to access this resource."
+    },
+    "404": {
+        "code": 404,
+        "title": "Page Not Found",
+        "message": "The page you are trying to access doesn't exist. Check the URL or contact the development team if you believe this is an error.",
+        "notification": "The page you are looking for could not be found. Please check the URL or contact the development team."
+    },
+    "406": {
+        "code": 406,
+        "title": "Not Acceptable",
+        "message": "The server can't generate a response acceptable to your request. Please modify your request and try again.",
+        "notification": "The server couldn't process your request as it was not acceptable. Please adjust your request and try again."
+    },
+    "408": {
+        "code": 408,
+        "title": "Request Timeout",
+        "message": "The server timed out while waiting for your request.",
+        "notification": "The server timed out while waiting for your request."
+    },
+    "409": {
+        "code": 409,
+        "title": "Duplicate error",
+        "message": "A conflict occurred because a resource with the same name already exists.",
+        "notification": "Resource with this name already exists."
+    },
+    "410": {
+        "code": 410,
+        "title": "Resource Gone",
+        "message": "The resource you're trying to access has been permanently removed. Contact the development team if you need further assistance.",
+        "notification": "The resource you are looking for is no longer available. Contact the development team if you need help."
+    },
+    "418": {
+        "code": 418,
+        "title": "I'm a Teapot",
+        "message": "This server is a teapot, not a coffee maker. Please direct your request to a coffee-capable server.",
+        "notification": "This server is a teapot, not equipped to handle your request. Try a different server."
+    },
+    "429": {
+        "code": 429,
+        "title": "Too Many Requests",
+        "message": "You've made too many requests in a short time. Please wait before trying again.",
+        "notification": "You have exceeded the request limit. Please slow down and try again after a short wait."
+    },
+    "500": {
+        "code": 500,
+        "title": "Something bad has happened",
+        "message": "API service encountered an issue and couldn't complete your request. Please try refreshing the page.",
+        "notification": "API service could not handle the request because of an internal issue.",
+        "detailOverride": true
+    },
+    "503": {
+        "code": 503,
+        "title": "Service unavailable",
+        "message": "API service is either not responding or unreachable. Please ensure a proper connection to the API service.",
+        "notification": "API service is either down or unreachable."
+    }
+}
