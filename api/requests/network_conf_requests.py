@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 from main import app
-from auth import get_current_user, User
+from auth import get_authorized_user, User
 
 from handlers.json_handler import JSONHandler
 
@@ -114,7 +114,7 @@ def validateJSONList(_list, list_name: str = 'list'):
 
 @app.get("/network/configuration")
 def get_current_network_configuration(
-    current_user: Annotated[User, Depends(get_current_user)]
+    current_user: Annotated[User, Depends(get_authorized_user)]
 ) -> NetworkConfiguration:
     return NetworkConfiguration(
         intnets = get_current_intnet_state(),
@@ -125,7 +125,7 @@ def get_current_network_configuration(
 @app.put("/network/configuration/intnets", status_code=204)
 def apply_intnet_configuration_to_virtual_machines(
     intnet_configuration: IntnetConfiguration,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_authorized_user)],
 ):
     # ...
     # TODO: function that applies intnet configuration to virtual machines
@@ -136,7 +136,7 @@ def apply_intnet_configuration_to_virtual_machines(
 @app.put("/network/configuration/panelstate", status_code=204)
 def save_flow_state(
     flow_state: FlowState,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_authorized_user)],
 ):
     current_state.write(jsonable_encoder(flow_state))
 
@@ -147,7 +147,7 @@ def save_flow_state(
 @app.post("/network/snapshot", status_code=201)
 def create_network_snapshot(
     snapshot: SnapshotCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> Snapshot:
     snapshots_list = snapshots.read()
     if not isinstance(snapshots_list, list): 
@@ -165,7 +165,7 @@ def create_network_snapshot(
 
 @app.get("/network/snapshot/all")
 def get_all_snapshots(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> list:
     snapshots_list = snapshots.read()
     if not isinstance(snapshots_list, list): return []
@@ -174,7 +174,7 @@ def get_all_snapshots(
 @app.get("/network/snapshot/{id}")
 def get_snapshot(
     id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> Snapshot:
     snapshots_list = snapshots.read()
     validateJSONList(snapshots_list, 'snapshots')
@@ -185,7 +185,7 @@ def get_snapshot(
 @app.delete("/network/snapshot/{id}", status_code=204)
 def delete_network_configuration_snapshot(
     id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_authorized_user)],
 ):
     snapshots_list = snapshots.read()
     validateJSONList(snapshots_list, 'snapshots')
@@ -201,7 +201,7 @@ def delete_network_configuration_snapshot(
 
 @app.get("/network/preset/all")
 def get_all_snapshots(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> list:
     presets_list = presets.read()
     if not isinstance(presets_list, list): return []
@@ -210,7 +210,7 @@ def get_all_snapshots(
 @app.get("/network/preset/{id}")
 def get_network_configuration_preset(
     id: int,
-    current_user: Annotated[User, Depends(get_current_user)]
+    current_user: Annotated[User, Depends(get_authorized_user)]
 ) -> Preset:
     presets_list = presets.read()
     validateJSONList(presets_list, 'presets')
