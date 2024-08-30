@@ -1,4 +1,5 @@
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router-dom";
+import { Center } from "@mantine/core";
 
 import Layout from "../Layout/Layout.jsx"
 import LoginPage from '../../pages/Login/LoginPage.jsx';
@@ -8,7 +9,6 @@ import MachinePage from "../../pages/VirtualMachines/MachinePage.jsx"
 import NetworkPanel from "../../pages/NetworkPanel/NetworkPanel.jsx"
 import Desktops from "../../pages/Desktops/Desktops.jsx";
 import Home from "../../pages/Home/Home.jsx";
-import { Center } from "@mantine/core";
 import ErrorBoundary from "../ErrorBoundary/ErrorBoundary.jsx";
 
 const router = createBrowserRouter(

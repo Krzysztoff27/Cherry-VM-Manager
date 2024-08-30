@@ -65,7 +65,7 @@ export default function Home() {
                             <List.Item>Configure network connections between your machines.</List.Item>
                             <List.Item><Text c='dimmed'>... and more</Text></List.Item>
                         </List>
-                        <Button component={Link} to='/login' color='cherry.6' radius='md' mt='md' fullWidth>
+                        <Button component={Link} to='/login' color='cherry.10' radius='md' mt='md' fullWidth>
                             Enter the panel
                         </Button>
                     </Stack>

@@ -10,6 +10,7 @@ import './main.css';
 const theme = createTheme({
   fontFamily: 'FontAwesome, Poppins',
   defaultRadius: 'md',
+  primaryColor: 'cherry',
   colors: {
     'suse-green':
     [
@@ -24,29 +25,20 @@ const theme = createTheme({
       "#67a81d",
       "#55920f"
     ],
-    'suse-cyan': [
-      "#e5fdfb",
-      "#d7f5f3",
-      "#b2e9e3",
-      "#89ddd3",
-      "#68d1c6",
-      "#52cbbe",
-      "#44c8ba",
-      "#33b0a3",
-      "#239e91",
-      "#00897e"
-    ],
     'cherry': [
-      "#ffebee",
-      "#fad5da",
-      "#f2a8b1",
-      "#eb7886",
-      "#ff1733",
-      "#e2384b",
-      "#e22a3e",
-      "#c81e31",
-      "#b3162b",
-      "#9d0823"
+      "#fff",     // 0
+      "#fff",     // 1
+      "#f54c56",  // 2 - subtle and light text
+      "#f66069",  // 3
+      "#f54c56",  // 4
+      "#f43843",  // 5 - light background
+      "#fa3244",  // 6
+      "#ff2c45",  // 7 - filled
+      "#e6283e",  // 8 - hover
+      "#cc2337",  // 9
+      "#ff1733",  // 10 - cherry color from logo
+      "#d3172e",  // 11
+      "#a61629",  // 12 - dark cherry color from logo
     ]
   }
 });

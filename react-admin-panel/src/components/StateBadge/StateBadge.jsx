@@ -8,7 +8,7 @@ export default function StateBadge({machineState, sizes = {badge: 'md', icon: 10
             size={sizes.badge}
             onClick={onClick}
             color={
-                machineState.active ? 'suse-green' : 
+                machineState.active ? 'suse-green.8' : 
                 machineState.loading ? 'yellow.5' : 'red.6'
             } 
             variant={
