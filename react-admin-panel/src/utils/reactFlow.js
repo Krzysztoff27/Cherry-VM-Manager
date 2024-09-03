@@ -26,8 +26,13 @@ export const calcMiddlePosition = (...positions) => {
     };
 };
 
+export const extractPositionsFromNodes = (nodes) => nodes?.reduce(
+    (acc, { id, position }) => ({ ...acc, [id]: position }), {}
+) ?? {};
+
 export default {
     getNodeId,
     getIdFromNodeId,
     calcMiddlePosition,
+    extractPositionsFromNodes,
 }

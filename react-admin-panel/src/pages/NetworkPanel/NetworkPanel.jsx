@@ -12,14 +12,14 @@ import IntnetNode from './components/IntnetNode/IntnetNode';
 import MachineNode from './components/MachineNode/MachineNode';
 
 import { noneOrEmpty, safeObjectValues } from '../../utils/misc';
-import { calcMiddlePosition, getIdFromNodeId, getNodeId } from '../../utils/reactFlow';
+import { calcMiddlePosition, getIdFromNodeId, getNodeId, extractPositionsFromNodes } from '../../utils/reactFlow';
 
 import '@xyflow/react/dist/style.css';
 import useAuth from '../../hooks/useAuth';
 import useFetch from '../../hooks/useFetch';
 import Prompt from '../../components/Prompt/Prompt';
 import useApi from '../../hooks/useApi';
-import useErrorHandler from '../../hooks/useErrorHandler';
+import useFlowPresets from '../../hooks/useFlowPresets';
 
 
 const NODE_TYPES = {
@@ -45,7 +45,7 @@ const createNode = (type, data, position) => {
     }
 }
 
-const createMachineNode = (machine, position) => ({
+export const createMachineNode = (machine, position) => ({
     id: getNodeId(NODE_TYPES.machine, machine.id),
     type: 'machine',
     position: position,
@@ -73,20 +73,16 @@ const createIntnetNode = (intnet, position) => ({
 const newPositionsAllocator = new NumberAllocator();
 const generateNewPos = () => ({ x: newPositionsAllocator.getNext() * 100, y: 0 });
 
-const extractPositionsFromNodes = (nodes) => nodes?.reduce(
-    (acc, { id, position }) => ({ ...acc, [id]: position }), {}
-) ?? {};
-
-
 function Flow({ }) {
     const { authOptions } = useAuth();
-    const { scriptError } = useErrorHandler();
     const { get, post, put } = useApi();
+    const { generateConfigFromPreset } = useFlowPresets();
 
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [rfInstance, setRfInstance] = useState(null);
     const { getNode, setViewport, getEdges } = useReactFlow();
+    const intnetAllocator = useRef(new NumberAllocator()).current;
 
     /**
      * [isDirty]
@@ -95,7 +91,7 @@ function Flow({ }) {
      * null - no unsaved changes and just loaded
      */
     const [isDirty, setIsDirty] = useState(null);
-    const allocator = useRef(new NumberAllocator()).current;
+    
 
     const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
 
@@ -111,7 +107,7 @@ function Flow({ }) {
     );
 
     const onNodesDelete = useCallback((deletedNodes) => 
-        deletedNodes.forEach(node => allocator.remove(node?.intnet)), []
+        deletedNodes.forEach(node => intnetAllocator.remove(node?.intnet)), []
     );
 
     // EDGES
@@ -128,7 +124,7 @@ function Flow({ }) {
         if (source.startsWith('intnet')) return;
         if (target.startsWith('intnet')) return addEdgeToFlow({ source: source, target: target });
 
-        const intnetId = allocator.getNext();
+        const intnetId = intnetAllocator.getNext();
         const intnetNode = createIntnetNode({ id: intnetId }, calcMiddlePosition(getNode(source).position, getNode(target).position));
 
         addNodes(intnetNode);
@@ -142,75 +138,8 @@ function Flow({ }) {
 
     const loadPreset = async (id) => {
         const preset = await get(`/network/preset/${id}`, authOptions);
-        const functions = getFunctionsFromPreset(preset);
-        if (functions) runPreset(functions, preset);
-    }
-
-    const getFunctionsFromPreset = (preset) => {
-        if (!preset?.data) return;
-
-        const getVariables = () => {
-            if (!preset?.data?.variables) return {};
-            try{
-                return Object.entries(preset.data.variables).reduce((acc, [name, value]) => {
-                    acc[name] = new Function(
-                        `{${Object.keys(acc).join()}}, machinesLength`,
-                        `return ${value}`
-                    )(acc, safeObjectValues(machines).length);
-                    return acc;
-                }, {});
-            }
-            catch (error) {
-                scriptError(error, { title: `Error occured while executing the configuration preset "${preset.name}"`, id: 'preset-error' });
-                return {};
-            }
-        }
-
-        const variables = getVariables();
-        const params = `{id, group_member_id, group}, i, {${Object.keys(variables).join()}}`;
-        const getFunc = (name) => (machine, i) => new Function(params, `return ${preset.data[name]}`)(machine, i, variables);
-
-        const getIntnet = getFunc('getIntnet')
-        const getPosX = getFunc('getPosX');
-        const getPosY = getFunc('getPosY');
-
-        return { getIntnet, getPosX, getPosY };
-    }
-
-    const runPreset = ({ getIntnet, getPosX, getPosY }, preset) => {
-        let nodes = [];
-        let intnets = {};
-
-        const addToIntnet = (intnetId, machineId) => {
-            if (!intnets[intnetId]) intnets[intnetId] = { id: intnetId, machines: [] };
-            intnets[intnetId].machines.push(machineId)
-        }
-
-        safeObjectValues(machines).forEach((machine, i) => {
-            try {
-                addToIntnet(getIntnet(machine, i), machine.id);
-                nodes.push({
-                    id: `machine-${machine.id}`,
-                    position: {
-                        x: (getPosX(machine, i)) ?? 0,
-                        y: (getPosY(machine, i)) ?? 0,
-                    }
-                })
-            }
-            catch (error) {
-                scriptError(error, { title: `Error occured while executing the configuration preset "${preset.name}"`, id: 'preset-error' });
-            }
-        })
-
-        safeObjectValues(intnets).forEach(intnet => {
-            nodes.push({
-                id: `intnet-${intnet.id}`,
-                position: calcMiddlePosition(...intnet.machines.map(machineId =>
-                    nodes.find(node => node.id === `machine-${machineId}`).position)
-                ),
-            })
-        })
-        loadFlowWithIntnets({ nodes }, intnets, true).then(() => setIsDirty(true));
+        const config = generateConfigFromPreset(preset, machines);
+        loadFlowWithIntnets(config.flow, config.intnets, true).then(() => setIsDirty(true));
     }
 
     // SNAPSHOTS
@@ -226,7 +155,7 @@ function Flow({ }) {
 
     const loadSnapshot = async (id) => {
         const { name, intnets, ...flow } = await get(`/network/snapshot/${id}`, authOptions);
-        return loadFlowWithIntnets(flow, intnets);
+        return loadFlowWithIntnets(flow, intnets).then(() => setIsDirty(true));
     }
 
     // INTNET CONFIG
@@ -258,10 +187,9 @@ function Flow({ }) {
             createFlowNodes(NODE_TYPES.intnet, safeObjectValues(intnets), positions);
             createIntnetEdges(intnets);
 
-            allocator.setCurrent(Math.max(...Object.keys(intnets || {})));
+            intnetAllocator.setCurrent(Math.max(...Object.keys(intnets || {})));
             resolve();
-        }
-        );
+        });
 
     const resetFlow = async (resetViewport = true) => {
         const { intnets, ...flow } = await get('/network/configuration', authOptions);
