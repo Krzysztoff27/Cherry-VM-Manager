@@ -56,11 +56,19 @@ class SnapshotCreate(NetworkConfiguration):
 class Snapshot(SnapshotCreate):
     id: int
 
-class PresetData(BaseModel):
-    variables: dict[str, str] | None = None
+class PresetCoreFunctions(BaseModel):
     getIntnet: str = ""
     getPosX: str = ""
     getPosY: str = ""
+
+class PresetCustomFunction(BaseModel):
+    expression: str = "",
+    arguments: list[str] = [],
+
+class PresetData(BaseModel):
+    variables: dict[str, str] = {}
+    customFunctions: dict[str, PresetCustomFunction] = {}
+    coreFunctions: PresetCoreFunctions = {}
 
 class PresetCreate(BaseModel):
     name: str = "Unnamed"
