@@ -6,15 +6,16 @@ import useAuth from "../../hooks/useAuth";
 
 
 export default function ErrorBoundary() {
-    const {logout} = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
     const e = useRouteError();
 
     const error = errors[e?.status ?? 'default-boundary'] ?? errors['default-boundary'];
 
     let onClick, buttonMessage;
+    let message = error.code > 600 && e.message ? e.message : error.message;
 
-    switch(error.code){
+    switch (error.code) {
         case 401:
         case 403:
             onClick = logout;
@@ -36,7 +37,7 @@ export default function ErrorBoundary() {
             </Center>
             <div className={styles.center}>
                 <h1 className={styles.title}>{error.title}</h1>
-                <span className={styles.message}>{error.message}</span>
+                <span className={styles.message}>{message}</span>
                 <Button
                     onClick={onClick}
                     size='lg'

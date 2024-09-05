@@ -43,12 +43,6 @@
         "message": "The page you are trying to access doesn't exist. Check the URL or contact the development team if you believe this is an error.",
         "notification": "The page you are looking for could not be found. Please check the URL or contact the development team."
     },
-    "406": {
-        "code": 406,
-        "title": "Not Acceptable",
-        "message": "The server can't generate a response acceptable to your request. Please modify your request and try again.",
-        "notification": "The server couldn't process your request as it was not acceptable. Please adjust your request and try again."
-    },
     "408": {
         "code": 408,
         "title": "Request Timeout",
@@ -91,5 +85,9 @@
         "title": "Service unavailable",
         "message": "API service is either not responding or unreachable. Please ensure a proper connection to the API service.",
         "notification": "API service is either down or unreachable."
+    },
+    "601": {
+        "code": 601,
+        "title": "Invalid Panel Configuration"
     }
 }

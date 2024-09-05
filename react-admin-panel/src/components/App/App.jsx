@@ -10,10 +10,11 @@ import NetworkPanel from "../../pages/NetworkPanel/NetworkPanel.jsx"
 import Desktops from "../../pages/Desktops/Desktops.jsx";
 import Home from "../../pages/Home/Home.jsx";
 import ErrorBoundary from "../ErrorBoundary/ErrorBoundary.jsx";
+import ConfigValidator from "../ConfigValidator/ConfigValidator.jsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
-        <Route errorElement={<ErrorBoundary/>}>
+        <Route element={<ConfigValidator/>} errorElement={<ErrorBoundary/>}>
             <Route exact path='/' element={<Home/>}/>
             <Route path='/credits'          element={<Center h='70vh' style={{fontSize: 32}}>Work in progress...</Center>}/>
             <Route path='/copyright'        element={<Center h='70vh' style={{fontSize: 32}}>Work in progress...</Center>}/>

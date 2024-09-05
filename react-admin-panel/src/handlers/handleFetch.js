@@ -1,5 +1,5 @@
 const handleFetch = async (URL, options = {}, errorHandler) => {
-    if(!URL) throw new Error('API URL not set');
+    if(!URL) throw {status: 601, message: `Environmental variable "VITE_API_BASE_URL" is either not set or its value is invalid.`};
 
     const fetchOptions = {
         headers: {'accept': 'application/json'},
