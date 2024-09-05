@@ -1,0 +1,14 @@
+.fadingScroll {
+    transition: all 5s;
+}
+
+.fade{
+    mask-image: linear-gradient(black 20%, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(black 20%, black 80%, transparent 100%);
+}
+
+.noFade {
+    mask-image: none;
+    -webkit-mask-image: none;
+}
+

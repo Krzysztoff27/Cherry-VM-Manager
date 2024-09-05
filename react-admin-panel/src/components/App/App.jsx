@@ -11,12 +11,13 @@ import Desktops from "../../pages/Desktops/Desktops.jsx";
 import Home from "../../pages/Home/Home.jsx";
 import ErrorBoundary from "../ErrorBoundary/ErrorBoundary.jsx";
 import ConfigValidator from "../ConfigValidator/ConfigValidator.jsx";
+import Credits from "../../pages/Credits/Credits.jsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
         <Route element={<ConfigValidator/>} errorElement={<ErrorBoundary/>}>
             <Route exact path='/' element={<Home/>}/>
-            <Route path='/credits'          element={<Center h='70vh' style={{fontSize: 32}}>Work in progress...</Center>}/>
+            <Route path='/credits'          element={<Credits/>}/>
             <Route path='/copyright'        element={<Center h='70vh' style={{fontSize: 32}}>Work in progress...</Center>}/>
             <Route element={<Protected/>}>
                 <Route element={<Layout/>}>

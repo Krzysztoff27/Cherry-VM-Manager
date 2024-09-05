@@ -1,0 +1,12 @@
+.returnButton {
+    position: absolute;
+}
+
+.text {
+    text-align: center;
+}
+
+.text a {
+    text-decoration: underline;
+    font-weight: 600;
+}

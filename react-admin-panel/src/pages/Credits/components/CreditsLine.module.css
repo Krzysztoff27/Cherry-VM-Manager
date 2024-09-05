@@ -1,0 +1,10 @@
+a.contributorLink:nth-of-type(n + 1):not(:last-child) {
+    &::after {
+        content: ", ";
+        color: var(--mantine-color-gray-5);
+    }
+}
+
+a.contributorLink:hover {
+    color: var(--mantine-color-gray-1);
+}
