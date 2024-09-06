@@ -13,6 +13,7 @@ import ErrorBoundary from "../ErrorBoundary/ErrorBoundary.jsx";
 import ConfigValidator from "../ConfigValidator/ConfigValidator.jsx";
 import Credits from "../../pages/Credits/Credits.jsx";
 import HomeLayout from "../Layouts/HomeLayout.jsx";
+import Copyright from "../../pages/Copyright/Copyright.jsx";
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -20,7 +21,7 @@ const router = createBrowserRouter(
             <Route element={<HomeLayout/>}>
                 <Route exact path='/' element={<Home/>}/>
                 <Route path='/credits'          element={<Credits/>}/>
-                <Route path='/copyright'        element={<Center h='70vh' styles={{fontSize: 32}}>Work in progres...</Center>}/>
+                <Route path='/copyright'        element={<Copyright/>}/>
             </Route>
             <Route element={<Protected/>}>
                 <Route element={<PanelLayout/>}>

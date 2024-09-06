@@ -11,7 +11,7 @@ const contributors = {
     },
     Tux10: {
         name: 'Tux 10',
-        avatar: '/icons/tux.png',
+        avatar: '/icons/Tux.webp',
     },
     Majs0n: {
         name: 'Maja Cegłowska',
@@ -29,7 +29,7 @@ const credits = [
         contributors: [contributors.Krzysztoff27]
     },
     {
-        label: 'Machines Virtualization',
+        label: 'Machines virtualization',
         contributors: [contributors.Krzysztoff27]
     },
     {

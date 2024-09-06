@@ -1,0 +1,16 @@
+.ccLink {
+    display: inline-block;
+    text-decoration: underline;
+    color: var(--mantine-color-cherry-7);
+}
+
+.ccLink *:first-child{
+    margin-left: 0.5rem;
+}
+
+.ccIcon {
+    height: 1.5rem;
+    margin-left: 0.25rem;
+    transform: translateY(0.3rem);
+    vertical-align: text-bottom;
+}
