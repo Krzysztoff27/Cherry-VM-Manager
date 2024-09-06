@@ -2,7 +2,7 @@ import { AppShell } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import NavBar from '../NavBar/NavBar.jsx'
 
-export default function Layout({}) {
+export default function PanelLayout({}) {
     return (
         <AppShell navbar={{ width: '75px', breakpoint: 'sm' }} padding="md">
             <AppShell.Navbar><NavBar/></AppShell.Navbar>

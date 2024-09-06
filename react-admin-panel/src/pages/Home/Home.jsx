@@ -1,4 +1,4 @@
-import { AppShell, Avatar, Button, Card, Group, Image, List, rem, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Avatar, Button, Card, Group, Image, List, rem, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { Link } from 'react-router-dom';
 
 const panels = [
@@ -7,7 +7,7 @@ const panels = [
         description: 'Apache Guacamole is a free and open-source, cross-platform, clientless remote desktop gateway maintained by the Apache Software Foundation.',
         color: '#578c34',
         icon: {
-            src: '/icons/apache_guacamole.webp',
+            src: '/icons/Apache Guacamole.webp',
             alt: 'Apache Guacamole Logo',
         },
     },
@@ -16,7 +16,7 @@ const panels = [
         description: 'Traefik is the leading open-source reverse proxy and load balancer for HTTP and TCP-based applications.',
         color: '#24A0C1',
         icon: {
-            src: '/icons/traefik_proxy.webp',
+            src: '/icons/Traefik Proxy.webp',
             alt: 'Traefik Proxy Logo',
         },
     },
@@ -41,54 +41,38 @@ export default function Home() {
     ))
 
     return (
-        <AppShell>
-            <AppShell.Main w={'100%'} pt={rem(64)} p={rem(96)}>
-                <Stack gap={rem(48)} align='center' ta='center'>
-                    <Stack align='center'>
-                        <Title>Welcome to the Cherry Admin Panel!</Title>
-                        <Text size='lg' ta='center'>This web application is the management center for your Cherry VM Manager.<br/> Its purpose is to provide user-friendly experience in controling deployed machines.</Text>
+        <Stack pt={rem(64)} p={rem(96)} gap={rem(48)} align='center' ta='center'>
+            <Stack align='center'>
+                <Title>Welcome to the Cherry Admin Panel!</Title>
+                <Text size='lg' ta='center'>This web application is the management center for your Cherry VM Manager.<br /> Its purpose is to provide user-friendly experience in controling deployed machines.</Text>
 
+            </Stack>
+            <Card w={800} shadow='sm' padding='lg' radius='md' ta='left' withBorder>
+                <Group>
+                    <Image
+                        src='/icons/Cherry Admin Panel.webp'
+                        fit="contain"
+                        mah={200}
+                        flex={1}
+                    />
+                    <Stack gap='0'>
+                        <Text>Here you can:</Text>
+                        <List mt={rem(4)}>
+                            <List.Item>Monitor your Virtual Machines and their activity.</List.Item>
+                            <List.Item>Manage their state remotely.</List.Item>
+                            <List.Item>Configure network connections between your machines.</List.Item>
+                            <List.Item><Text c='dimmed'>... and more</Text></List.Item>
+                        </List>
+                        <Button component={Link} to='/login' color='cherry.10' radius='md' mt='md' fullWidth>
+                            Enter the panel
+                        </Button>
                     </Stack>
-
-                    <Card w={800} shadow='sm' padding='lg' radius='md' ta='left' withBorder>
-                        <Group>
-                            <Image
-                                src='/icons/cherry_admin_panel.webp'
-                                fit="contain"
-                                mah={200}
-                                flex={1}
-                            />
-                            <Stack gap='0'>
-                                <Text>Here you can:</Text>
-                                <List mt={rem(4)}>
-                                    <List.Item>Monitor your Virtual Machines and their activity.</List.Item>
-                                    <List.Item>Manage their state remotely.</List.Item>
-                                    <List.Item>Configure network connections between your machines.</List.Item>
-                                    <List.Item><Text c='dimmed'>... and more</Text></List.Item>
-                                </List>
-                                <Button component={Link} to='/login' color='cherry.10' radius='md' mt='md' fullWidth>
-                                    Enter the panel
-                                </Button>
-                            </Stack>
-                        </Group>
-
-                        
-                    </Card>
-                    <Text size='lg'>For advanced configurations, you might want to enter the dependancy panels:</Text>
-                    <SimpleGrid cols={2} w={800}>
-                        {...cards}
-                    </SimpleGrid>
-                </Stack>
-            </AppShell.Main>
-            <AppShell.Footer p='sm'>
-                <Group w='100%' justify='center'>
-                    <SimpleGrid w={750} cols={3} gap={rem(96)} ta='center' c='dimmed'>
-                        <Text component={Link}>Documentation</Text>
-                        <Text component={Link} to='/credits'>Credits</Text>
-                        <Text component={Link} to='/copyright'>Copyright</Text>
-                    </SimpleGrid>
                 </Group>
-            </AppShell.Footer>
-        </AppShell>
+            </Card>
+            <Text size='lg'>For advanced configurations, you might want to enter the dependancy panels:</Text>
+            <SimpleGrid cols={2} w={800}>
+                {...cards}
+            </SimpleGrid>
+        </Stack>
     )
 }
