@@ -24,7 +24,7 @@ export default function MachineCard({machine, to, navigate}){
         <Card shadow="sm" padding="md" radius="md" withBorder onClick={handleCardClick} style={{cursor: 'pointer'}}>
             <Card.Section>
                 <Image
-                    src="/icons/white_geeko.webp"
+                    src="/icons/Geeko White.webp"
                     height={55}
                     alt="geeko"
                     style={{

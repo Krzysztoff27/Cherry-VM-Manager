@@ -33,7 +33,7 @@ export default function LoginPage() {
             <Fieldset w='400'>
                 <form onSubmit={form.onSubmit(authenticate)}>
                     <Group align='flex-end' pt='xs'>
-                        <Avatar src='/icons/cherry_admin_panel.webp' radius={0}/>
+                        <Avatar src='/icons/Cherry Admin Panel.webp' radius={0}/>
                         <Text size="xl" fw={500}>
                             Cherry Admin Panel
                         </Text>
