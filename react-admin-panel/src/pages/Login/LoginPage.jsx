@@ -4,10 +4,12 @@ import { notifications } from '@mantine/notifications';
 import React from 'react';
 import useAuth from '../../hooks/useAuth';
 import useApi from '../../hooks/useApi';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
+    const navigate = useNavigate();
     const {post} = useApi();
-    const auth = useAuth();
+    const {setToken} = useAuth();
     const form = useForm({
         mode: 'uncontrolled',
         validate: {
@@ -24,7 +26,7 @@ export default function LoginPage() {
 
         if(!jsonResponse?.access_token) return;
 
-        auth.setToken(jsonResponse.access_token)
+        setToken(jsonResponse.access_token)
         notifications.clean();
     }
 
@@ -58,7 +60,15 @@ export default function LoginPage() {
                         key={form.key('password')}
                         {...form.getInputProps('password')}
                     />
-                    <Group justify="flex-end" mt="md">
+                    <Group justify="space-between" mt="md">
+                        <Button 
+                            onClick={() => navigate('/')} 
+                            style={{fontWeight: 500}}
+                            color='dark.1'
+                            variant='light'
+                        >
+                            Go back
+                        </Button>
                         <Button type="submit">Sign in</Button>
                     </Group>
                 </form>
