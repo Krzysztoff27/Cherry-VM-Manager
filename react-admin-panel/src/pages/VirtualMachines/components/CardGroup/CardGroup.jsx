@@ -1,11 +1,16 @@
 import { Button, Collapse, SimpleGrid, Stack, Text } from "@mantine/core";
-import { useElementSize, useLocalStorage } from "@mantine/hooks";
+import { useElementSize } from "@mantine/hooks";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
+import { useCookies } from "react-cookie";
 
 export default function CardGroup({children, group}){
     const {ref, width} = useElementSize();
-    const [opened, setOpened] = useLocalStorage({key: `${group}-opened`, defaultValue: false});
-    const toggle = () => setOpened((o) => !o);
+    const [cookies, setCookies] = useCookies();
+    
+    const cookieName = `${group}-opened`;
+    const toggle = () => setCookies(cookieName, !cookies[cookieName], {path: '/virtual-machines'});
+    
+    const opened = cookies[cookieName];
 
     return (
         <Stack ref={ref}>
@@ -26,7 +31,7 @@ export default function CardGroup({children, group}){
 
             <Collapse in={opened}>
                 <SimpleGrid cols={Math.floor(width / 300)}>
-                    {children}   
+                    {width ? children : null}   
                 </SimpleGrid>
             </Collapse>
         </Stack>
