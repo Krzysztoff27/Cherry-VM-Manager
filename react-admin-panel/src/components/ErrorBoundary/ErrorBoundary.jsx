@@ -26,7 +26,7 @@ export default function ErrorBoundary() {
             buttonMessage = 'Take me back';
             break;
         default:
-            onClick = () => navigate(-1);
+            onClick = () => navigate(0);
             buttonMessage = 'Refresh page';
     }
 
