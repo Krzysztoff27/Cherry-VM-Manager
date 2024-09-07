@@ -36,7 +36,7 @@ class User(BaseModel):
 #       auth functions
 ###############################
 
-def get_user(username):
+def get_user_from_pam(username) -> User | None:
     try:
         user = pwd.getpwnam(username)
         return User(uid=user.pw_uid, username=user.pw_name, full_name=user.pw_gecos)
@@ -44,7 +44,7 @@ def get_user(username):
         return None
     
 
-def is_user_in_access_group(username: str):
+def is_user_in_access_group(username: str) -> bool:
     if not ACCESS_GROUP_GID: 
         return True
     group_members = grp.getgrgid(ACCESS_GROUP_GID).gr_mem
@@ -53,16 +53,14 @@ def is_user_in_access_group(username: str):
             return True
         return False
     except:
-        raise Exception('No access group GID set in the configuration')
+        raise Exception('Group with GID set in configuration does not exist.')
     
 
 def authenticate_user(username: str, password: str):
     authenticated = pam.authenticate(username, password)
     if not authenticated:
         return False
-    if not is_user_in_access_group(username):
-        return False
-    return get_user(username)
+    return get_user_from_pam(username)
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -79,7 +77,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="Could not validate credentials.",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
@@ -88,7 +86,16 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     except InvalidTokenError:
         raise credentials_exception
     
-    user = get_user(username)
+    user = get_user_from_pam(username)
     if user is None:
         raise credentials_exception
+    return user
+
+async def get_authorized_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    user = await get_current_user(token)
+    if not is_user_in_access_group(user.username):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not belong to the access group."
+        )
     return user

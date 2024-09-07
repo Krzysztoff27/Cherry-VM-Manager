@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Annotated
 
 from main import app
-from auth import get_current_user, User
+from auth import get_authorized_user, User
 
 ###############################
 #           classes
@@ -37,7 +37,7 @@ import random
 
 @app.get("/vm/all/networkdata") # * request for network data of all VMs
 async def get_all_vms_network_data(
-    current_user: Annotated[User, Depends(get_current_user)], # ! provides authentication, no need to do anything with it
+    current_user: Annotated[User, Depends(get_authorized_user)], # ! provides authentication, no need to do anything with it
 ) -> dict[int, MachineNetworkData]:
     # ...
     # ... code here
@@ -48,7 +48,7 @@ async def get_all_vms_network_data(
 
 @app.get("/vm/all/state") # * request for state of all VMs
 async def get_all_vms_state(
-    current_user: Annotated[User, Depends(get_current_user)], # ! -"-
+    current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> dict[int, MachineState]:
     # ...
     # ... code here
@@ -65,7 +65,7 @@ async def get_all_vms_state(
 @app.get("/vm/{id}/networkdata") # * request for network data of VM with specific <id>
 async def get_vm_network_data(
     id: int,
-    current_user: Annotated[User, Depends(get_current_user)], # ! -"-
+    current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> MachineNetworkData: # 
     # ...
     # ... code here
@@ -76,7 +76,7 @@ async def get_vm_network_data(
 @app.get("/vm/{id}/state") # * request for network data of VM with specific <id>
 async def get_vm_state(
     id: int,
-    current_user: Annotated[User, Depends(get_current_user)], # ! -"-
+    current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> MachineState:
     # ...
     # ... code here
