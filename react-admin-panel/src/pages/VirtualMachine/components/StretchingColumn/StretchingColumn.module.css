@@ -1,0 +1,14 @@
+.column {
+    display: flex;
+}
+
+.columnPaper {
+    flex: 1;
+    align-items: stretch;
+    padding: var(--mantine-spacing-md);
+}
+
+.columnPaper > * {
+    width: 100%;
+    height: 100%;
+}

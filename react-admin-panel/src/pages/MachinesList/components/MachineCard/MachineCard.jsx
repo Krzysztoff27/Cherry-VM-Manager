@@ -59,7 +59,7 @@ export default function MachineCard({machine, to, navigate}){
             <Button 
                 onClick={handleButtonClick}
                 disabled={!machine.active}
-
+                color='suse-green.4'
                 variant="light" 
                 mt="md" 
                 radius="md" 

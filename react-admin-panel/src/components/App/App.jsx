@@ -1,11 +1,10 @@
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router-dom";
-import { Center } from "@mantine/core";
 
 import PanelLayout from "../Layouts/PanelLayout.jsx"
 import LoginPage from '../../pages/Login/LoginPage.jsx';
 import {Protected, ReverseProtected} from "../Protected/Protected.jsx";
-import MachineList from "../../pages/VirtualMachines/MachineList.jsx"
-import MachinePage from "../../pages/VirtualMachines/MachinePage.jsx"
+import MachineList from "../../pages/MachinesList/MachineList.jsx";
+import MachinePage from "../../pages/VirtualMachine/MachinePage.jsx"
 import NetworkPanel from "../../pages/NetworkPanel/NetworkPanel.jsx"
 import Desktops from "../../pages/Desktops/Desktops.jsx";
 import Home from "../../pages/Home/Home.jsx";

@@ -4,12 +4,12 @@ import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { useCookies } from "react-cookie";
 
 export default function CardGroup({children, group}){
-    const {ref, width} = useElementSize();
-    const [cookies, setCookies] = useCookies();
-    
     const cookieName = `${group}-opened`;
-    const toggle = () => setCookies(cookieName, !cookies[cookieName], {path: '/virtual-machines'});
+
+    const [cookies, setCookies] = useCookies([cookieName]);
+    const {ref, width} = useElementSize();
     
+    const toggle = () => setCookies(cookieName, !cookies[cookieName], {path: '/virtual-machines'});
     const opened = cookies[cookieName];
 
     return (
