@@ -1,0 +1,14 @@
+.appShell {
+    height: 100vh; /* Full height of the viewport */
+}
+
+.appshellMain {
+    height: 100%; /* Fill the remaining height */
+    display: flex;
+    flex-direction: column;
+}
+
+.appshellMain > * {
+    flex: 1; /* Allow child elements to stretch */
+    width: 100%;
+}
