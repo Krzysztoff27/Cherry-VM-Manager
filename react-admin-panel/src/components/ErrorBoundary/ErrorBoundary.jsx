@@ -4,16 +4,15 @@ import styles from './ErrorBoundary.module.css';
 import errors from '../../assets/data/errorResponses.json';
 import useAuth from "../../hooks/useAuth";
 
-
 export default function ErrorBoundary() {
     const { logout } = useAuth();
     const navigate = useNavigate();
-    const e = useRouteError();
+    const e = useRouteError(); // {status: Number, message?: String}
 
-    const error = errors[e?.status ?? 'default-boundary'] ?? errors['default-boundary'];
+    const error = errors[e?.status ?? 600] ?? errors[600]; // get error from errors based on the status
 
     let onClick, buttonMessage;
-    let message = error.code > 600 && e.message ? e.message : error.message;
+    let message = error.code >= 600 && e.message ? e.message : error.message;
 
     switch (error.code) {
         case 401:
