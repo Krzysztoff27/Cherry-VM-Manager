@@ -18,6 +18,14 @@ export default function LoginPage() {
         }
     })
 
+    /**
+     * @typedef {object} TokenRequestForm
+     * @property {string} username
+     * @property {string} password
+     * 
+     * Sends a POST request for the token with filled form data
+     * @param {TokenRequestForm} values 
+     */
     async function authenticate(values) {
         const jsonResponse = await post('/token', new URLSearchParams({
             username: values.username,

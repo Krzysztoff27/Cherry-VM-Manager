@@ -37,6 +37,16 @@ const DEFAULT_EDGE_OPTIONS = {
     type: 'floating',
 }
 
+/**
+ * @typedef {object} Position
+ * @property {number} x - x coordinate
+ * @property {number} y - y coordinate
+ * 
+ * @param {MachineNode|IntnetNode} type 
+ * @param {object} data - data required for node's creation
+ * @param {Position} position 
+ * @returns {MachineNode|IntnetNode}
+ */
 const createNode = (type, data, position) => {
     switch (type) {
         case MachineNode: return createMachineNode(data, position);

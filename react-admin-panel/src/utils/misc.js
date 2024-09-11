@@ -1,12 +1,39 @@
+/**
+ * Checks if variable is type "Object".
+ * @param {*} variable 
+ * @returns {boolean}
+ */
 export const isObject = (variable) => typeof variable === 'object' && variable !== null && !Array.isArray(variable)
 
+/**
+ * Checks if variable is falsy or if it's length is 0
+ * @param {*} variable 
+ * @returns {boolean}
+ */
 export const noneOrEmpty = (variable) => !variable || !variable.length;
 
+/**
+ * Zips keys from keyArray and values from valueArray into one object
+ * @param {Array} keyArray 
+ * @param {Array} valueArray 
+ * @returns {Object} ZippedObject
+ */
 export const zipToObject = (keyArray = [], valueArray = []) => noneOrEmpty(keyArray) || noneOrEmpty(valueArray) ? {} :
     keyArray.reduce((acc, key, i) => ({...acc, [key]: valueArray[i]}), {});
 
+/**
+ * Provides errorless Object.values experience
+ * @param {Object} object
+ * @returns {Array} array of values
+ */
 export const safeObjectValues = (obj = {}) => Object.values({...obj});
 
+/**
+ * Splits array into chunks
+ * @param {Array} array - flat array
+ * @param {Number} chunkSize - max number of elements in one chunk
+ * @returns {Array} array of chunk arrays
+ */
 export const arrayIntoChunks = (array, chunkSize) => {
     const result = [];
     for (let i = 0; i < array.length; i += chunkSize) {
@@ -15,20 +42,17 @@ export const arrayIntoChunks = (array, chunkSize) => {
     return result;
 };
 
-export const pluralize = (count, singular, pluralFew, pluralMany) => {
-    if (count === 1) return singular;
-    if ((count % 10 >= 2 && count % 10 <= 4) && !(count % 100 >= 12 && count % 100 <= 14)) {
-        return pluralFew;
-    }
-    return pluralMany;
-};
-
-export const getCurrentTime = () => {
+/**
+ * Returns string of current clock time.
+ * @param {boolean} showSeconds - should seconds be also included in the returned value?
+ * @returns {string} current clock time
+ */
+export const getCurrentTime = (showSeconds = true) => {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
+    return `${hours}:${minutes}${showSeconds ? `:${seconds}` : ''}`;
 }
 
 /**
@@ -53,7 +77,6 @@ export default {
     isObject,
     noneOrEmpty,
     safeObjectValues,
-    pluralize,
     arrayIntoChunks,
     getCurrentTime,
     clockSynchronizedTimeout,

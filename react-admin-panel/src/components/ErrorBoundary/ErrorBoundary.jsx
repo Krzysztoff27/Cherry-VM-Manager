@@ -4,6 +4,15 @@ import styles from './ErrorBoundary.module.css';
 import errors from '../../assets/data/errorResponses.json';
 import useAuth from "../../hooks/useAuth";
 
+/**
+ * ErrorBoundary for the react-router-dom routes. When error is thrown in the application, this component catches it and displays error message to the user.
+ * 
+ * Thrown error should be {Object} with
+ *      @prop {number} error.status error status code
+ *      @prop {string} error?.message used only in errors with status code of 600+ range
+ * 
+ * @returns React Component
+ */
 export default function ErrorBoundary() {
     const { logout } = useAuth();
     const navigate = useNavigate();

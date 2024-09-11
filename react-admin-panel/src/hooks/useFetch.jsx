@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import useApi from "./useApi";
 
+/**
+ * @typedef {Object} useFetchReturn
+ * @property {boolean} loading - boolean indicating whether fetch is still waiting for response
+ * @property {Error|Response|null} error - any error that occured during the fetch process
+ * @property {object|null} data - json body of the response
+ * 
+ * Custom hook for fetch embeded into react's useEffect.
+ * @param {string} path path of the resource, relative to the API base URL
+ * @param {object|undefined} options - additional options for the fetch
+ * @returns {useFetchReturn}
+ */
 const useFetch = (path, options = undefined) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);

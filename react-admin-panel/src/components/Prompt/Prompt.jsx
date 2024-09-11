@@ -1,6 +1,12 @@
-import { Button, Modal, SimpleGrid, Stack, Text, Title } from "@mantine/core"
+import { Button, Modal, SimpleGrid, Stack, Text } from "@mantine/core"
 import ReactRouterPrompt from "react-router-prompt"
 
+/**
+ * A prompt that alerts the user when attempting to navigate away from a page with unsaved changes.
+ * @param {Object} props 
+ * @param {boolean} props.when Condition that determines whether the prompt should be displayed should the user try to leave the page.
+ * @returns {React.JSX.Element}
+ */
 export default function Prompt({when}) {
     return (
         <ReactRouterPrompt when={when}>

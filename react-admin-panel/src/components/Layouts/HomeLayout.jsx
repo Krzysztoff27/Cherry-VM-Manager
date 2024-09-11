@@ -2,6 +2,10 @@ import { AppShell, Group, rem, SimpleGrid, Text } from '@mantine/core'
 import React from 'react'
 import { Link, Outlet } from 'react-router-dom'
 
+/**
+ * Layout used in the readonly subpages, such as Home, Credits, Copyright etc.
+ * @returns {React.JSX.Element} Layout element
+ */
 export default function HomeLayout() {
     return (
         <AppShell>

@@ -18,7 +18,7 @@ const router = createBrowserRouter(
     createRoutesFromElements(
         <Route element={<ConfigValidator/>} errorElement={<ErrorBoundary/>}>
             <Route element={<HomeLayout/>}>
-                <Route exact path='/' element={<Home/>}/>
+                <Route exact path='/'           element={<Home/>}/>
                 <Route path='/credits'          element={<Credits/>}/>
                 <Route path='/copyright'        element={<Copyright/>}/>
             </Route>
@@ -32,7 +32,7 @@ const router = createBrowserRouter(
                 </Route>
             </Route>
             <Route element={<ReverseProtected/>}>
-                <Route path='/login' element={<LoginPage />} />
+                <Route path='/login' element={<LoginPage/>}/>
             </Route>
         </Route>
     )
