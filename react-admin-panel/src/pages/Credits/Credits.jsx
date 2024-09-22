@@ -1,7 +1,7 @@
 import { Container, rem, Stack, Text, Title } from "@mantine/core";
 import FadingScroll from "../../components/FadingScroll/FadingScroll";
 import credits from "./data";
-import styles from './Credits.module.css';
+import classes from './Credits.module.css';
 import CreditsLine from "./components/CreditsLine";
 import Snowfall from 'react-snowfall';
 
@@ -27,7 +27,7 @@ export default function Credits() {
                         <Title order={2} ta='center' mt='sm'>{'< Team >'}</Title>
                         {...credits.map((data, i) => <CreditsLine key={i} data={data} />)}
                         <Title order={2} ta='center' mt='sm'>{'< Site >'}</Title>
-                        <Text className={styles.text}>
+                        <Text className={classes.text}>
                             This website is developed using <a href='https://react.dev/'>React</a>, incorporating components from the <a href='https://mantine.dev/'>Mantine</a> library. The network panel is built on the <a href='https://reactflow.dev/'>React Flow component</a>. Icons used are sourced from <a href='https://tabler.io/icons'>Tabler Icons</a>.
                         </Text>
                     </Stack>

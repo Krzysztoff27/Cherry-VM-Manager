@@ -1,8 +1,8 @@
 import { Avatar, AvatarGroup, Group, Text } from "@mantine/core";
-import styles from './CreditsLine.module.css';
+import classes from './CreditsLine.module.css';
 
 export default function CreditsLine({ data }) {
-    const names = data.contributors.map(contributor => <a href={contributor.url} className={styles.contributorLink}>{contributor.name}</a>);
+    const names = data.contributors.map(contributor => <a href={contributor.url} className={classes.contributorLink}>{contributor.name}</a>);
     const isCherry = data.label.search(/cherry/i) !== -1;
 
     return (

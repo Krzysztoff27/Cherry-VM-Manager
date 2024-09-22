@@ -1,5 +1,5 @@
 import { Container, Group, Image, rem, Stack, Text, Title } from '@mantine/core';
-import styles from './Copyright.module.css';
+import classes from './Copyright.module.css';
 
 export default function Copyright() {
     return (
@@ -27,26 +27,26 @@ export default function Copyright() {
                             href="https://creativecommons.org/licenses/by-nc-nd/4.0/?ref=chooser-v1"
                             target="_blank"
                             rel="license noopener noreferrer"
-                            className={styles.ccLink}
+                            className={classes.ccLink}
                         >
                             CC BY-NC-ND 4.0
                             <img
-                                className={styles.ccIcon}
+                                className={classes.ccIcon}
                                 src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"
                                 alt="Creative Commons icon"
                             />
                             <img
-                                className={styles.ccIcon}
+                                className={classes.ccIcon}
                                 src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"
                                 alt="By attribution Creative Commons icon"
                             />
                             <img
-                                className={styles.ccIcon}
+                                className={classes.ccIcon}
                                 src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"
                                 alt="Noncommercial Creative Commons icon"
                             />
                             <img
-                                className={styles.ccIcon}
+                                className={classes.ccIcon}
                                 src="https://mirrors.creativecommons.org/presskit/icons/nd.svg?ref=chooser-v1"
                                 alt="Noderivatives Creative Commons icon"
                             />

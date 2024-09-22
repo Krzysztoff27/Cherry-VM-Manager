@@ -1,7 +1,7 @@
 import { AppShell } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import NavBar from '../NavBar/NavBar.jsx';
-import styles from './PanelLayout.module.css';
+import classes from './PanelLayout.module.css';
 
 /**
  * Layout for the panel, consisting of navigational bar for moving between important sections of the panel
@@ -12,10 +12,10 @@ export default function PanelLayout() {
         <AppShell
             navbar={{ width: '75px', breakpoint: 'sm' }}
             padding="md"
-            className={styles.appShell}
+            className={classes.appShell}
         >
             <AppShell.Navbar><NavBar /></AppShell.Navbar>
-            <AppShell.Main className={styles.appshellMain}>
+            <AppShell.Main className={classes.appshellMain}>
                 <Outlet />
             </AppShell.Main>
         </AppShell>

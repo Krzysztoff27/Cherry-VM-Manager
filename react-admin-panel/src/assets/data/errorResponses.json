@@ -82,6 +82,7 @@
         "notification": "API service is either down or unreachable."
     },
     "600": {
+        "code": 600,
         "title": "Something bad has happened",
         "message": "An internal issue in the web application has occured. Please contact with the development team to resolve it."
     },
