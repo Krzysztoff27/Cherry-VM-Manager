@@ -146,8 +146,8 @@ function Flow({ }) {
 
     // PRESETS
 
-    const loadPreset = async (id) => {
-        const preset = await get(`/network/preset/${id}`, authOptions);
+    const loadPreset = async (uuid) => {
+        const preset = await get(`/network/preset/${uuid}`, authOptions);
         const config = generateConfigFromPreset(preset, machines);
         loadFlowWithIntnets(config.flow, config.intnets, true).then(() => setIsDirty(true));
     }
@@ -163,8 +163,8 @@ function Flow({ }) {
     const takeSnapshot = (name) => ({...getSnapshotData(), name: name, intnets: getIntnetConfig()})
     const postSnapshot = (name) => post('/network/snapshot', JSON.stringify(takeSnapshot(name)), authOptions);
 
-    const loadSnapshot = async (id) => {
-        const { name, intnets, ...flow } = await get(`/network/snapshot/${id}`, authOptions);
+    const loadSnapshot = async (uuid) => {
+        const { name, intnets, ...flow } = await get(`/network/snapshot/${uuid}`, authOptions);
         return loadFlowWithIntnets(flow, intnets).then(() => setIsDirty(true));
     }
 

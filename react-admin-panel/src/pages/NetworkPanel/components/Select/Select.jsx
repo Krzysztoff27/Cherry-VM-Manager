@@ -4,22 +4,28 @@ import { useEffect, useRef, useState } from "react";
 import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 import useApi from "../../../../hooks/useApi";
 
+const VALUE_SEPERATOR = ':::';
+
 export default function Select({authOptions, loadSnapshot, loadPreset, forceUpdate}) {
     const {get} = useApi();
     const [snapshotComponents, setSnapshotComponents] = useState([]);
     const [presetComponents, setPresetComponents] = useState([]);
-    const selectedValue = useRef(null);
     const [confirmationOpened, { open, close }] = useDisclosure(false);
+    const selectedValue = useRef(null);
 
+    const combineValues = (...values) => values.join(VALUE_SEPERATOR);
+
+    const splitValues = (value) => value.split?.(VALUE_SEPERATOR);
+    
     useEffect(() => {
         const setData = async () => {
             const snapshots = await get('/network/snapshot/all', authOptions);
             const presets = await get('/network/preset/all', authOptions);
             setSnapshotComponents(snapshots?.map((s, i) => 
-                <option key={i} value={`snapshot-${s.id}`}> {s.name}</option>
+                <option key={i} value={combineValues('snapshot', s.uuid)}> {s.name}</option>
             ) ?? []);
             setPresetComponents(presets?.map((p, i) => 
-                <option key={i} value={`preset-${p.id}`}>&#xf023; &nbsp;{p.name}</option>
+                <option key={i} value={combineValues('preset', p.uuid)}>&#xf023; &nbsp;{p.name}</option>
             ) ?? []);
         }
         setData();
@@ -36,9 +42,10 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceUpda
     }
 
     const onModalConfirm = () => {
-        const selection = selectedValue.current?.split?.('-');
-        if(selection[0] === 'preset') loadPreset(selection[1]);
-        else if(selection[0] === 'snapshot') loadSnapshot(selection[1]);
+        const [type, uuid] = splitValues(selectedValue.current);
+        
+        if(type === 'preset') loadPreset(uuid);
+        else if(type === 'snapshot') loadSnapshot(uuid);
 
         selectedValue.current = null;
         close();
