@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import Annotated
 from pathlib import Path
 import re
+import uuid
 
 from main import app
 from auth import get_authorized_user, User
@@ -54,7 +55,7 @@ class SnapshotCreate(NetworkConfiguration):
     name: str = "Unnamed"
 
 class Snapshot(SnapshotCreate):
-    id: int
+    uuid: str
 
 class PresetCoreFunctions(BaseModel):
     getIntnet: str = ""
@@ -75,7 +76,7 @@ class PresetCreate(BaseModel):
     data: PresetData = {}
 
 class Preset(PresetCreate):
-    id: int
+    uuid: str
 
 ###############################
 # functions
@@ -108,13 +109,15 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
 def isIndexInList(_list, index):
     return index >= 0 and index < len(_list)
 
-def validateIndexInList(_list, index, element_name: str = 'element'):
-     if not isIndexInList(_list, index):
-        raise HTTPException(status_code=404, detail=f"{element_name} not found.")
-
 def validateJSONList(_list, list_name: str = 'list'):
     if not isinstance(_list, list): 
         raise HTTPException(status_code=404, detail=f"List \"{list_name}\" is empty or undefined.")
+
+def getByUUID(_list, uuid):
+    found = next((item for item in _list if item['uuid'] == uuid), None)
+    if not found:
+        raise HTTPException(status_code=404, detail=f"Element not found.")
+    return found
 
 ###############################
 # configuration requests
@@ -165,7 +168,7 @@ def create_network_snapshot(
     if any(s['name'] == snapshot.name for s in snapshots_list):
         raise HTTPException(status_code=409, detail="Snapshot with this name already exists")
 
-    snapshot = jsonable_encoder({**jsonable_encoder(snapshot), 'id': len(snapshots_list)})
+    snapshot = jsonable_encoder({**jsonable_encoder(snapshot), 'uuid': str(uuid.uuid4())})
     snapshots_list.append(snapshot)
     snapshots.write(snapshots_list)
 
@@ -179,29 +182,29 @@ def get_all_snapshots(
     if not isinstance(snapshots_list, list): return []
     return snapshots_list
 
-@app.get("/network/snapshot/{id}")
+@app.get("/network/snapshot/{uuid}")
 def get_snapshot(
-    id: int,
+    uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> Snapshot:
     snapshots_list = snapshots.read()
     validateJSONList(snapshots_list, 'snapshots')
-    validateIndexInList(snapshots_list, id, 'snapshot')
-    return snapshots_list[id]
+    return getByUUID(snapshots_list, uuid)
     
 
-@app.delete("/network/snapshot/{id}", status_code=204)
+@app.delete("/network/snapshot/{uuid}", status_code=204)
 def delete_network_configuration_snapshot(
-    id: int,
+    uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)],
 ):
     snapshots_list = snapshots.read()
     validateJSONList(snapshots_list, 'snapshots')
-    validateIndexInList(snapshots_list, id, 'snapshot')   
-    
-    deleted = snapshots_list.pop(id)
+
+    snapshot = getByUUID(snapshots_list, uuid)
+    snapshots_list.remove(snapshot)
+
     snapshots.write(snapshots_list)
-    return deleted
+    return snapshot
 
 ###############################
 # preset requests
@@ -215,12 +218,11 @@ def get_all_snapshots(
     if not isinstance(presets_list, list): return []
     return presets_list
 
-@app.get("/network/preset/{id}")
+@app.get("/network/preset/{uuid}")
 def get_network_configuration_preset(
-    id: int,
+    uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)]
 ) -> Preset:
     presets_list = presets.read()
     validateJSONList(presets_list, 'presets')
-    validateIndexInList(presets_list, id, 'preset')
-    return presets_list[id]
+    return getByUUID(presets_list, uuid) 

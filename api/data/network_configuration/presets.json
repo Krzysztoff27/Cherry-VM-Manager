@@ -1,6 +1,6 @@
 [
     {
-        "id": 0,
+        "uuid": "7803c46d-9e68-4a74-8910-3fbc378b5638",
         "name": "DesktopX - serverX",
         "data": {
             "coreFunctions": {
@@ -11,7 +11,7 @@
         }
     },
     {
-        "id": 1,
+        "uuid": "8ddaf3c4-50b0-4b8a-9373-b74300b69ee6",
         "name": "Wspólna Sieć",
         "data": {
             "variables": {
@@ -34,7 +34,7 @@
         }
     },
     {
-        "id": 2,
+        "uuid": "b9c2c44d-2872-463b-be1c-ec9aa7dcc9fd",
         "name": "Sieci Typu Maszyn",
         "data": {
             "coreFunctions": {
