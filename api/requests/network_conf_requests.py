@@ -163,7 +163,7 @@ def create_network_snapshot(
     snapshots_list = snapshots.read()
     if not isinstance(snapshots_list, list): 
         snapshots_list = []
-    if not re.match(r'^[a-zA-Z][\w\-\ ]{2,15}$', snapshot.name):
+    if not re.match(r'^[a-zA-Z][\w\-\ ]{3,16}$', snapshot.name):
         raise HTTPException(status_code=400, detail="Invalid snapshot name. The name must be between 3 and 16 characters and start with a letter, followed by alphanumeric characters, spaces, underscores, or hyphens.")
     if any(s['name'] == snapshot.name for s in snapshots_list):
         raise HTTPException(status_code=409, detail="Snapshot with this name already exists")
