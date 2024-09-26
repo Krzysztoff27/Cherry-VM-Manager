@@ -199,11 +199,12 @@ def delete_network_configuration_snapshot(
 ):
     snapshots_list = snapshots.read()
     validateJSONList(snapshots_list, 'snapshots')
-    validateIndexInList(snapshots_list, id, 'snapshot')   
-    
-    deleted = snapshots_list.pop(id)
+
+    snapshot = getByUUID(snapshots_list, uuid)
+    snapshots_list.remove(snapshot)
+
     snapshots.write(snapshots_list)
-    return deleted
+    return snapshot
 
 ###############################
 # preset requests
