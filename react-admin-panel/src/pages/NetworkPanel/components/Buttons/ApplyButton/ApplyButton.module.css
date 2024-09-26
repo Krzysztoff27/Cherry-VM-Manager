@@ -1,13 +1,15 @@
 .saveButton {
-    animation: pulse 2s infinite;
     transition: background-color 0.25s ease-out;
-
-    &:disabled,
+	
     &[data-disabled] {
-        background-color: var(--mantine-color-suse-green-8);
+		background-color: var(--mantine-color-suse-green-8);
         border-color: var(--mantine-color-suse-green-9);
         color: white;
     }
+
+	&:not(&[data-disabled]){
+		animation: pulse 2s infinite;
+	}
 }
 
 @keyframes pulse {
