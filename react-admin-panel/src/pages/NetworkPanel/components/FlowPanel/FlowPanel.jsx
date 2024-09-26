@@ -5,6 +5,7 @@ import Select from "../Select/Select";
 import RestoreButton from "../Buttons/RestoreButton/RestoreButton";
 import ApplyButton from "../Buttons/ApplyButton/ApplyButton";
 import AddSnapshotButton from "../Buttons/AddSnapshotButton/AddSnapshotButton";
+import ModifySnapshotsButton from "../Buttons/ModifySnapshotsButton/ModifySnapshotsButton";
 
 export default function FlowPanel({ resetFlow, applyNetworkConfig, isDirty, selectProps,addSnapshotButtonProps }) {
     const [forceUpdate, setForceUpdate] = useState(0)
@@ -14,6 +15,7 @@ export default function FlowPanel({ resetFlow, applyNetworkConfig, isDirty, sele
             <Panel position="top-center">
                 <Button.Group>
                     <AddSnapshotButton {...addSnapshotButtonProps} setForceUpdate={setForceUpdate}/>
+                    <ModifySnapshotsButton/>
                     <Select {...selectProps} forceUpdate={forceUpdate}/>
                     <RestoreButton resetFlow={resetFlow} isDirty={isDirty}/>
                     <ApplyButton applyNetworkConfig={applyNetworkConfig} isDirty={isDirty}/>

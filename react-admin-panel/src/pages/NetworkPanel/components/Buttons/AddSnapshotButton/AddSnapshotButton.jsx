@@ -1,5 +1,5 @@
 import { useDisclosure } from "@mantine/hooks";
-import { IconPlus } from "@tabler/icons-react";
+import { IconCameraPlus } from "@tabler/icons-react";
 import TextInputModal from "../../TextInputModal/TextInputModal";
 import { notifications } from "@mantine/notifications";
 import { Button, List, Stack, Text } from "@mantine/core";
@@ -53,7 +53,7 @@ export default function AddSnapshotButton({ postSnapshot = async () => { }, setF
                 pl='xs'
                 pr='9'
             >
-                <IconPlus size={20} />
+                <IconCameraPlus size={20} />
             </Button>
         </>
     )

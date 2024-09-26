@@ -73,6 +73,10 @@ export const clockSynchronizedTimeout = (func = () => {}, secondsDelay = 1) => {
     return () => clearTimeout(timeout);
 }
 
+export const isInRange = (value, min, max) => value >= min && value <= max;
+
+export const startsWithLetter = (str = '') => str ? /[a-z]/i.test(str[0]) : false;
+
 export default {
     isObject,
     noneOrEmpty,
@@ -80,4 +84,6 @@ export default {
     arrayIntoChunks,
     getCurrentTime,
     clockSynchronizedTimeout,
+    isInRange,
+    startsWithLetter,
 }
