@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom/client'
 import App from './components/App/App.jsx'
 import { createTheme, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
-import '@mantine/core/styles.css';
-import '@mantine/notifications/styles.css';
-import '@mantine/charts/styles.css';
+import '@mantine/core/styles.layer.css';
+import '@mantine/notifications/styles.layer.css';
+import '@mantine/charts/styles.layer.css';
 import './main.css';
 
 const theme = createTheme({
