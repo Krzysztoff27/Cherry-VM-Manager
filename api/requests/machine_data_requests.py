@@ -32,9 +32,6 @@ class MachineState(VirtualMachine):         # * when displaying a page needing t
 #       data requests
 ###############################
 
-from requests.dummies import NETWORK_DATA_DUMMY, STATE_DUMMY
-import random
-
 @app.get("/vm/all/networkdata") # * request for network data of all VMs
 async def get_all_vms_network_data(
     current_user: Annotated[User, Depends(get_authorized_user)], # ! provides authentication, no need to do anything with it
@@ -43,7 +40,14 @@ async def get_all_vms_network_data(
     # ... code here
     # ...
     # example return:
-    return NETWORK_DATA_DUMMY
+    return {
+        1: MachineNetworkData(id=1, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
+        2: MachineNetworkData(id=2, group='desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
+        # ...
+        17: MachineNetworkData(id=17, group='server',  group_member_id=1, port=1501, domain='server1.wisniowa.oedu.pl'),
+        18: MachineNetworkData(id=18, group='server',  group_member_id=2, port=1502, domain='server2.wisniowa.oedu.pl'),
+        # ...
+    }
     
 
 @app.get("/vm/all/state") # * request for state of all VMs
@@ -54,13 +58,14 @@ async def get_all_vms_state(
     # ... code here
     # ...
     # example return:
-    states = STATE_DUMMY
-    for i in states:
-        if not states[i].active: continue
-        states[i].cpu = random.randint(max(0, states[i].cpu - 15), min(states[i].cpu + 15, 100))
-        states[i].ram_used = random.randint(max(0, states[i].ram_used - 1024), min(states[i].ram_used + 2048, 4096))
-    return STATE_DUMMY
-    
+    return {
+        1: MachineState(id=1, group='desktop', active=True, group_member_id=1, cpu=42, ram_used=3462, ram_max=4096),
+        2: MachineState(id=2, group='desktop', active=False, group_member_id=2),
+        # ...
+        17: MachineState(id=17, group='server',  active=False, group_member_id=1),
+        18: MachineState(id=18, group='server',  active=True, group_member_id=2, cpu=97, ram_used=1094, ram_max=4096),
+        # ...
+    }
 
 @app.get("/vm/{id}/networkdata") # * request for network data of VM with specific <id>
 async def get_vm_network_data(
@@ -71,7 +76,7 @@ async def get_vm_network_data(
     # ... code here
     # ...
     # example return:
-    return NETWORK_DATA_DUMMY[id]
+    return MachineNetworkData(id=id, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
 
 @app.get("/vm/{id}/state") # * request for network data of VM with specific <id>
 async def get_vm_state(
@@ -82,9 +87,4 @@ async def get_vm_state(
     # ... code here
     # ...
     # example return:
-    
-    state = STATE_DUMMY[id]
-    if not state.active: return state
-    state.cpu = random.randint(max(0, state.cpu - 15), min(state.cpu + 15, 100))
-    state.ram_used = random.randint(max(0, state.ram_used - 1024), min(state.ram_used + 2048, 4096))
-    return state
+    return MachineState(id=id, group='Desktop', group_member_id=1, active=True, cpu=42, ram_used=3462, ram_max=4096)
