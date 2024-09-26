@@ -28,8 +28,7 @@
     "react-router-prompt": "^0.7.1",
     "react-snowfall": "^2.1.1",
     "recharts": "^2.12.7",
-    "styled-components": "^6.1.13",
-    "use-local-storage": "^3.0.0"
+    "styled-components": "^6.1.13"
   },
   "devDependencies": {
     "@types/react": "^18.3.5",
