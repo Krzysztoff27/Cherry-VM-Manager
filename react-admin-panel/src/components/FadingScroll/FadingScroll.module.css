@@ -1,5 +1,17 @@
-.fade{
-    mask-image: linear-gradient(black 10%, black 80%, transparent 100%);
-    -webkit-mask-image: linear-gradient(black 20%, black 80%, transparent 100%);
+@property --fade-end {
+    syntax: '<color>';
+    inherits: false;
+    initial-value: transparent;
+}
+
+.scrollArea{
+    --fade-end: transparent;
+
+    mask-image: linear-gradient(black 10%, black 70%, var(--fade-end) 100%);
+    transition: --fade-end 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.noFade{
+    --fade-end: black;
 }
 

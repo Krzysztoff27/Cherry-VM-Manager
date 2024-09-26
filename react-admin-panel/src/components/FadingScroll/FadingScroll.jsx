@@ -1,6 +1,7 @@
 import { ScrollArea } from '@mantine/core';
-import styles from './FadingScroll.module.css';
-import { useRef, useState } from 'react';
+import classes from './FadingScroll.module.css';
+import { useEffect, useRef, useState } from 'react';
+import { useViewportSize } from '@mantine/hooks';
 
 /**
  * Mantine Scroll Area component with a fade effect near the bottom of the scrollable area.
@@ -11,18 +12,26 @@ import { useRef, useState } from 'react';
  */
 export default function FadingScroll(props) {
     const viewport = useRef(null);
-    const [atEnd, setAtEnd] = useState(false);
+    const [faded, setFaded] = useState(true);
+    const { height, width } = useViewportSize(); // website window width and height
 
-    const onScrollPositionChange = (position) => {
-        const height = viewport.current.scrollHeight - viewport.current.clientHeight; // INT
-        const scrolled = position.y; // FLOAT
-        setAtEnd(Math.abs(scrolled - height) < 20);
-    };
+    const isNearScrollEnd = () => {
+        const areaHeight = viewport.current.scrollHeight - viewport.current.clientHeight; 
+        const scrolled = viewport.current.scrollTop; 
+        return Math.abs(scrolled - areaHeight) < 30; // if lower than 30px then its close enough to the end to not fade
+    }
+
+    const onScrollPositionChange = (_) => setFaded(!isNearScrollEnd());
+
+    useEffect(() => {
+        if(viewport.current.scrollHeight == viewport.current.clientHeight) setFaded(false);
+        else if(!isNearScrollEnd()) setFaded(true);
+    }, [height, width])
 
     return (
         <ScrollArea
             {...props}
-            className={atEnd ? null : styles.fade}
+            className={`${classes.scrollArea} ${faded ? '' : classes.noFade}`}
             onScrollPositionChange={onScrollPositionChange}
             viewportRef={viewport}
             type="always"

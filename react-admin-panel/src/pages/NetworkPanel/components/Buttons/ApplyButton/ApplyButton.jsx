@@ -1,5 +1,5 @@
 import { Button } from "@mantine/core";
-import styles from './ApplyButton.module.css';
+import classes from './ApplyButton.module.css';
 
 export default function ApplyButton({applyNetworkConfig = () => {}, isDirty}) {
     return (
@@ -7,8 +7,8 @@ export default function ApplyButton({applyNetworkConfig = () => {}, isDirty}) {
             onClick={applyNetworkConfig}
             disabled={!isDirty}
             classNames={{
-                root: isDirty === null ? null : styles.saveButton,
-                label: styles.saveButtonLabel
+                root: isDirty === null ? null : classes.saveButton,
+                label: classes.saveButtonLabel
             }}
             variant='default'
             w={isDirty ? 100 : 200}

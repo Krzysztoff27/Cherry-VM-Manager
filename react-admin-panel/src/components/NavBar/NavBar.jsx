@@ -51,7 +51,7 @@ export default function NavBar() {
     const location = useLocation();
     const [active, setActive] = useState();
     
-    useEffect(() => setActive(categories.findIndex(cat => cat.link === location.pathname)), 
+    useEffect(() => setActive(categories.findIndex(cat => location.pathname.startsWith(cat.link))), 
         [location.pathname]);
 
     const mainLinks = categories.map((category, i) => (

@@ -1,6 +1,6 @@
 import { Container } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconDeviceDesktop, IconServer2 } from '@tabler/icons-react';
+import { IconDeviceDesktop, IconPlayerRecord, IconServer2 } from '@tabler/icons-react';
 import { Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from '@xyflow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -65,7 +65,7 @@ export const createMachineNode = (machine, position) => ({
         label: `${machine.group} ${machine.group_member_id}`,
         icon: (
             machine.group === 'desktop' ? IconDeviceDesktop :
-                machine.group === 'server' ? IconServer2 : null
+                machine.group === 'server' ? IconServer2 : IconPlayerRecord
         ),
     },
 })
@@ -213,7 +213,7 @@ function Flow({ }) {
                     id: 'flow-init',
                     color: 'suse-green',
                     title: 'Network configuration loaded',
-                    message: `Successfully created a representation of the current configuration of present internal networks and machines.`
+                    message: `Successfully created a representation of the present configuration of internal networks.`
                 })
                 setIsDirty(null);
             })
@@ -261,7 +261,7 @@ function Flow({ }) {
             id: 'flow-init',
             color: 'suse-green',
             title: 'Saved intnet configuration',
-            message: `Network configuration of the intnets and virtual machines has been successfully updated and saved.`
+            message: `Network configuration has been successfully updated and saved.`
         })
 
         setIsDirty(false);

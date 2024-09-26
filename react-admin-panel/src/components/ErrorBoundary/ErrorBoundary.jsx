@@ -1,6 +1,6 @@
 import { Button, Center } from "@mantine/core";
 import { useNavigate, useRouteError } from "react-router-dom"
-import styles from './ErrorBoundary.module.css';
+import classes from './ErrorBoundary.module.css';
 import errors from '../../assets/data/errorResponses.json';
 import useAuth from "../../hooks/useAuth";
 
@@ -40,12 +40,12 @@ export default function ErrorBoundary() {
 
     return (
         <>
-            <Center className={styles.background}>
+            <Center className={classes.background}>
                 {e?.status || error.code}
             </Center>
-            <div className={styles.center}>
-                <h1 className={styles.title}>{error.title}</h1>
-                <span className={styles.message}>{message}</span>
+            <div className={classes.center}>
+                <h1 className={classes.title}>{error.title}</h1>
+                <span className={classes.message}>{message}</span>
                 <Button
                     onClick={onClick}
                     size='lg'

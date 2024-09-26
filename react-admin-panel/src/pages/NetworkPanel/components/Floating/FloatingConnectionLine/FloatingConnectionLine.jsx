@@ -1,7 +1,7 @@
 import React from 'react';
 import { getStraightPath } from '@xyflow/react';
 import { getEdgeParams } from '../utils.js';
-import '../Floating.css'
+import classes from '../Floating.module.css'
 
 function FloatingConnectionLine({
     toX,
@@ -37,8 +37,8 @@ function FloatingConnectionLine({
 
     return (
         <g>
-            <path className='connectionLinePath' d={edgePath}/>
-            <circle cx={toX} cy={toY} r={3} className='connectionLineCircle'/>
+            <path className={classes.connectionLinePath} d={edgePath}/>
+            <circle cx={toX} cy={toY} r={3} className={classes.connectionLineCircle}/>
         </g>
     );
 }

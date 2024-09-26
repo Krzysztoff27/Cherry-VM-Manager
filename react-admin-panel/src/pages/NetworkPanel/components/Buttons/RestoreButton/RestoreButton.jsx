@@ -11,7 +11,7 @@ export default function RestoreButton({resetFlow = () => {}, isDirty}) {
     const onCancel = () => close();
     const onConfirm = () => {
         close();
-        resetFlow()
+        resetFlow(false)
         .then(() => notifications.show({
             id: 'flow-reset',
             color: 'suse-green',

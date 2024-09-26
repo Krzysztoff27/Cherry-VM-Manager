@@ -1,6 +1,6 @@
 .machineNode::before {
     content: '';
-    background-image: url('/icons/pinned.svg');
+    background-image: url('/icons/Pinned.svg');
     background-size: contain;
     position: absolute;
     top: -16px;
