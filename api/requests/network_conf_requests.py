@@ -3,6 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from typing import Annotated
 from pathlib import Path
+from threading import Lock
 import re
 import uuid
 
@@ -22,6 +23,8 @@ PRESETS_PATH = Path('data/network_configuration/presets.json')
 current_state = JSONHandler(CURRENT_STATE_PATH) 
 snapshots = JSONHandler(SNAPSHOTS_PATH) 
 presets = JSONHandler(PRESETS_PATH) 
+
+lock = Lock()
 
 ###############################
 # classes & types
@@ -114,10 +117,17 @@ def validateJSONList(_list, list_name: str = 'list'):
         raise HTTPException(status_code=404, detail=f"List \"{list_name}\" is empty or undefined.")
 
 def getByUUID(_list, uuid):
-    found = next((item for item in _list if item['uuid'] == uuid), None)
-    if not found:
-        raise HTTPException(status_code=404, detail=f"Element not found.")
-    return found
+    for item in _list:
+        if item['uuid'] == uuid: 
+            return item        
+    raise HTTPException(status_code=404, detail=f"Element not found.")
+
+def getIndexByUUID(_list, uuid):
+    for i, item in enumerate(_list):
+        if item['uuid'] == uuid: 
+            return i
+    raise HTTPException(status_code=404, detail=f"Element not found.")
+
 
 ###############################
 # configuration requests
@@ -163,7 +173,7 @@ def create_network_snapshot(
     snapshots_list = snapshots.read()
     if not isinstance(snapshots_list, list): 
         snapshots_list = []
-    if not re.match(r'^[a-zA-Z][\w\-\ ]{3,16}$', snapshot.name):
+    if not re.match(r'^[\w\-\.\,() ]{2,15}$', snapshot.name):
         raise HTTPException(status_code=400, detail="Invalid snapshot name. The name must be between 3 and 16 characters and start with a letter, followed by alphanumeric characters, spaces, underscores, or hyphens.")
     if any(s['name'] == snapshot.name for s in snapshots_list):
         raise HTTPException(status_code=409, detail="Snapshot with this name already exists")
@@ -192,19 +202,19 @@ def get_snapshot(
     return getByUUID(snapshots_list, uuid)
     
 
-@app.delete("/network/snapshot/{uuid}", status_code=204)
+@app.delete("/network/snapshot/{uuid}")
 def delete_network_configuration_snapshot(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)],
 ):
-    snapshots_list = snapshots.read()
-    validateJSONList(snapshots_list, 'snapshots')
+    with lock:
+        snapshots_list = snapshots.read()
+        validateJSONList(snapshots_list, 'snapshots')
+        index = getIndexByUUID(snapshots_list, uuid)
+        snapshot = snapshots_list.pop(index)
 
-    snapshot = getByUUID(snapshots_list, uuid)
-    snapshots_list.remove(snapshot)
-
-    snapshots.write(snapshots_list)
-    return snapshot
+        snapshots.write(snapshots_list)
+        return snapshot
 
 ###############################
 # preset requests
