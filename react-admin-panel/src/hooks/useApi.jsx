@@ -6,14 +6,14 @@ import useErrorHandler from "./useErrorHandler";
  * 
  * @typedef {Object} useApiReturn
  * @property {function} getPath - combines given relative path with the base API URL
- * @property {function} get - Sends a GET request to the API
- * @property {function} post - Sends a POST request to the API
- * @property {function} put - Sends a PUT request to the API
+ * @property {function} getRequest - Sends a GET request to the API
+ * @property {function} postRequest - Sends a POST request to the API
+ * @property {function} deleteRequest - Sends a DELETE request to the API
  * 
  * @returns {useApiReturn} obj
  */
 export const useApi = () => {
-    const errorHandler = useErrorHandler();
+    const {requestResponseError} = useErrorHandler();
     const API_URL = import.meta.env.VITE_API_BASE_URL;
 
     const validPath = (path = '') => path.startsWith('/') ? path : `/${path}`;
@@ -22,47 +22,30 @@ export const useApi = () => {
      * Combines given relative path with the base API URL
      * @param {string} path
      * @returns {string} absolute path
-     */
+    */
     const getPath = (path) => API_URL ? `${API_URL}${validPath(path)}` : undefined;
 
     /**
-     * Sends a GET request to the API
+     * Sends a request of provided method to the API
      * @param {string} path - path relative to the configured base API URL
+     * @param {string} method - HTTP request method
      * @param {Object} options - additional options for the fetch
-     * @returns {object|undefined} json response
+     * @param {Object|undefined} body - if required, body for the request
+     * @returns {object} response body
      */
-    const get = async (path, options = {}) => 
-        await handleFetch(getPath(path), options, errorHandler);
-
-    /**
-     * Sends a POST request to the API
-     * @param {string} path - path relative to the configured base API URL
-     * @param {Object} body - body to be sent in the request
-     * @param {Object} options - additional options for the fetch
-     * @returns {object|undefined} json response
-     */
-    const post = async (path, body = {}, options = {}) => 
+    const sendRequest = async (path, method, options = {}, body = undefined, errorCallback) =>
         await handleFetch(getPath(path), {
-                ...options,
-                method: 'POST',
-                body: body,
-            }, errorHandler);
+            ...options,
+            method: method,
+            body: body,
+        }, errorCallback);
+    
+    const getRequest    = (path, options = {}, errorCallback = requestResponseError) =>            sendRequest(path, 'GET', options, undefined, errorCallback);
+    const deleteRequest = (path, options = {}, errorCallback = requestResponseError) =>            sendRequest(path, 'DELETE', options, undefined, errorCallback);
+    const postRequest   = (path, body = {}, options = {}, errorCallback = requestResponseError) => sendRequest(path, 'POST', options, body, errorCallback);
+    const putRequest    = (path, body = {}, options = {}, errorCallback = requestResponseError) => sendRequest(path, 'PUT', options, body, errorCallback);
 
-    /**
-     * Sends a PUT request to the API
-     * @param {string} path - path relative to the configured base API URL
-     * @param {Object} body - body to be sent in the request
-     * @param {Object} options - additional options for the fetch
-     * @returns {object|undefined} json response
-     */
-    const put = async (path, body = {}, options = {}) => 
-        await handleFetch(getPath(path), {
-                ...options,
-                method: 'PUT',
-                body: body,
-            }, errorHandler);
-
-    return { getPath, get, post, put };
+    return { getPath, getRequest, postRequest, putRequest, deleteRequest };
 };
 
 export default useApi;

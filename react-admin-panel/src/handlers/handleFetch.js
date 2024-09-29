@@ -2,11 +2,10 @@
  * Handles fetch, if fetch failed it creates a fake response with status code 503 - Service Unavailable
  * @param {string} URL URL of the object to be fetched
  * @param {Object} options additional options of the fetch
- * @param {Object} errorHandler 
- * @param {function} errorHandler.requestResponseError function called when response's status code is >= 400
+ * @param {function} errorCallback - function called when response is an error
  * @returns {object|undefined}
  */
-const handleFetch = async (URL, options = {}, errorHandler) => {
+const handleFetch = async (URL, options = {}, errorCallback) => {
     if(!URL) throw {status: 601, message: `Environmental variable "VITE_API_BASE_URL" is either not set or its value is invalid.`};
 
     const fetchOptions = {
@@ -25,7 +24,7 @@ const handleFetch = async (URL, options = {}, errorHandler) => {
     const text = await response.text(); 
     const json = text ? JSON.parse(text) : {};
 
-    if(!response.ok) return errorHandler.requestResponseError(response, json);
+    if(!response.ok) return errorCallback(response, json);
     return json;
 }
 
