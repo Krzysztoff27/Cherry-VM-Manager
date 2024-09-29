@@ -12,7 +12,7 @@
     },
     {
         "uuid": "8ddaf3c4-50b0-4b8a-9373-b74300b69ee6",
-        "name": "Wspólna Sieć",
+        "name": "Unified Intnet",
         "data": {
             "variables": {
                 "distance": "1000",
@@ -35,12 +35,26 @@
     },
     {
         "uuid": "b9c2c44d-2872-463b-be1c-ec9aa7dcc9fd",
-        "name": "Sieci Typu Maszyn",
+        "name": "Group-Based Intnet",
         "data": {
             "coreFunctions": {
                 "getIntnet": "ifElse([group] = 'desktop', 1, ifElse([group] = 'server', 2, 3))",
                 "getPosX": "[group_member_id] * 250",
                 "getPosY": "ifElse([group] = 'desktop', 0, 500)"
+            }
+        }
+    },
+    {
+        "uuid": "7ce1d833-a9a2-4e69-9626-fdda09adae7f",
+        "name": "Isolated IntNet Per VM",
+        "data": {
+            "variables": {
+                "sqrtLength": "sqrt([machines.length])"
+            },
+            "coreFunctions": {
+                "getIntnet": "0",
+                "getPosX": "floor([i] / [sqrtLength]) * 200",
+                "getPosY": "mod([i], [sqrtLength]) * 200"
             }
         }
     }
