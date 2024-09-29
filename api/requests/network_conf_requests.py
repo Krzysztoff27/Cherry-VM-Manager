@@ -112,22 +112,24 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
 def isIndexInList(_list, index):
     return index >= 0 and index < len(_list)
 
-def validateJSONList(_list, list_name: str = 'list'):
-    if not isinstance(_list, list): 
-        raise HTTPException(status_code=404, detail=f"List \"{list_name}\" is empty or undefined.")
+def raise404(element_name: str = 'element'):
+    raise HTTPException(status_code=404, detail=f"{element_name[0].upper()}{element_name[1:]} not found")
 
-def getByUUID(_list, uuid):
+def validateJSONList(_list, element_name: str = 'element'):
+    if not isinstance(_list, list): 
+        raise404(element_name)
+
+def getByUUID(_list, uuid, element_name: str = 'element'):
     for item in _list:
         if item['uuid'] == uuid: 
             return item        
-    raise HTTPException(status_code=404, detail=f"Element not found.")
+    raise404(element_name)
 
-def getIndexByUUID(_list, uuid):
+def getIndexByUUID(_list, uuid, element_name: str = 'element'):
     for i, item in enumerate(_list):
         if item['uuid'] == uuid: 
             return i
-    raise HTTPException(status_code=404, detail=f"Element not found.")
-
+    raise404(element_name)
 
 ###############################
 # configuration requests
@@ -170,19 +172,20 @@ def create_network_snapshot(
     snapshot: SnapshotCreate,
     current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> Snapshot:
-    snapshots_list = snapshots.read()
-    if not isinstance(snapshots_list, list): 
-        snapshots_list = []
-    if not re.match(r'^[\w\-\.\,() ]{2,15}$', snapshot.name):
-        raise HTTPException(status_code=400, detail="Invalid snapshot name. The name must be between 3 and 16 characters and start with a letter, followed by alphanumeric characters, spaces, underscores, or hyphens.")
-    if any(s['name'] == snapshot.name for s in snapshots_list):
-        raise HTTPException(status_code=409, detail="Snapshot with this name already exists")
+    with lock:
+        snapshots_list = snapshots.read()
+        if not isinstance(snapshots_list, list): 
+            snapshots_list = []
+        if not re.match(r'^[!-z]{3,24}$', snapshot.name):
+            raise HTTPException(status_code=400, detail="Invalid characters in the snapshot name.")
+        if any(s['name'] == snapshot.name for s in snapshots_list):
+            raise HTTPException(status_code=409, detail="Snapshot with this name already exists.")
 
-    snapshot = jsonable_encoder({**jsonable_encoder(snapshot), 'uuid': str(uuid.uuid4())})
-    snapshots_list.append(snapshot)
-    snapshots.write(snapshots_list)
+        snapshot = jsonable_encoder({**jsonable_encoder(snapshot), 'uuid': str(uuid.uuid4())})
+        snapshots_list.append(snapshot)
+        snapshots.write(snapshots_list)
 
-    return snapshot
+        return snapshot
 
 @app.get("/network/snapshot/all")
 def get_all_snapshots(
@@ -198,9 +201,27 @@ def get_snapshot(
     current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> Snapshot:
     snapshots_list = snapshots.read()
-    validateJSONList(snapshots_list, 'snapshots')
-    return getByUUID(snapshots_list, uuid)
+    validateJSONList(snapshots_list, 'snapshot')
+    return getByUUID(snapshots_list, uuid, 'snapshot')
     
+@app.post("/network/snapshot/{uuid}/rename/{name}")
+def rename_snapshot(
+    uuid: str,
+    name: str,
+    current_user: Annotated[User, Depends(get_authorized_user)],
+) -> Snapshot:
+    with lock:
+        snapshots_list = snapshots.read()
+        validateJSONList(snapshots_list, 'snapshot')
+
+        for s in snapshots_list:
+            if s['name'] == name: raise HTTPException(status_code=409, detail="Snapshot with this name already exists.")
+
+        index = getIndexByUUID(snapshots_list, uuid, 'snapshot')
+        snapshots_list[index]['name'] = name
+
+        snapshots.write(snapshots_list)
+        return snapshots_list[index]
 
 @app.delete("/network/snapshot/{uuid}")
 def delete_network_configuration_snapshot(
@@ -209,8 +230,8 @@ def delete_network_configuration_snapshot(
 ):
     with lock:
         snapshots_list = snapshots.read()
-        validateJSONList(snapshots_list, 'snapshots')
-        index = getIndexByUUID(snapshots_list, uuid)
+        validateJSONList(snapshots_list, 'snapshot')
+        index = getIndexByUUID(snapshots_list, uuid, 'snapshot')
         snapshot = snapshots_list.pop(index)
 
         snapshots.write(snapshots_list)
@@ -234,5 +255,5 @@ def get_network_configuration_preset(
     current_user: Annotated[User, Depends(get_authorized_user)]
 ) -> Preset:
     presets_list = presets.read()
-    validateJSONList(presets_list, 'presets')
-    return getByUUID(presets_list, uuid) 
+    validateJSONList(presets_list, 'preset')
+    return getByUUID(presets_list, uuid, 'preset') 
