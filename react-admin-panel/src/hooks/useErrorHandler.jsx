@@ -23,7 +23,7 @@ const useErrorHandler = (defaultOptions = {}) => {
      */
     const getError = (code = 'default-notification', detail = '') => {
         let error = errors[code] ?? errors['default-notification'];
-        if(error.variants && detail) error = error.variants.find(variant => variant.message === detail) || error;
+        if(error.variants && detail) error = error.variants.find(variant => variant.matches === detail) || error;
 
         return error;
     }
@@ -52,7 +52,7 @@ const useErrorHandler = (defaultOptions = {}) => {
     const requestResponseError = async (response = new Response(), body = {}) => {
         const code = response?.status;
         const error = getError(code, body.detail);
-        const message = (error.detailOverride ? undefined : body.detail) || error.notification || error.message;
+        const message = error.displayDetail ? body.detail : error.notification || error.message;
 
         showErrorNotification({
             id: `${code}-${Date.now()}`,
@@ -61,7 +61,7 @@ const useErrorHandler = (defaultOptions = {}) => {
         })
     };
 
-    return { requestResponseError };
+    return { requestResponseError, showErrorNotification };
 };
 
 export default useErrorHandler;

@@ -11,20 +11,22 @@
         "notification": "Your request could not be processed due to an error. Please verify your input and try again."
     },
     "401": {
+        "code": 401,
+        "title": "Unauthorized",
+        "message": "You are not authorized to access this resource. If you were previously logged in, your session may have expired. Please log in again to continue.",
+        "notification": "You are not authorized to access this resource. Please log in to continue.",
         "variants": [
             {
+                "matches": "Incorrect username or password.",
                 "title": "Login failed",
                 "notification": "Incorrect username or password."
             },
             {
+                "matches": "Please log in to the panel again.",
                 "title": "Session expired",
                 "notification": "Please log in to the panel again."
             }
-        ],
-        "code": 401,
-        "title": "Unauthorized",
-        "message": "You are not authorized to access this resource. If you were previously logged in, your session may have expired. Please log in again to continue.",
-        "notification": "You are not authorized to access this resource. Please log in to continue."
+        ]
     },
     "403": {
         "code": 403,
@@ -36,7 +38,19 @@
         "code": 404,
         "title": "Page Not Found",
         "message": "The page you are trying to access doesn't exist. Check the URL or contact the development team if you believe this is an error.",
-        "notification": "The page you are looking for could not be found. Please check the URL or contact the development team."
+        "notification": "The page you are looking for could not be found. Please check the URL or contact the development team.",
+        "variants": [
+            {
+                "matches": "Snapshot not found",
+                "title": "Snapshot Not Found",
+                "notification": "Selected snapshot no longer exists."
+            },
+            {
+                "matches": "Preset not found",
+                "title": "Preset Not Found",
+                "notification": "Selected preset no longer exists."
+            }
+        ]
     },
     "408": {
         "code": 408,
@@ -72,8 +86,7 @@
         "code": 500,
         "title": "Something bad has happened",
         "message": "API service encountered an issue and couldn't complete your request. Please try refreshing the page.",
-        "notification": "API service could not handle the request because of an internal issue.",
-        "detailOverride": true
+        "notification": "API service could not handle the request because of an internal issue."
     },
     "503": {
         "code": 503,
