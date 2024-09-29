@@ -2,6 +2,7 @@ import Formula from 'fparser';
 import { isObject, safeObjectValues, zipToObject } from '../utils/misc';
 import { calcMiddlePosition } from '../utils/reactFlow';
 import { createMachineNode } from '../pages/NetworkPanel/NetworkPanel';
+import useErrorHandler from './useErrorHandler';
 
 /**
  * @typedef {Object} RawVariables - non calculated, the values of the keys are uncalculated expressions
@@ -26,6 +27,8 @@ const builtInFunctions = {
     ifElse: (predicate, trueValue, falseValue) => (predicate ? trueValue : falseValue),
     or: (...args) => args.some(e => e),
     and: (...args) => args.every(e => e),
+    mod: (dividend, divisor) => dividend % divisor,
+    len: (string) => `${string}`.length,
 }
 
 /**
@@ -45,9 +48,20 @@ const builtInFunctions = {
  * @returns {CalculatedVariables}
  */
 const calculateVariables = (variables, defaultScope = {}) => {
+    const { showErrorNotification } = useErrorHandler();
+
     let calculatedVariables = isObject(defaultScope) ? defaultScope : {};
     for (const [key, expression] of Object.entries(variables)) {
-        calculatedVariables[key] = Formula.calc(`${expression}`, calculatedVariables);
+        try {
+            calculatedVariables[key] = Formula.calc(`${expression}`, calculatedVariables);
+        } catch (e) {
+            showErrorNotification({
+                id: `invalid-formula-${key}-${Date.now()}`,
+                title: 'Could Not Load The Preset',
+                message: `An error occured during calculation of the "${key}" variable.`,
+            });
+            break;
+        }
     }
     return calculatedVariables;
 }
@@ -59,20 +73,53 @@ const calculateVariables = (variables, defaultScope = {}) => {
  * @returns {CustomFunctions}
  */
 const getCustomFunctions = (customFunctions, defaultScope = {}) => {
+    const { showErrorNotification } = useErrorHandler();
     if (!customFunctions) return {};
 
     let functions = {};
     for (const [key, func] of Object.entries(customFunctions)) {
         // functions[key] is set to be a function accepting arguments for the expression and calling that expression using fparser
-        functions[key] = (...args) => Formula.calc( 
-            `${func.expression}`,                                       // formula's expression
-            { ...zipToObject(func.arguments, args), ...defaultScope }   // formula's scope (CalculatedVariables)
-        );
+        functions[key] = (...args) => {
+            try {
+                return Formula.calc(
+                    `${func.expression}`,                                       // formula's expression
+                    { ...zipToObject(func.arguments, args), ...defaultScope }   // formula's scope (CalculatedVariables)
+                );
+            } catch (e) {
+                showErrorNotification({
+                    id: `invalid-formula-${key}-${Date.now()}`,
+                    title: 'Could Not Load The Preset',
+                    message: `An error occured during calculation of the "${key}" custom function.`,
+                });
+            }
+        }
     }
     functions = { ...functions, ...builtInFunctions };
 
     return functions;
 }
+
+/**
+ * Loads a formula from the given core function and handles any syntax errors.
+ *
+ * @param {string} coreFunction - String form of core function to create the Formula instance.
+ * @param {string} functionName - The name of the function, used for error notifications.
+ * @returns {Formula|undefined} The created Formula instance, or undefined if an error occurred. 
+ */
+const loadFormula = (coreFunction, functionName) => {
+    const { showErrorNotification } = useErrorHandler();
+
+    try {
+        if (!coreFunction) throw new Error('not defined')
+        return new Formula(coreFunction);
+    } catch (e) {
+        showErrorNotification({
+            id: `invalid-formula-${functionName}-${Date.now()}`,
+            title: 'Could Not Load The Preset',
+            message: e === 'not defined' ? `${functionName} is either not defined or empty.` : `Syntax error occurred in the preset's ${functionName} core function.`,
+        });
+    }
+};
 
 /**
  * Turns preset's core expressions into fparser Formulas. It then defines custom functions on the Formula objects.
@@ -81,9 +128,9 @@ const getCustomFunctions = (customFunctions, defaultScope = {}) => {
  * @returns {CoreFunctions}
  */
 const getCoreFunctions = (coreFunctions, customFunctions) => {
-    const getIntnet = new Formula(coreFunctions.getIntnet);
-    const getPosX = new Formula(coreFunctions.getPosX);
-    const getPosY = new Formula(coreFunctions.getPosY);
+    const getIntnet = loadFormula(coreFunctions.getIntnet, 'getIntnet');
+    const getPosX = loadFormula(coreFunctions.getPosX, 'getPosX');
+    const getPosY = loadFormula(coreFunctions.getPosY, 'getPosY');
 
     const setFormulasFunctions = (formula) => Object.entries(customFunctions).forEach(([key, func]) => formula[key] = func);
 
@@ -101,9 +148,11 @@ const getCoreFunctions = (coreFunctions, customFunctions) => {
  * @param {CalculatedVariables} variables - calculated variables to be used by core functions 
  * @returns 
  */
-const calculateConfig = (machines, {getIntnet, getPosX, getPosY}, variables) => {
+const calculateConfig = (machines, { getIntnet, getPosX, getPosY }, variables) => {
+    const {showErrorNotification} = useErrorHandler();
     const nodes = [];
     const intnets = {};
+    let error = false;
 
     /**
      * Adds machine id to the machines array in the intnets object.
@@ -123,9 +172,22 @@ const calculateConfig = (machines, {getIntnet, getPosX, getPosY}, variables) => 
      */
     const createMachineNodes = () => safeObjectValues(machines).forEach((machine, i) => {
         const evalArguments = { ...machine, i: i, ...variables }; //combined arguments to be used in the core functions
+        try {
+            const intnet = getIntnet.evaluate(evalArguments);
+            const [x, y] = [getPosX.evaluate(evalArguments), getPosY.evaluate(evalArguments)]
 
-        addMachineToIntnet(getIntnet.evaluate(evalArguments), machine.id);
-        nodes.push(createMachineNode(machine, {x: (getPosX.evaluate(evalArguments)) ?? 0, y: (getPosY.evaluate(evalArguments)) ?? 0}));
+            if(isNaN(intnet) || isNaN(x) || isNaN(y)) throw new Error();
+
+            if (intnet) addMachineToIntnet(intnet, machine.id);
+            nodes.push(createMachineNode(machine, { x: x, y: y }));
+        } catch (e) {
+            if(e.message) showErrorNotification({
+                id: `invalid-formula-${Date.now()}`,
+                title: 'Could Not Load The Preset',
+                message: `${e.message}`,
+            });
+            return error = true;
+        }
     });
 
     /**
@@ -143,9 +205,10 @@ const calculateConfig = (machines, {getIntnet, getPosX, getPosY}, variables) => 
     }
 
     createMachineNodes();
-    createIntnetNodes();
+    if(error) return null;
 
-    return {flow: {nodes}, intnets};
+    createIntnetNodes();
+    return { flow: { nodes }, intnets };
 }
 
 /**
