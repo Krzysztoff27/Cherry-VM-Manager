@@ -33,7 +33,7 @@ const useErrorHandler = (defaultOptions = {}) => {
             id: 'albatrosy',
             withCloseButton: true,
             loading: false,
-            autoClose: 10000,
+            autoClose: 5000,
             className: 'error-class',
             color: 'red',
             icon: <IconX />,
