@@ -1,4 +1,4 @@
-import { Grid, Paper, rem, ScrollArea } from "@mantine/core";
+import { Grid } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
@@ -11,12 +11,12 @@ import useApi from "../../hooks/useApi";
 import ConsoleDisplay from "./components/ConsoleDisplay/ConsoleDisplay";
 
 export default function MachinePage() {
-    const { get } = useApi();
+    const { getRequest } = useApi();
     const { id } = useParams();
     const { authOptions } = useAuth();
     const [currentState, setCurrentState] = useState({ loading: true })
 
-    const loadState = async () => setCurrentState(await get(`vm/${id}/state`, authOptions));
+    const loadState = async () => setCurrentState(await getRequest(`vm/${id}/state`, authOptions));
 
     useEffect(() => {
         const clear = clockSynchronizedTimeout(loadState, 1)
@@ -35,6 +35,5 @@ export default function MachinePage() {
                 <MachineStateChart currentState={currentState} />
             </StretchingColumn>
         </Grid >
-
     )
 }

@@ -85,7 +85,7 @@ const generateNewPos = () => ({ x: newPositionsAllocator.getNext() * 100, y: 0 }
 
 function Flow({ }) {
     const { authOptions } = useAuth();
-    const { get, post, put } = useApi();
+    const { getRequest, postRequest, putRequest } = useApi();
     const { generateConfigFromPreset } = useFlowPresets();
 
     const [nodes, setNodes] = useState([]);
@@ -147,8 +147,10 @@ function Flow({ }) {
     // PRESETS
 
     const loadPreset = async (uuid) => {
-        const preset = await get(`/network/preset/${uuid}`, authOptions);
+        const preset = await getRequest(`/network/preset/${uuid}`, authOptions);
         const config = generateConfigFromPreset(preset, machines);
+        if(!config) return;
+
         loadFlowWithIntnets(config.flow, config.intnets, true).then(() => setIsDirty(true));
     }
 
@@ -161,10 +163,13 @@ function Flow({ }) {
     );
         
     const takeSnapshot = (name) => ({...getSnapshotData(), name: name, intnets: getIntnetConfig()})
-    const postSnapshot = (name) => post('/network/snapshot', JSON.stringify(takeSnapshot(name)), authOptions);
+    const postSnapshot = (name, errorCallback = undefined) => postRequest('/network/snapshot', JSON.stringify(takeSnapshot(name)), authOptions, errorCallback);
 
     const loadSnapshot = async (uuid) => {
-        const { name, intnets, ...flow } = await get(`/network/snapshot/${uuid}`, authOptions);
+        const data = await getRequest(`/network/snapshot/${uuid}`, authOptions);
+        if(!data) return;
+        
+        const { name, intnets, ...flow } = data;
         return loadFlowWithIntnets(flow, intnets).then(() => setIsDirty(true));
     }
 
@@ -197,12 +202,12 @@ function Flow({ }) {
             createFlowNodes(NODE_TYPES.intnet, safeObjectValues(intnets), positions);
             createIntnetEdges(intnets);
 
-            intnetAllocator.setCurrent(Math.max(...Object.keys(intnets || {})));
+            intnetAllocator.setCurrent(Math.max(...Object.keys(intnets || {}), 0));
             resolve();
         });
 
     const resetFlow = async (resetViewport = true) => {
-        const { intnets, ...flow } = await get('/network/configuration', authOptions);
+        const { intnets, ...flow } = await getRequest('/network/configuration', authOptions);
         return loadFlowWithIntnets(flow, intnets, resetViewport);
     };
 
@@ -269,8 +274,8 @@ function Flow({ }) {
 
     // APPLY CHANGES REQUESTS
 
-    const putFlowState = (state) => put('/network/configuration/panelstate', JSON.stringify(state), authOptions);
-    const putIntnetConfiguration = () => put('/network/configuration/intnets', JSON.stringify(getIntnetConfig()), authOptions);
+    const putFlowState = (state) => putRequest('/network/configuration/panelstate', JSON.stringify(state), authOptions);
+    const putIntnetConfiguration = () => putRequest('/network/configuration/intnets', JSON.stringify(getIntnetConfig()), authOptions);
 
     //
 
@@ -278,7 +283,7 @@ function Flow({ }) {
 
     if (machinesLoading) return;
     if (machinesError) throw machinesError;
-
+    
     return (
         <>
             <Prompt when={isDirty} />
@@ -299,6 +304,7 @@ function Flow({ }) {
                     connectionLineComponent={FloatingConnectionLine}
                 >
                     <FlowPanel
+                        key='flow-panel'
                         runPresetButtonProps={{ machines, loadFlowWithIntnets }}
                         addSnapshotButtonProps={{ postSnapshot }}
                         applyNetworkConfig={applyNetworkConfig}

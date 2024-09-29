@@ -6,8 +6,8 @@ import useApi from "../../../../hooks/useApi";
 
 const VALUE_SEPERATOR = ':::';
 
-export default function Select({authOptions, loadSnapshot, loadPreset, forceUpdate}) {
-    const {get} = useApi();
+export default function Select({authOptions, loadSnapshot, loadPreset, forceSnapshotDataUpdate}) {
+    const {getRequest} = useApi();
     const [snapshotComponents, setSnapshotComponents] = useState([]);
     const [presetComponents, setPresetComponents] = useState([]);
     const [confirmationOpened, { open, close }] = useDisclosure(false);
@@ -19,8 +19,8 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceUpda
     
     useEffect(() => {
         const setData = async () => {
-            const snapshots = await get('/network/snapshot/all', authOptions);
-            const presets = await get('/network/preset/all', authOptions);
+            const snapshots = await getRequest('/network/snapshot/all', authOptions);
+            const presets = await getRequest('/network/preset/all', authOptions);
             setSnapshotComponents(snapshots?.map((s, i) => 
                 <option key={i} value={combineValues('snapshot', s.uuid)}> {s.name}</option>
             ) ?? []);
@@ -29,7 +29,7 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceUpda
             ) ?? []);
         }
         setData();
-    }, [authOptions, forceUpdate]);
+    }, [authOptions, forceSnapshotDataUpdate]);
 
     const onChange = (event) => {
         if(event.currentTarget.value === 'null') return;
@@ -38,6 +38,7 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceUpda
     }
 
     const onModalCancel = () => {
+        selectedValue.current = null;
         close();
     }
 

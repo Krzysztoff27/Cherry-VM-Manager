@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const {post} = useApi();
+    const {postRequest} = useApi();
     const {setToken} = useAuth();
     const form = useForm({
         mode: 'uncontrolled',
@@ -23,11 +23,11 @@ export default function LoginPage() {
      * @property {string} username
      * @property {string} password
      * 
-     * Sends a POST request for the token with filled form data
+     * Sends a postRequest request for the token with filled form data
      * @param {TokenRequestForm} values 
      */
     async function authenticate(values) {
-        const jsonResponse = await post('/token', new URLSearchParams({
+        const jsonResponse = await postRequest('/token', new URLSearchParams({
             username: values.username,
             password: values.password,
         }));

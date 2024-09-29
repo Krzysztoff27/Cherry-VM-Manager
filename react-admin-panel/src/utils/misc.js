@@ -77,6 +77,16 @@ export const isInRange = (value, min, max) => value >= min && value <= max;
 
 export const startsWithLetter = (str = '') => str ? /[a-z]/i.test(str[0]) : false;
 
+/**
+ * Checks if element is occurs at multiple positions in the array
+ * @param {any} element 
+ * @param {Array} array 
+ * @returns {boolean}
+ */
+export const hasMultipleOccurrences = (element, array = []) => array.filter(e => e === element).length > 1;
+
+export const pluralize = (text, refAmount) => `${text}${refAmount > 1 ? 's' : ''}`
+
 export default {
     isObject,
     noneOrEmpty,
@@ -86,4 +96,6 @@ export default {
     clockSynchronizedTimeout,
     isInRange,
     startsWithLetter,
+    hasMultipleOccurrences,
+    pluralize,
 }
