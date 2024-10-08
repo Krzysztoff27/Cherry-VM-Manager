@@ -11,13 +11,16 @@ import useApi from "./useApi";
  * @param {string} path path of the resource, relative to the API base URL
  * @param {object|undefined} options - additional options for the fetch
  * @returns {useFetchReturn}
- */
+*/
 const useFetch = (path, options = undefined) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
-    const {getPath} = useApi();
+    const [refreshValue, setRefreshValue] = useState(false);
 
+    const refresh = () => setRefreshValue(prev => !prev);
+
+    const { getPath } = useApi();
     const fetchURL = getPath(path);
 
     useEffect(() => {
@@ -31,13 +34,13 @@ const useFetch = (path, options = undefined) => {
                             'Content-Type': 'text/plain'
                         }
                     }));
-                    
-                if (!response.ok){
+
+                if (!response.ok) {
                     setData(null);
                     setError(response);
                     setLoading(false);
                 }
-                else{
+                else {
                     const json = await response.json();
                     setData(json);
                     setError(null);
@@ -50,9 +53,9 @@ const useFetch = (path, options = undefined) => {
             }
         };
         fetchData();
-    }, [path, options]);
+    }, [path, options, refreshValue]);
 
-    return { loading, error, data };
+    return { loading, error, data, refresh };
 }
 
 export default useFetch;
