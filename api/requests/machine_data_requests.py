@@ -35,17 +35,17 @@ class MachineState(VirtualMachine):         # * when displaying a page needing t
 @app.get("/vm/all/networkdata") # * request for network data of all VMs
 async def get_all_vms_network_data(
     current_user: Annotated[User, Depends(get_authorized_user)], # ! provides authentication, no need to do anything with it
-) -> dict[int, MachineNetworkData]:
+) -> dict[str, MachineNetworkData]:
     # ...
     # ... code here
     # ...
     # example return:
     return {
-        1: MachineNetworkData(uuid='b38350cf-105f-4ecd-8eb4-3d9370d39f0e', group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
-        2: MachineNetworkData(uuid='280af110-b78c-4c7a-a554-d38bc0c428df', group='desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
+        'b38350cf-105f-4ecd-8eb4-3d9370d39f0e': MachineNetworkData(uuid='b38350cf-105f-4ecd-8eb4-3d9370d39f0e', group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
+        '280af110-b78c-4c7a-a554-d38bc0c428df': MachineNetworkData(uuid='280af110-b78c-4c7a-a554-d38bc0c428df', group='desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
         # ...
-        17: MachineNetworkData(uuid='a923601a-fc61-44cb-b007-5df89b1966e2', group='server',  group_member_id=1, port=1501, domain='server1.wisniowa.oedu.pl'),
-        18: MachineNetworkData(uuid='67ac8bfd-2b97-4196-9572-5b519960bf3f', id=18, group='server',  group_member_id=2, port=1502, domain='server2.wisniowa.oedu.pl'),
+        'a923601a-fc61-44cb-b007-5df89b1966e2': MachineNetworkData(uuid='a923601a-fc61-44cb-b007-5df89b1966e2', group='server',  group_member_id=1, port=1501, domain='server1.wisniowa.oedu.pl'),
+        '67ac8bfd-2b97-4196-9572-5b519960bf3f': MachineNetworkData(uuid='67ac8bfd-2b97-4196-9572-5b519960bf3f', id=18, group='server',  group_member_id=2, port=1502, domain='server2.wisniowa.oedu.pl'),
         # ...
     }
     
@@ -53,17 +53,17 @@ async def get_all_vms_network_data(
 @app.get("/vm/all/state") # * request for state of all VMs
 async def get_all_vms_state(
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
-) -> dict[int, MachineState]:
+) -> dict[str, MachineState]:
     # ...
     # ... code here
     # ...
     # example return:
     return {
-        1: MachineState(uuid='b38350cf-105f-4ecd-8eb4-3d9370d39f0e',group='desktop', active=True, group_member_id=1, cpu=42, ram_used=3462, ram_max=4096),
-        2: MachineState(uuid='280af110-b78c-4c7a-a554-d38bc0c428df',group='desktop', active=False, group_member_id=2),
+        'b38350cf-105f-4ecd-8eb4-3d9370d39f0e': MachineState(uuid='b38350cf-105f-4ecd-8eb4-3d9370d39f0e',group='desktop', active=True, group_member_id=1, cpu=42, ram_used=3462, ram_max=4096),
+        '280af110-b78c-4c7a-a554-d38bc0c428df': MachineState(uuid='280af110-b78c-4c7a-a554-d38bc0c428df',group='desktop', active=False, group_member_id=2),
         # ...
-        17: MachineState(uuid='a923601a-fc61-44cb-b007-5df89b1966e2', group='server',  active=False, group_member_id=1),
-        18: MachineState(uuid='67ac8bfd-2b97-4196-9572-5b519960bf3f', group='server',  active=True, group_member_id=2, cpu=97, ram_used=1094, ram_max=4096),
+        'a923601a-fc61-44cb-b007-5df89b1966e2': MachineState(uuid='a923601a-fc61-44cb-b007-5df89b1966e2', group='server',  active=False, group_member_id=1),
+        '67ac8bfd-2b97-4196-9572-5b519960bf3f': MachineState(uuid='67ac8bfd-2b97-4196-9572-5b519960bf3f', group='server',  active=True, group_member_id=2, cpu=97, ram_used=1094, ram_max=4096),
         # ...
     }
 
