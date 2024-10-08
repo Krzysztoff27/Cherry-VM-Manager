@@ -10,7 +10,7 @@ from auth import get_authorized_user, User
 ###############################
 
 class VirtualMachine(BaseModel):            # * parent class with properties needed in every request
-    id: int                                 # unique ID for each machine
+    uuid: str                                 # unique ID for each machine
     group: str | None = None                # string of a corresponding machine group e.g.: "Desktop" or "Server"
     group_member_id: int | None = None      # unique ID for each machine in the scope of a group
 
@@ -41,11 +41,11 @@ async def get_all_vms_network_data(
     # ...
     # example return:
     return {
-        1: MachineNetworkData(id=1, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
-        2: MachineNetworkData(id=2, group='desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
+        1: MachineNetworkData(uuid='b38350cf-105f-4ecd-8eb4-3d9370d39f0e', group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl'),
+        2: MachineNetworkData(uuid='280af110-b78c-4c7a-a554-d38bc0c428df', group='desktop', group_member_id=2, port=1002, domain='desktop2.wisniowa.oedu.pl'),
         # ...
-        17: MachineNetworkData(id=17, group='server',  group_member_id=1, port=1501, domain='server1.wisniowa.oedu.pl'),
-        18: MachineNetworkData(id=18, group='server',  group_member_id=2, port=1502, domain='server2.wisniowa.oedu.pl'),
+        17: MachineNetworkData(uuid='a923601a-fc61-44cb-b007-5df89b1966e2', group='server',  group_member_id=1, port=1501, domain='server1.wisniowa.oedu.pl'),
+        18: MachineNetworkData(uuid='67ac8bfd-2b97-4196-9572-5b519960bf3f', id=18, group='server',  group_member_id=2, port=1502, domain='server2.wisniowa.oedu.pl'),
         # ...
     }
     
@@ -59,32 +59,32 @@ async def get_all_vms_state(
     # ...
     # example return:
     return {
-        1: MachineState(id=1, group='desktop', active=True, group_member_id=1, cpu=42, ram_used=3462, ram_max=4096),
-        2: MachineState(id=2, group='desktop', active=False, group_member_id=2),
+        1: MachineState(uuid='b38350cf-105f-4ecd-8eb4-3d9370d39f0e',group='desktop', active=True, group_member_id=1, cpu=42, ram_used=3462, ram_max=4096),
+        2: MachineState(uuid='280af110-b78c-4c7a-a554-d38bc0c428df',group='desktop', active=False, group_member_id=2),
         # ...
-        17: MachineState(id=17, group='server',  active=False, group_member_id=1),
-        18: MachineState(id=18, group='server',  active=True, group_member_id=2, cpu=97, ram_used=1094, ram_max=4096),
+        17: MachineState(uuid='a923601a-fc61-44cb-b007-5df89b1966e2', group='server',  active=False, group_member_id=1),
+        18: MachineState(uuid='67ac8bfd-2b97-4196-9572-5b519960bf3f', group='server',  active=True, group_member_id=2, cpu=97, ram_used=1094, ram_max=4096),
         # ...
     }
 
 @app.get("/vm/{id}/networkdata") # * request for network data of VM with specific <id>
 async def get_vm_network_data(
-    id: int,
+    uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> MachineNetworkData: # 
     # ...
     # ... code here
     # ...
     # example return:
-    return MachineNetworkData(id=id, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
+    return MachineNetworkData(uuid=uuid, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
 
 @app.get("/vm/{id}/state") # * request for network data of VM with specific <id>
 async def get_vm_state(
-    id: int,
+    uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> MachineState:
     # ...
     # ... code here
     # ...
     # example return:
-    return MachineState(id=id, group='Desktop', group_member_id=1, active=True, cpu=42, ram_used=3462, ram_max=4096)
+    return MachineState(uuid=uuid, group='Desktop', group_member_id=1, active=True, cpu=42, ram_used=3462, ram_max=4096)
