@@ -10,7 +10,7 @@ from auth import get_authorized_user, User
 ###############################
 
 class VirtualMachine(BaseModel):            # * parent class with properties needed in every request
-    id: int                                 # unique ID for each machine
+    uuid: str                                 # unique ID for each machine
     group: str | None = None                # string of a corresponding machine group e.g.: "Desktop" or "Server"
     group_member_id: int | None = None      # unique ID for each machine in the scope of a group
 
@@ -38,7 +38,7 @@ import random
 @app.get("/vm/all/networkdata") # * request for network data of all VMs
 async def get_all_vms_network_data(
     current_user: Annotated[User, Depends(get_authorized_user)], # ! provides authentication, no need to do anything with it
-) -> dict[int, MachineNetworkData]:
+) -> dict[str, MachineNetworkData]:
     # ...
     # ... code here
     # ...
@@ -49,7 +49,7 @@ async def get_all_vms_network_data(
 @app.get("/vm/all/state") # * request for state of all VMs
 async def get_all_vms_state(
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
-) -> dict[int, MachineState]:
+) -> dict[str, MachineState]:
     # ...
     # ... code here
     # ...
@@ -64,18 +64,18 @@ async def get_all_vms_state(
 
 @app.get("/vm/{id}/networkdata") # * request for network data of VM with specific <id>
 async def get_vm_network_data(
-    id: int,
+    uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> MachineNetworkData: # 
     # ...
     # ... code here
     # ...
     # example return:
-    return NETWORK_DATA_DUMMY[id]
+    return NETWORK_DATA_DUMMY[uuid]
 
 @app.get("/vm/{id}/state") # * request for network data of VM with specific <id>
 async def get_vm_state(
-    id: int,
+    uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> MachineState:
     # ...
@@ -83,7 +83,7 @@ async def get_vm_state(
     # ...
     # example return:
     
-    state = STATE_DUMMY[id]
+    state = STATE_DUMMY[uuid]
     if not state.active: return state
     state.cpu = random.randint(max(0, state.cpu - 15), min(state.cpu + 15, 100))
     state.ram_used = random.randint(max(0, state.ram_used - 1024), min(state.ram_used + 2048, 4096))
