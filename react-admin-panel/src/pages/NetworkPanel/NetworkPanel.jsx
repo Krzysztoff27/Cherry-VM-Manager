@@ -83,7 +83,7 @@ const createIntnetNode = (intnet, position) => ({
 const newPositionsAllocator = new NumberAllocator();
 const generateNewPos = () => ({ x: newPositionsAllocator.getNext() * 100, y: 0 });
 
-function Flow({ }) {
+function Flow() {
     const { authOptions } = useAuth();
     const { getRequest, postRequest, putRequest } = useApi();
     const { generateConfigFromPreset } = useFlowPresets();
@@ -101,9 +101,8 @@ function Flow({ }) {
      * null - no unsaved changes and just loaded
      */
     const [isDirty, setIsDirty] = useState(null);
-    
 
-    const { loading: machinesLoading, error: machinesError, data: machines } = useFetch('/vm/all/networkdata', authOptions);
+    const { loading: machinesLoading, error: machinesError, data: machines, refresh: refreshMachines } = useFetch('/vm/all/networkdata', authOptions);
 
     const addNodes = (...nodes) => setNodes(nds => [...nds, ...nodes.flat()]);
     const addEdgeToFlow = (edge) => setEdges(eds => addEdge(edge, eds));
@@ -214,12 +213,13 @@ function Flow({ }) {
     const initFlow = useCallback(() => {
         resetFlow()
             .then(() => {
+                notifications.hide(`flow-init`);
                 notifications.show({
-                    id: 'flow-init',
+                    id: `flow-init`,
                     color: 'suse-green',
-                    title: 'Network configuration loaded',
+                    title: 'Network Configuration Loaded',
                     message: `Successfully created a representation of the present configuration of internal networks.`
-                })
+                });
                 setIsDirty(null);
             })
             .catch((error) => console.error(error));
@@ -304,13 +304,13 @@ function Flow({ }) {
                     connectionLineComponent={FloatingConnectionLine}
                 >
                     <FlowPanel
-                        key='flow-panel'
-                        runPresetButtonProps={{ machines, loadFlowWithIntnets }}
-                        addSnapshotButtonProps={{ postSnapshot }}
+                        refreshMachines={refreshMachines}
                         applyNetworkConfig={applyNetworkConfig}
                         resetFlow={resetFlow}
                         isDirty={isDirty}
-                        selectProps={{ loadSnapshot, loadPreset, authOptions }}
+                        loadSnapshot={loadSnapshot}
+                        loadPreset={loadPreset}
+                        postSnapshot={postSnapshot}
                     />
                     <Controls />
                     <MiniMap nodeStrokeWidth={3} pannable zoomable />

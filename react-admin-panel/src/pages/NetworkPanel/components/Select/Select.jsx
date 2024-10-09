@@ -3,11 +3,13 @@ import { useDisclosure } from "@mantine/hooks";
 import { useEffect, useRef, useState } from "react";
 import ConfirmationModal from "../ConfirmationModal/ConfirmationModal";
 import useApi from "../../../../hooks/useApi";
+import useAuth from "../../../../hooks/useAuth";
 
 const VALUE_SEPERATOR = ':::';
 
-export default function Select({authOptions, loadSnapshot, loadPreset, forceSnapshotDataUpdate}) {
-    const {getRequest} = useApi();
+export default function Select({ loadSnapshot, loadPreset, forceSnapshotDataUpdate }) {
+    const { getRequest } = useApi();
+    const { authOptions } = useAuth();
     const [snapshotComponents, setSnapshotComponents] = useState([]);
     const [presetComponents, setPresetComponents] = useState([]);
     const [confirmationOpened, { open, close }] = useDisclosure(false);
@@ -16,15 +18,15 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceSnap
     const combineValues = (...values) => values.join(VALUE_SEPERATOR);
 
     const splitValues = (value) => value.split?.(VALUE_SEPERATOR);
-    
+
     useEffect(() => {
         const setData = async () => {
             const snapshots = await getRequest('/network/snapshot/all', authOptions);
             const presets = await getRequest('/network/preset/all', authOptions);
-            setSnapshotComponents(snapshots?.map((s, i) => 
+            setSnapshotComponents(snapshots?.map((s, i) =>
                 <option key={i} value={combineValues('snapshot', s.uuid)}> {s.name}</option>
             ) ?? []);
-            setPresetComponents(presets?.map((p, i) => 
+            setPresetComponents(presets?.map((p, i) =>
                 <option key={i} value={combineValues('preset', p.uuid)}>&#xf023; &nbsp;{p.name}</option>
             ) ?? []);
         }
@@ -32,7 +34,7 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceSnap
     }, [authOptions, forceSnapshotDataUpdate]);
 
     const onChange = (event) => {
-        if(event.currentTarget.value === 'null') return;
+        if (event.currentTarget.value === 'null') return;
         selectedValue.current = event.currentTarget.value;
         open();
     }
@@ -44,9 +46,9 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceSnap
 
     const onModalConfirm = () => {
         const [type, uuid] = splitValues(selectedValue.current);
-        
-        if(type === 'preset') loadPreset(uuid);
-        else if(type === 'snapshot') loadSnapshot(uuid);
+
+        if (type === 'preset') loadPreset(uuid);
+        else if (type === 'snapshot') loadSnapshot(uuid);
 
         selectedValue.current = null;
         close();
@@ -54,12 +56,12 @@ export default function Select({authOptions, loadSnapshot, loadPreset, forceSnap
 
     return (
         <>
-            <ConfirmationModal 
-                opened={confirmationOpened} 
+            <ConfirmationModal
+                opened={confirmationOpened}
                 onCancel={onModalCancel}
                 onConfirm={onModalConfirm}
-                title='Confirm loading configuration' 
-                confirmButtonProps={{color: 'red.7'}}
+                title='Confirm loading configuration'
+                confirmButtonProps={{ color: 'red.7' }}
             />
             <NativeSelect
                 onChange={onChange}
