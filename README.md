@@ -1,3 +1,3 @@
 # Cherry VM Manager
-
+Documentation is available [here](https://krzysztof27.notion.site/2d330eb559bb47c589e01315a893b273?v=59ebf2e040284f42ae6c09e649be2e6c).  
 Work in progress...
