@@ -1,0 +1,53 @@
+.mainContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+    margin-top: var(--mantine-spacing-sm);
+}
+
+.labelContainer {
+    position: absolute;
+    height: 60px;
+}
+
+.labelBackground {
+    height: 41px;
+    background-color: var(--mantine-color-dark-6);
+    padding-top: 4px;
+    border-radius: 0px;
+}
+
+.labelText {
+    font-size: var(--mantine-font-size-xl);
+    font-weight: 600;
+    padding: 8px;
+}
+
+.labelText.online  {color: var(--mantine-color-suse-green-7);}
+.labelText.fetching{color: var(--mantine-color-orange-6);}
+.labelText.loading {color: var(--mantine-color-yellow-6);}
+.labelText.offline {color: var(--mantine-color-cherry-5);}
+
+.dividerRoot {
+    flex: 1;
+    padding: none;
+    margin: none;
+}
+
+.labelText.fetching::before, .labelText.fetching::after {
+    border-style: dashed;
+    border-width: 2px;
+    border-color: var(--mantine-color-orange-6);
+}
+
+.labelText.loading::before, .labelText.loading::after {
+    border-style: dashed;
+    border-width: 2px;
+    border-color: var(--mantine-color-yellow-6);
+}
+
+.labelText.offline::before, .labelText.offline::after {
+    border-width: 2px;
+    border-color: var(--mantine-color-cherry-5);
+}

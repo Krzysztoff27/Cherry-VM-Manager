@@ -6,6 +6,8 @@
     height: 100%; /* Fill the remaining height */
     display: flex;
     flex-direction: column;
+    padding-left: 85px;
+    padding-right: 4px;
 }
 
 .appshellMain > * {

@@ -1,4 +1,4 @@
-import { Container } from '@mantine/core';
+import { Container, Stack } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconDeviceDesktop, IconPlayerRecord, IconServer2 } from '@tabler/icons-react';
 import { Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from '@xyflow/react';
@@ -287,7 +287,7 @@ function Flow({ }) {
     return (
         <>
             <Prompt when={isDirty} />
-            <Container h='96.5vh' fluid>
+            <Container h='94.5vh' fluid>
                 <ReactFlow
                     colorMode='dark'
                     connectionMode='loose'

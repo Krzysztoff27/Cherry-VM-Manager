@@ -3,6 +3,7 @@ import { IconDeviceDesktop, IconHome, IconLogout, IconTerminal2, IconTopologySta
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import classes from './NavBar.module.css';
 
 const categories = [
     {icon: IconHome, label: 'Home page', link: '/home'},
@@ -32,7 +33,9 @@ function IconButton({label = null, icon, active, ...props}) {
         >
             <ActionIcon
                 {...props}
-                variant={active ? 'filled' : 'default'}
+                variant='filled'
+                className={classes.actionIcon}
+                disabled={active}
                 size='xl'
                 aria-label={label}
             >
@@ -72,7 +75,6 @@ export default function NavBar() {
             justify='space-between'
             align='center'
             h='100%'
-            style={{backgroundColor: ""}}
         >
             <Stack gap='md'>
                 {mainLinks}

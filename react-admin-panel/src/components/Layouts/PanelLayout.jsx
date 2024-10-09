@@ -1,4 +1,4 @@
-import { AppShell } from "@mantine/core";
+import { AppShell, Container } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import NavBar from '../NavBar/NavBar.jsx';
 import classes from './PanelLayout.module.css';
@@ -10,13 +10,16 @@ import classes from './PanelLayout.module.css';
 export default function PanelLayout() {
     return (
         <AppShell
-            navbar={{ width: '75px', breakpoint: 'sm' }}
-            padding="md"
+            padding="sm"
             className={classes.appShell}
         >
-            <AppShell.Navbar><NavBar /></AppShell.Navbar>
+            <AppShell.Navbar w='75px'>
+                <NavBar />
+            </AppShell.Navbar>
             <AppShell.Main className={classes.appshellMain}>
-                <Outlet />
+                <Container fluid p='0' pr='4' h='100%' display='flex'>
+                    <Outlet/>
+                </Container>
             </AppShell.Main>
         </AppShell>
     )

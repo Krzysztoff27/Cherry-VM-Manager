@@ -1,0 +1,11 @@
+.actionIcon {
+    background-color: var(--mantine-color-dark-6);
+    border-color: var(--mantine-color-dark-5);
+    border-width: 2px;
+
+    &:disabled,
+    &[data-disabled] {
+        background-color: var(--mantine-color-cherry-7);
+        border-color: var(--mantine-color-cherry-12);
+    }
+}
