@@ -1,3 +1,3 @@
-# Cherry Container Proxy
+# Cherry VM Manager
 
 Work in progress...
