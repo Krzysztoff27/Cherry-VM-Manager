@@ -6,7 +6,7 @@
 
 #Test to ensure that script is executed with root priviliges
 if ((EUID != 0)); then
-    printf '[!] Insufficient priviliges! Please run the script with root rights.'
+    printf '[!] Insufficient priviliges! Please run the script with root rights.\n'
     exit
 fi
 
