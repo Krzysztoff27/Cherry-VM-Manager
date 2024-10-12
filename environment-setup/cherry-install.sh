@@ -16,12 +16,12 @@ fi
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
 readonly LOGS_DIRECTORY='./logs/cherry-install/'
-LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).log"
-readonly LOGS_FILE
+LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).log"; readonly LOGS_FILE
 readonly ZYPPER_PACKAGES='./dependencies/zypper_packages.txt'
 readonly ZYPPER_PATTERNS='./dependencies/zypper_patterns.txt'
 readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt/'
 readonly DIR_DOCKER='/opt/cherry-vm-manager/docker/'
+readonly VM_INSTANCES='/var/opt/cherry-vm-manager/virtual-machines/'
 
 #Color definitions for distinguishable status codes
 readonly GREEN='\033[0;32m'
@@ -127,17 +127,27 @@ install_zypper_patterns(){
 }
 
 create_user(){
-    printf '\n[i] Creating CherryWorker system user: '
+    printf '\n[i] Creating CVMM system group: '
+    groupadd -f -r 'CVMM'
+    ok_handler
+    printf '[i] Creating CherryWorker system user: '
     useradd -r -M -s '/usr/bin/false' -c 'Cherry-VM-Manager system user' 'CherryWorker'
+    ok_handler
+    printf '[i] Changing CherryWorker primary group: '
+    usermod -g 'CVMM' 'CherryWorker'
     ok_handler
     printf '[i] Creating CherryWorker home directory: '
     mkdir /home/CherryWorker
-    chown CherryWorker:users /home/CherryWorker
+    chown CherryWorker:CVMM /home/CherryWorker
     chmod 700 /home/CherryWorker
     ok_handler
     printf '[i] Adding CherryWorker to system groups: '
     usermod -a -G docker,libvirt,kvm CherryWorker
     ok_handler
+    printf '[i] Adding /etc/sudoers.d/cherryworker file: '
+    echo "CherryWorker ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/cherryworker
+    chmod 440 /etc/sudoers.d/cherryworker
+    ok_handler 
 }
 
 #Function to check for nested virtualization support and state on the host system.
@@ -190,6 +200,9 @@ configure_daemon_libvirt(){
     mkdir -p "$DIR_LIBVIRT"
     cp -r ../libvirt/. "$DIR_LIBVIRT"
     ok_handler
+    printf "[i] Creating directory structure ($VM_INSTANCES): "
+    mkdir -p "$VM_INSTANCES"
+    ok_handler
 }
 
 configure_daemon_docker(){
@@ -214,8 +227,23 @@ configure_container_guacamole(){
     ok_handler
 }
 
+configure_file_ownership(){
+    printf '\n[i] Changing file ownership: '
+    #Change ownership of CVMM stack filesystem to CherryWorker:CVMM
+    chown -R CherryWorker:CVMM /opt/cherry-vm-manager
+    chown -R CherryWorker:CVMM /var/opt/cherry-vm-manager
+    #Set ACLs to ensure that any directory or file created in CVMM stack filesystem will be owned by CherryWorker user
+    setfacl -R -m d:u:CherryWorker:rwx /opt/cherry-vm-manager
+    setfacl -R -m d:u:CherryWorker:rwx /var/opt/cherry-vm-manager
+    #Set ACLs to ensure that any directory or file created in CVMM stack filesystem will be owned by CVMM group
+    setfacl -R -m d:g:CVMM:rwx /opt/cherry-vm-manager
+    setfacl -R -m d:g:CVMM:rwx /var/opt/cherry-vm-manager
+    ok_handler
+}
+
 create_vm_networks(){
     printf '\n[i] Disabling libvirt default network stack on host OS: '
+    runuser -u Cherry
     runuser -u CherryWorker -- virsh net-undefine --network default > "$LOGS_FILE"
     runuser -u CherryWorker -- virsh net-destroy --network default > "$LOGS_FILE"
     ok_handler
@@ -264,6 +292,7 @@ installation(){
     create_user
     configure_daemon_kvm
     configure_daemon_libvirt
+    configure_file_ownership
     #configure_daemon_docker
     #configure_container_guacamole
     create_vm_firewall

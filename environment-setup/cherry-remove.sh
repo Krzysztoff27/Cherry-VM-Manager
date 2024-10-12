@@ -16,8 +16,7 @@ fi
 
 #Environmental variables - paths to files storing installation logs and dependencies names to be installed
 readonly LOGS_DIRECTORY='./logs/cherry-remove/'
-LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).log"
-readonly LOGS_FILE
+LOGS_FILE="${LOGS_DIRECTORY}$(date +%d-%m-%y_%H-%M-%S).log"; readonly LOGS_FILE
 readonly ZYPPER_PACKAGES='./dependencies/zypper_packages.txt'
 readonly ZYPPER_PATTERNS='./dependencies/zypper_patterns.txt'
 readonly DIR_LIBVIRT='/opt/cherry-vm-manager/libvirt/'
@@ -39,14 +38,13 @@ mkdir -p "$LOGS_DIRECTORY"
 #Redirect stderr output to the logs file globally
 exec 2> "$LOGS_FILE"
 
-#Force script to call err_handler exit on ERR occurence
+#Force script to call err_handler on ERR occurence
 set -E
 
 #Error handler to call on ERR occurence and print an error message
 err_handler(){
     printf "${RED}ERR${NC}\n"
     err_occured=true
-    #printf "\n[!] An error occured!\nSee the $LOGS_FILE for specific information.\n"
 }
 trap 'err_handler' ERR
 
@@ -111,6 +109,12 @@ remove_user(){
     printf '[i] Removing CherryWorker system user: '
     userdel -f -r 'CherryWorker' > "$LOGS_FILE"
     ok_handler
+    printf '[i] Removing CVMM system group: '
+    groupdel -f 'CVMM'
+    ok_handler
+    printf '[i] Removing /etc/sudoers.d/cherryworker file: '
+    rm --interactive=never -r -f /etc/sudoers.d/cherryworker
+    ok_handler
 }
 
 configure_daemon_libvirt(){
@@ -160,7 +164,8 @@ remove_vm_firewall(){
 }
 
 final_cleanup(){
-    rm  --interactive=never -r -f '/opt/cherry-vm-manager/'
+    rm --interactive=never -r -f '/opt/cherry-vm-manager'
+    rm --interactive=never -r -f '/var/opt/cherry-vm-manager'
 }
 
 print_begin_notice(){
@@ -182,7 +187,6 @@ print_finish_notice(){
     else
         printf "\n${GREEN}The removal script has finished its job without any errors.${NC}"
         printf '\nAll components of the Cherry VM Manager stack have been removed succesfully!\n'
-    #printf "$(cat ./messages/cherry-remove_finish.txt)\n"
     fi
 }
 
@@ -200,6 +204,7 @@ removal(){
     remove_user
     #remove_zypper_patterns
     #remove_zypper_packages
+    #final_cleanup
     print_finish_notice
 }
 removal
