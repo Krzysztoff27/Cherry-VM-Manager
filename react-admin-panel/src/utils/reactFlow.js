@@ -1,19 +1,24 @@
 import MachineNode from "../pages/NetworkPanel/components/MachineNode/MachineNode";
 import IntnetNode from "../pages/NetworkPanel/components/IntnetNode/IntnetNode";
 
+export const NODE_TYPES = {
+    machine: MachineNode,
+    intnet: IntnetNode,
+}
+
 /**
  * Gets flow node id based on the node type and it's type's indentificator
  * @param {MachineNode|IntnetNode} type - node's type 
- * @param {number} num - id in said node type
+ * @param {number} uniqueId - provided id/uuid
  * @returns 
  */
-export const getNodeId = (type, num) => {
+export const getNodeId = (type, uniqueId) => {
     let prefix;
     switch(type){
-        case MachineNode: prefix = 'machine-'; break;
-        case IntnetNode: prefix = 'intnet-'; break;
+        case MachineNode: prefix = 'machine:::'; break;
+        case IntnetNode: prefix = 'intnet:::'; break;
     }
-    return `${prefix}${num}`;
+    return `${prefix}${uniqueId}`;
 }
 
 /**
@@ -21,7 +26,7 @@ export const getNodeId = (type, num) => {
  * @param {string} nodeId - flow node id
  * @returns {number} id
  */
-export const getIdFromNodeId = (nodeId) => nodeId.split('-')[1] || null;
+export const sliceNodeIdToId = (nodeId) => nodeId.split(':::')[1] || null;
 
 /**
  * Calculates mean of both coordinates in given list of node positions
@@ -30,8 +35,8 @@ export const getIdFromNodeId = (nodeId) => nodeId.split('-')[1] || null;
  */
 export const calcMiddlePosition = (...positions) => {
     if (positions.length === 0) return null;
-
-    const sum = positions.reduce((acc, coords) => ({
+    
+    const sum = positions.flat().reduce((acc, coords) => ({
         x: acc.x + (coords?.x ?? 0),
         y: acc.y + (coords?.y ?? 0),
     }), { x: 0, y: 0 });
@@ -53,7 +58,7 @@ export const extractPositionsFromNodes = (nodes) => nodes?.reduce(
 
 export default {
     getNodeId,
-    getIdFromNodeId,
+    sliceNodeIdToId,
     calcMiddlePosition,
     extractPositionsFromNodes,
 }

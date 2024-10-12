@@ -78,8 +78,8 @@ function NetworkDataTable({ machine, currentState }) {
     )
 }
 
-export default function NetworkDataDisplay({ currentState, id, authOptions }) {
-    const { loading, error, data: machine } = useFetch(`/vm/${id}/networkdata`, authOptions);
+export default function NetworkDataDisplay({ currentState, uuid, authOptions }) {
+    const { loading, error, data: machine } = useFetch(`/vm/${uuid}/networkdata`, authOptions);
 
     if (loading) return <Loading />;
     if (error) throw error;

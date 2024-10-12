@@ -1,4 +1,4 @@
-import { Container, Stack } from '@mantine/core';
+import { Container } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconDeviceDesktop, IconPlayerRecord, IconServer2 } from '@tabler/icons-react';
 import { Background, Controls, MiniMap, ReactFlow, ReactFlowProvider, addEdge, applyEdgeChanges, applyNodeChanges, useReactFlow } from '@xyflow/react';
@@ -12,7 +12,7 @@ import IntnetNode from './components/IntnetNode/IntnetNode';
 import MachineNode from './components/MachineNode/MachineNode';
 
 import { noneOrEmpty, safeObjectValues } from '../../utils/misc';
-import { calcMiddlePosition, getIdFromNodeId, getNodeId, extractPositionsFromNodes } from '../../utils/reactFlow';
+import { calcMiddlePosition, sliceNodeIdToId, getNodeId, extractPositionsFromNodes } from '../../utils/reactFlow';
 
 import '@xyflow/react/dist/style.css';
 import useAuth from '../../hooks/useAuth';
@@ -21,6 +21,7 @@ import Prompt from '../../components/Prompt/Prompt';
 import useApi from '../../hooks/useApi';
 import useFlowPresets from '../../hooks/useFlowPresets';
 
+import { v4 as uuidv4 } from 'uuid';
 
 const NODE_TYPES = {
     machine: MachineNode,
@@ -56,7 +57,7 @@ const createNode = (type, data, position) => {
 }
 
 export const createMachineNode = (machine, position) => ({
-    id: getNodeId(NODE_TYPES.machine, machine.id),
+    id: getNodeId(NODE_TYPES.machine, machine.uuid),
     type: 'machine',
     position: position,
     deletable: false,
@@ -71,12 +72,12 @@ export const createMachineNode = (machine, position) => ({
 })
 
 const createIntnetNode = (intnet, position) => ({
-    id: getNodeId(NODE_TYPES.intnet, intnet.id),
+    id: getNodeId(NODE_TYPES.intnet, intnet.uuid),
     type: 'intnet',
-    intnet: intnet.id,
+    intnet: intnet.uuid,
     position: position,
     data: {
-        label: `Intnet ${intnet.id}`
+        label: `Intnet ${intnet.number || intnet.uuid}`
     },
 })
 
@@ -91,7 +92,7 @@ function Flow() {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     const [rfInstance, setRfInstance] = useState(null);
-    const { getNode, setViewport, getEdges } = useReactFlow();
+    const { getNode, getEdges, zoomTo, getZoom, setCenter} = useReactFlow();
     const intnetAllocator = useRef(new NumberAllocator()).current;
 
     /**
@@ -115,7 +116,7 @@ function Flow() {
     }, [],
     );
 
-    const onNodesDelete = useCallback((deletedNodes) => 
+    const onNodesDelete = useCallback((deletedNodes) =>
         deletedNodes.forEach(node => intnetAllocator.remove(node?.intnet)), []
     );
 
@@ -133,8 +134,8 @@ function Flow() {
         if (source.startsWith('intnet')) return;
         if (target.startsWith('intnet')) return addEdgeToFlow({ source: source, target: target });
 
-        const intnetId = intnetAllocator.getNext();
-        const intnetNode = createIntnetNode({ id: intnetId }, calcMiddlePosition(getNode(source).position, getNode(target).position));
+        const number = intnetAllocator.getNext();
+        const intnetNode = createIntnetNode({ uuid: uuidv4(), number: number }, calcMiddlePosition(getNode(source).position, getNode(target).position));
 
         addNodes(intnetNode);
         addEdgeToFlow({ source: target, target: intnetNode.id });
@@ -148,7 +149,7 @@ function Flow() {
     const loadPreset = async (uuid) => {
         const preset = await getRequest(`/network/preset/${uuid}`, authOptions);
         const config = generateConfigFromPreset(preset, machines);
-        if(!config) return;
+        if (!config) return;
 
         loadFlowWithIntnets(config.flow, config.intnets, true).then(() => setIsDirty(true));
     }
@@ -156,63 +157,70 @@ function Flow() {
     // SNAPSHOTS
 
     const getSnapshotData = useCallback(() => {
-            const {edges: _, ...snapshotData} = rfInstance.toObject();
-            return snapshotData;
-        }, [rfInstance]
+        const { edges: _, ...snapshotData } = rfInstance.toObject();
+        return snapshotData;
+    }, [rfInstance]
     );
-        
-    const takeSnapshot = (name) => ({...getSnapshotData(), name: name, intnets: getIntnetConfig()})
+
+    const takeSnapshot = (name) => ({ ...getSnapshotData(), name: name, intnets: getIntnetConfig() })
     const postSnapshot = (name, errorCallback = undefined) => postRequest('/network/snapshot', JSON.stringify(takeSnapshot(name)), authOptions, errorCallback);
 
     const loadSnapshot = async (uuid) => {
         const data = await getRequest(`/network/snapshot/${uuid}`, authOptions);
-        if(!data) return;
-        
+        if (!data) return;
+
         const { name, intnets, ...flow } = data;
         return loadFlowWithIntnets(flow, intnets).then(() => setIsDirty(true));
     }
 
     // INTNET CONFIG
 
-    const getIntnetConfig = () => 
+    const getIntnetConfig = () =>
         getEdges().reduce((acc, { source, target }) => {
-            const [intnetId, machineId] = [getIdFromNodeId(target), getIdFromNodeId(source)];
+            const [intnetUuid, machineUuid] = [sliceNodeIdToId(target), sliceNodeIdToId(source)];
 
-            if (intnetId !== null && machineId !== null) {
-                if (!acc[intnetId]) acc[intnetId] = { id: intnetId, machines: [] };
-                acc[intnetId].machines.push(machineId);
+            if (intnetUuid !== null && machineUuid !== null) {
+                if (!acc[intnetUuid]) acc[intnetUuid] = { uuid: intnetUuid, machines: [] };
+                acc[intnetUuid].machines.push(machineUuid);
             }
 
+            console.log(acc)
             return acc;
-        }, {})
-    ;
+        }, {});
 
     // FLOW
 
-    const loadFlowWithIntnets = async (flow, intnets, resetViewport = true) =>
+    const loadFlowWithIntnets = async (flow, intnets) =>
         new Promise(async (resolve, reject) => {
             if (!flow || !intnets) return reject('Either flow or intnets is undefined.');
 
-            if (resetViewport) setViewport({ x: 0, y: 0, zoom: 1, ...flow.viewport });
             const positions = extractPositionsFromNodes(flow?.nodes);
+            const center = calcMiddlePosition(...safeObjectValues(positions))
+            console.log(center.x, center.y)
+            
+            setCenter(center.x, center.y);
+            zoomTo(getZoom() - 1, { duration: 500 });
+            
             setNodes([]);
             setEdges([]);
             createMachineNodes(positions);
             createFlowNodes(NODE_TYPES.intnet, safeObjectValues(intnets), positions);
             createIntnetEdges(intnets);
-
-            intnetAllocator.setCurrent(Math.max(...Object.keys(intnets || {}), 0));
+            intnetAllocator.setCurrent(Math.max(...safeObjectValues(intnets).map(e => e.number), 0));
+            newPositionsAllocator.setCurrent(0);
             resolve();
         });
 
-    const resetFlow = async (resetViewport = true) => {
+    const resetFlow = async () => {
         const { intnets, ...flow } = await getRequest('/network/configuration', authOptions);
-        return loadFlowWithIntnets(flow, intnets, resetViewport);
+        return loadFlowWithIntnets(flow, intnets);
     };
 
     const initFlow = useCallback(() => {
         resetFlow()
             .then(() => {
+                fitView({nodes: nodes})
+
                 notifications.hide(`flow-init`);
                 notifications.show({
                     id: `flow-init`,
@@ -227,10 +235,9 @@ function Flow() {
 
     const createFlowNodes = (nodeType, data = [], positions) => {
         if (noneOrEmpty(data) || !nodeType) return;
-        const getPos = (id) => positions[getNodeId(nodeType, id)] ?? generateNewPos();
-        addNodes(data.map(node =>
-            createNode(nodeType, node, getPos(node.id))
-        ));
+        const getPos = (uuid) => positions[getNodeId(nodeType, uuid)] ?? generateNewPos();
+
+        addNodes(data.map(node => createNode(nodeType, node, getPos(node.uuid))));
     }
 
     const createMachineNodes = (positions) => createFlowNodes(NODE_TYPES.machine, safeObjectValues(machines), positions);
@@ -239,11 +246,11 @@ function Flow() {
         if (!intnets) return;
 
         safeObjectValues(intnets).forEach(
-            ({ machines, id }) => machines ?
-                machines.forEach(machineId =>
+            ({ uuid, machines }) => machines ?
+                machines.forEach(machineUuid =>
                     addEdgeToFlow({
-                        source: getNodeId(NODE_TYPES.machine, machineId),
-                        target: getNodeId(NODE_TYPES.intnet, id),
+                        source: getNodeId(NODE_TYPES.machine, machineUuid),
+                        target: getNodeId(NODE_TYPES.intnet, uuid),
                     })
                 )
                 : null,
@@ -253,7 +260,7 @@ function Flow() {
     const applyNetworkConfig = (_) => {
         const stateResponse = putFlowState(getSnapshotData());
 
-        if(stateResponse) notifications.show({
+        if (stateResponse) notifications.show({
             id: 'flow-init',
             color: 'suse-green',
             title: 'Saved current panel state',
@@ -262,7 +269,7 @@ function Flow() {
 
         const networkConfigResponse = putIntnetConfiguration();
 
-        if(networkConfigResponse) notifications.show({
+        if (networkConfigResponse) notifications.show({
             id: 'flow-init',
             color: 'suse-green',
             title: 'Saved intnet configuration',
@@ -283,11 +290,11 @@ function Flow() {
 
     if (machinesLoading) return;
     if (machinesError) throw machinesError;
-    
+
     return (
         <>
             <Prompt when={isDirty} />
-            <Container h='94.5vh' fluid>
+            <Container flex='1' fluid>
                 <ReactFlow
                     colorMode='dark'
                     connectionMode='loose'

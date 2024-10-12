@@ -1,6 +1,7 @@
 import Formula from 'fparser';
+import { v4 as uuidv4 } from 'uuid';
 import { isObject, safeObjectValues, zipToObject } from '../utils/misc';
-import { calcMiddlePosition } from '../utils/reactFlow';
+import { calcMiddlePosition, getNodeId, NODE_TYPES } from '../utils/reactFlow';
 import { createMachineNode } from '../pages/NetworkPanel/NetworkPanel';
 import useErrorHandler from './useErrorHandler';
 
@@ -155,13 +156,16 @@ const calculateConfig = (machines, { getIntnet, getPosX, getPosY }, variables) =
     let error = false;
 
     /**
-     * Adds machine id to the machines array in the intnets object.
-     * @param {number} intnetId
-     * @param {number} machineId 
+     * Adds machine uuid to the machines array in the intnets object.
+     * @param {number} intnetNumber
+     * @param {number} machineUuid 
      */
-    const addMachineToIntnet = (intnetId, machineId) => {
-        if (!intnets[intnetId]) intnets[intnetId] = { id: intnetId, machines: [] };
-        intnets[intnetId].machines.push(machineId)
+    const addMachineToIntnet = (intnetNumber, machineUuid) => {
+        const uuid = safeObjectValues(intnets).find(intnet => intnet.number === intnetNumber)?.uuid;
+        if(uuid) return intnets[uuid].machines.push(machineUuid);
+        
+        const newUuid = uuidv4();
+        intnets[newUuid] = { number: intnetNumber, machines: [machineUuid], uuid: newUuid}
     }
 
     /**
@@ -178,7 +182,7 @@ const calculateConfig = (machines, { getIntnet, getPosX, getPosY }, variables) =
 
             if(isNaN(intnet) || isNaN(x) || isNaN(y)) throw new Error();
 
-            if (intnet) addMachineToIntnet(intnet, machine.id);
+            if (intnet) addMachineToIntnet(intnet, machine.uuid);
             nodes.push(createMachineNode(machine, { x: x, y: y }));
         } catch (e) {
             if(e.message) showErrorNotification({
@@ -191,14 +195,14 @@ const calculateConfig = (machines, { getIntnet, getPosX, getPosY }, variables) =
     });
 
     /**
-     * Creates intnet nodes in the mean position of all the nodes in said intnets.
+     * Creates intnet nodes at the mean position of all machine nodes connected to intnet.
      */
     const createIntnetNodes = () => {
         safeObjectValues(intnets).forEach(intnet => {
             nodes.push({
-                id: `intnet-${intnet.id}`,
-                position: calcMiddlePosition(...intnet.machines.map(machineId =>
-                    nodes.find(node => node.id === `machine-${machineId}`).position)
+                id: getNodeId(NODE_TYPES.intnet, intnet.uuid),
+                position: calcMiddlePosition(...intnet.machines.map(machineUuid =>
+                    nodes.find(node => node.id === getNodeId(NODE_TYPES.machine, machineUuid)).position)
                 ),
             })
         })

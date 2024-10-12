@@ -4,7 +4,7 @@ import PanelLayout from "../Layouts/PanelLayout.jsx"
 import LoginPage from '../../pages/Login/LoginPage.jsx';
 import {Protected, ReverseProtected} from "../Protected/Protected.jsx";
 import MachineList from "../../pages/MachinesList/MachineList.jsx";
-import MachinePage from "../../pages/VirtualMachine/MachinePage.jsx"
+import VirtualMachinePage from "../../pages/VirtualMachine/VirtualMachinePage.jsx"
 import NetworkPanel from "../../pages/NetworkPanel/NetworkPanel.jsx"
 import Desktops from "../../pages/Desktops/Desktops.jsx";
 import Home from "../../pages/Home/Home.jsx";
@@ -26,7 +26,7 @@ const router = createBrowserRouter(
                 <Route element={<PanelLayout/>}>
                     <Route path='/home'                 element={<Home/>}/>
                     <Route path='/virtual-machines'     element={<MachineList/>}/>
-                    <Route path='/virtual-machines/:id' element={<MachinePage/>}/>
+                    <Route path='/virtual-machines/:uuid' element={<VirtualMachinePage/>}/>
                     <Route path='/desktops'             element={<Desktops/>}/>
                     <Route path='/network-panel'        element={<NetworkPanel/>}/>    
                 </Route>
