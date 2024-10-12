@@ -67,7 +67,7 @@ async def get_all_vms_state(
         # ...
     }
 
-@app.get("/vm/{id}/networkdata") # * request for network data of VM with specific <id>
+@app.get("/vm/{uuid}/networkdata") # * request for network data of VM with specific <id>
 async def get_vm_network_data(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
@@ -78,7 +78,7 @@ async def get_vm_network_data(
     # example return:
     return MachineNetworkData(uuid=uuid, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
 
-@app.get("/vm/{id}/state") # * request for network data of VM with specific <id>
+@app.get("/vm/{uuid}/state") # * request for network data of VM with specific <id>
 async def get_vm_state(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-

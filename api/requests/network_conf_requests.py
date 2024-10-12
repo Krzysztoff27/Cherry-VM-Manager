@@ -30,15 +30,15 @@ lock = Lock()
 # classes & types
 ###############################
 
-MachineId = int
-IntnetId = int
+IntnetUuid = str
+MachineUuid = str
 
 class Intnet(BaseModel):
-    id: IntnetId
-    machines: list[MachineId] = []
+    uuid: IntnetUuid
+    machines: list[MachineUuid] = []
+    number: int | None = None
 
-IntnetConfiguration = dict[IntnetId, Intnet]
-
+IntnetConfiguration = dict[IntnetUuid, Intnet]
 
 class Coordinates(BaseModel):
     x: float = 0
@@ -91,22 +91,8 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
     # ...
     # ? example return:
     return {
-        1:  Intnet(id=1, machines=[1, 17]),  
-        2:  Intnet(id=2, machines=[2, 18]),  
-        3:  Intnet(id=3, machines=[3, 19]),  
-        4:  Intnet(id=4, machines=[4, 20]),  
-        5:  Intnet(id=5, machines=[5, 21]),  
-        6:  Intnet(id=6, machines=[6, 22]),  
-        7:  Intnet(id=7, machines=[7, 23]),  
-        8:  Intnet(id=8, machines=[8, 24]),  
-        9:  Intnet(id=9, machines=[9, 25]),  
-        10: Intnet(id=10, machines=[10, 26]),  
-        11: Intnet(id=11, machines=[11, 27]),  
-        12: Intnet(id=12, machines=[12, 28]),  
-        13: Intnet(id=13, machines=[13, 29]),  
-        14: Intnet(id=14, machines=[14, 30]),  
-        15: Intnet(id=15, machines=[15, 31]),  
-        16: Intnet(id=16, machines=[16, 32])
+        '5952f2aa-b2c0-4214-a4f7-6ee2c9bf918e': Intnet(uuid='5952f2aa-b2c0-4214-a4f7-6ee2c9bf918e', machines=['b38350cf-105f-4ecd-8eb4-3d9370d39f0e', 'a923601a-fc61-44cb-b007-5df89b1966e2']),  
+        '07e2836c-2854-4347-96e3-6cd9d233af54': Intnet(uuid='07e2836c-2854-4347-96e3-6cd9d233af54', machines=['280af110-b78c-4c7a-a554-d38bc0c428df', '67ac8bfd-2b97-4196-9572-5b519960bf3f']),
     }
 
 def isIndexInList(_list, index):
