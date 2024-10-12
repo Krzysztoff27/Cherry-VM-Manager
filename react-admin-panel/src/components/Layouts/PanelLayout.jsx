@@ -13,11 +13,11 @@ export default function PanelLayout() {
             padding="sm"
             className={classes.appShell}
         >
-            <AppShell.Navbar w='75px'>
+            <AppShell.Navbar className={classes.appshellNavbar}>
                 <NavBar />
             </AppShell.Navbar>
             <AppShell.Main className={classes.appshellMain}>
-                <Container fluid p='0' pr='4' h='100%' display='flex'>
+                <Container fluid className={classes.container}>
                     <Outlet/>
                 </Container>
             </AppShell.Main>

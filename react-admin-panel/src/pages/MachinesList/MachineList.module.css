@@ -1,13 +1,20 @@
 .pagePaper {
     display: flex;
     overflow: hidden;
-    background-size: 80px 80px;
-    background-image: linear-gradient(to right, var(--mantine-color-dark-6) 2px, transparent 2px), 
-                      linear-gradient(to bottom, var(--mantine-color-dark-6) 2px, transparent 2px);
-    background-position-x: 50%;
-    background-position-y: 45px;
+    background-color: transparent;
 
     flex: 1;
     margin: var(--mantine-spacing-lg);
     margin-top: 0;
+}
+
+.pageStack {
+    flex: 1;
+    gap: 0;
+}
+
+.scrollArea {
+    flex: 1;
+    padding-top: var(--mantine-spacing-md);
+    padding-bottom: 4;
 }

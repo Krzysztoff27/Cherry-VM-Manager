@@ -1,0 +1,23 @@
+.card {
+    padding: var(--mantine-spacing-md);
+    border-radius: var(--mantine-radius-md);
+    cursor: pointer;
+    height: 240px;
+}
+
+.titleGroup {
+    justify-content: space-between;
+    margin-top: 4px;
+    margin-bottom: var(--mantine-spacing-xs);
+}
+
+.infoEntry {
+    justify-content: start;
+    align-items: center;
+    gap: 4px;
+}
+
+.connectButton {
+    margin-top: var(--mantine-spacing-md);
+    border-radius: var(--mantine-radius-md);
+}

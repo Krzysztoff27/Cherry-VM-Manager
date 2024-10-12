@@ -19,14 +19,14 @@ export const noneOrEmpty = (variable) => !variable || !variable.length;
  * @returns {Object} ZippedObject
  */
 export const zipToObject = (keyArray = [], valueArray = []) => noneOrEmpty(keyArray) || noneOrEmpty(valueArray) ? {} :
-    keyArray.reduce((acc, key, i) => ({...acc, [key]: valueArray[i]}), {});
+    keyArray.reduce((acc, key, i) => ({ ...acc, [key]: valueArray[i] }), {});
 
 /**
  * Provides errorless Object.values experience
  * @param {Object} object
  * @returns {Array} array of values
  */
-export const safeObjectValues = (obj = {}) => Object.values({...obj});
+export const safeObjectValues = (obj = {}) => Object.values({ ...obj });
 
 /**
  * Splits array into chunks
@@ -61,7 +61,7 @@ export const getCurrentTime = (showSeconds = true) => {
  * @param {Number} secondsDelay delay in seconds
  * @returns clear timeout function
  */
-export const clockSynchronizedTimeout = (func = () => {}, secondsDelay = 1) => {
+export const clockSynchronizedTimeout = (func = () => { }, secondsDelay = 1) => {
     let timeout;
     const getDelay = () => 1000 * secondsDelay - new Date().getMilliseconds();;
     const syncLoadState = () => {
@@ -87,6 +87,34 @@ export const hasMultipleOccurrences = (element, array = []) => array.filter(e =>
 
 export const pluralize = (text, refAmount) => `${text}${refAmount > 1 ? 's' : ''}`
 
+/**
+ * Safely pushes to the array variable even if array given is undefined. Throws error if arr parameter is defined and is not an array.
+ * @param {array|undefined} arr 
+ * @param  {...any} elements
+ * @returns array with pushed elements | error
+ */
+export const safePush = (arr, ...elements) => {
+    if (arr === undefined) arr = [];
+    if (!Array.isArray(arr)) throw (`Cannot push values into variable of type ${typeof arr}: ${arr}`)
+
+    return [...arr, ...elements];
+}
+
+/**
+ * Toggles the presence of a value in an array.
+ * @param {Array} array - The array to toggle the value in.
+ * @param {*} value - The value to toggle.
+ * @returns {Array} - A new array with the value toggled (added or removed).
+ */
+export const toggleInArray = (array, value) => {
+    const index = array.indexOf(value);
+
+    return index === -1 ? [...array, value] : array.filter((_, i) => i !== index);
+};
+
+export const mergeObjectPropertiesToArray = (a, b) =>
+    Object.keys({ ...a, ...b })?.map(key => ({ ...a[key], ...b?.[key] }));
+
 export default {
     isObject,
     noneOrEmpty,
@@ -98,4 +126,7 @@ export default {
     startsWithLetter,
     hasMultipleOccurrences,
     pluralize,
+    safePush,
+    toggleInArray,
+    mergeObjectPropertiesToArray
 }

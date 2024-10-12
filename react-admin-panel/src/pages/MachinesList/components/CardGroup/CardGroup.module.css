@@ -1,0 +1,37 @@
+.groupContainer {
+    margin-right: var(--mantine-spacing-xl);
+}
+.collapse {
+    margin-left: var(--mantine-spacing-md);
+}
+
+.button {
+    background-color: transparent;
+    height: fit-content;
+    padding: 0;
+}
+
+.buttonLabel {
+    width: 100%;
+}
+
+.buttonIcon {
+    size: 25px;
+    stroke-width: 3px;
+    color: var(--mantine-color-dark-3);
+}
+
+.divider {
+    flex: 1;
+    opacity: 0.8;
+}
+
+.dividerLabel::after, .dividerLabel::before {
+    border-color: var(--mantine-color-dark-4);
+    border-width: 3px;
+}
+
+.dividerLabelText {
+    font-size: var(--mantine-font-size-xl);
+    font-weight: 500;
+}

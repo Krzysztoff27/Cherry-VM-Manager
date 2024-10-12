@@ -8,9 +8,22 @@
     flex-direction: column;
     padding-left: 85px;
     padding-right: 4px;
+
+    background-size: 120px 120px;
+    background-image: linear-gradient(to right, var(--mantine-color-dark-6) 2px, transparent 2px), 
+                      linear-gradient(to bottom, var(--mantine-color-dark-6) 2px, transparent 2px);
+    background-position-x: 50%;
+    background-position-y: 45px;
 }
 
-.appshellMain > * {
-    flex: 1; /* Allow child elements to stretch */
+.container {
     width: 100%;
+    height: 100%;
+    display: flex;
+    padding: 0;
+}
+
+.appshellNavbar {
+    border-right: solid var(--mantine-color-dark-6) 2px;
+    width: 75px;
 }
