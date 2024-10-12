@@ -1,7 +1,7 @@
 [
     {
         "uuid": "7803c46d-9e68-4a74-8910-3fbc378b5638",
-        "name": "DesktopX - serverX",
+        "name": "DesktopX - ServerX",
         "data": {
             "coreFunctions": {
                 "getIntnet": "[group_member_id]",
