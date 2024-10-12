@@ -4,7 +4,9 @@
     <bridge name='cvmm-nat-bridge' stp='on' delay='0'/>
     <ip address='192.168.100.1' netmask='255.255.255.0'>
       <dhcp>
-        <range start='192.168.100.100' end='192.168.100.254'/>
+        <range start='192.168.100.100' end='192.168.100.254'>
+          <lease expiry='45' unit='minutes'/>
+        </range>
       </dhcp>
     </ip>
     <dns>

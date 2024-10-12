@@ -1,6 +1,7 @@
 <domain type='kvm'>
     <name>opensuse-leap-15.6</name>
-    <memory unit='MiB'>2048</memory>
+    <uuid></uuid>
+    <memory unit='MiB'>1024</memory>
     <vcpu placement='static'>1</vcpu>
     
     <os>
@@ -8,17 +9,23 @@
       <boot dev='hd'/>
       <boot dev='cdrom'/>
     </os>
+
+    <features>
+      <acpi/>
+      <apic/>
+      <pae/>
+    </features>  
   
     <devices>
       <disk type='file' device='disk'>
         <driver name='qemu' type='qcow2'/>
-        <source file='/var/lib/libvirt/images/opensuse-vm.qcow2'/>
+        <source file=''/>
         <target dev='vda' bus='virtio'/>
       </disk>
   
       <disk type='file' device='cdrom'>
         <driver name='qemu' type='raw'/>
-        <source file='/opt/libvirt/cherry-vm-manager/iso/openSUSE-Leap-15.6.iso'/>
+        <source file=''/>
         <target dev='hdc' bus='ide'/>
         <readonly/>
       </disk>
