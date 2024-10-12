@@ -62,7 +62,7 @@ async def get_all_vms_state(
     return STATE_DUMMY
     
 
-@app.get("/vm/{id}/networkdata") # * request for network data of VM with specific <id>
+@app.get("/vm/{uuid}/networkdata") # * request for network data of VM with specific <id>
 async def get_vm_network_data(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
@@ -73,7 +73,7 @@ async def get_vm_network_data(
     # example return:
     return NETWORK_DATA_DUMMY[uuid]
 
-@app.get("/vm/{id}/state") # * request for network data of VM with specific <id>
+@app.get("/vm/{uuid}/state") # * request for network data of VM with specific <id>
 async def get_vm_state(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-

@@ -30,7 +30,7 @@ lock = Lock()
 # classes & types
 ###############################
 
-MachineId = int
+MachineId = str
 IntnetId = int
 
 class Intnet(BaseModel):
@@ -91,22 +91,7 @@ def get_current_intnet_state() -> IntnetConfiguration: # !
     # ...
     # ? example return:
     return {
-        1:  Intnet(id=1, machines=[1, 17]),  
-        2:  Intnet(id=2, machines=[2, 18]),  
-        3:  Intnet(id=3, machines=[3, 19]),  
-        4:  Intnet(id=4, machines=[4, 20]),  
-        5:  Intnet(id=5, machines=[5, 21]),  
-        6:  Intnet(id=6, machines=[6, 22]),  
-        7:  Intnet(id=7, machines=[7, 23]),  
-        8:  Intnet(id=8, machines=[8, 24]),  
-        9:  Intnet(id=9, machines=[9, 25]),  
-        10: Intnet(id=10, machines=[10, 26]),  
-        11: Intnet(id=11, machines=[11, 27]),  
-        12: Intnet(id=12, machines=[12, 28]),  
-        13: Intnet(id=13, machines=[13, 29]),  
-        14: Intnet(id=14, machines=[14, 30]),  
-        15: Intnet(id=15, machines=[15, 31]),  
-        16: Intnet(id=16, machines=[16, 32])
+        1: Intnet(id=1, machines=['b38350cf-105f-4ecd-8eb4-3d9370d39f0e', 'a923601a-fc61-44cb-b007-5df89b1966e2'])
     }
 
 def isIndexInList(_list, index):
