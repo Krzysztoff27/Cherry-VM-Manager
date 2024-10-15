@@ -11,7 +11,7 @@ from auth import authenticate_user, get_current_user, create_access_token, Token
 # auth requests
 ################################
 
-@app.post("/token")
+@app.post("/token", tags=['auth'])
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ) -> Token:
@@ -28,6 +28,6 @@ async def login_for_access_token(
     )
     return Token(access_token=access_token, token_type="bearer")
 
-@app.get("/user", response_model=User)
+@app.get("/user", response_model=User, tags=['auth'])
 async def read_users_me(current_user: Annotated[User, Depends(get_current_user)]) -> User:
     return current_user

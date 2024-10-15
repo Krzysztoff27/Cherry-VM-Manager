@@ -117,7 +117,7 @@ def getIndexByUUID(_list, uuid, element_name: str = 'element'):
 # configuration requests
 ###############################
 
-@app.get("/network/configuration")
+@app.get("/network/configuration", tags=['network configuration'])
 def get_current_network_configuration(
     current_user: Annotated[User, Depends(get_authorized_user)]
 ) -> NetworkConfiguration:
@@ -127,7 +127,7 @@ def get_current_network_configuration(
     )
     
 
-@app.put("/network/configuration/intnets", status_code=204)
+@app.put("/network/configuration/intnets", tags=['network configuration'])
 def apply_intnet_configuration_to_virtual_machines(
     intnet_configuration: IntnetConfiguration,
     current_user: Annotated[User, Depends(get_authorized_user)],
@@ -138,7 +138,7 @@ def apply_intnet_configuration_to_virtual_machines(
     # ? returns null
     return
     
-@app.put("/network/configuration/panelstate", status_code=204)
+@app.put("/network/configuration/panelstate", tags=['network configuration'])
 def save_flow_state(
     flow_state: FlowState,
     current_user: Annotated[User, Depends(get_authorized_user)],
@@ -149,7 +149,7 @@ def save_flow_state(
 # snapshot requests
 ###############################
 
-@app.post("/network/snapshot", status_code=201)
+@app.post("/network/snapshot", status_code=201, tags=['network configuration snapshots'])
 def create_network_snapshot(
     snapshot: SnapshotCreate,
     current_user: Annotated[User, Depends(get_authorized_user)],
@@ -169,7 +169,7 @@ def create_network_snapshot(
 
         return snapshot
 
-@app.get("/network/snapshot/all")
+@app.get("/network/snapshot/all", tags=['network configuration snapshots'])
 def get_all_snapshots(
     current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> list:
@@ -177,7 +177,7 @@ def get_all_snapshots(
     if not isinstance(snapshots_list, list): return []
     return snapshots_list
 
-@app.get("/network/snapshot/{uuid}")
+@app.get("/network/snapshot/{uuid}", tags=['network configuration snapshots'])
 def get_snapshot(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)],
@@ -186,7 +186,7 @@ def get_snapshot(
     validateJSONList(snapshots_list, 'snapshot')
     return getByUUID(snapshots_list, uuid, 'snapshot')
     
-@app.post("/network/snapshot/{uuid}/rename/{name}")
+@app.post("/network/snapshot/{uuid}/rename/{name}", tags=['network configuration snapshots'])
 def rename_snapshot(
     uuid: str,
     name: str,
@@ -205,7 +205,7 @@ def rename_snapshot(
         snapshots.write(snapshots_list)
         return snapshots_list[index]
 
-@app.delete("/network/snapshot/{uuid}")
+@app.delete("/network/snapshot/{uuid}", tags=['network configuration snapshots'])
 def delete_network_configuration_snapshot(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)],
@@ -223,7 +223,7 @@ def delete_network_configuration_snapshot(
 # preset requests
 ###############################
 
-@app.get("/network/preset/all")
+@app.get("/network/preset/all", tags=['network configuration presets'])
 def get_all_snapshots(
     current_user: Annotated[User, Depends(get_authorized_user)],
 ) -> list:
@@ -231,7 +231,7 @@ def get_all_snapshots(
     if not isinstance(presets_list, list): return []
     return presets_list
 
-@app.get("/network/preset/{uuid}")
+@app.get("/network/preset/{uuid}", tags=['network configuration presets'])
 def get_network_configuration_preset(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)]

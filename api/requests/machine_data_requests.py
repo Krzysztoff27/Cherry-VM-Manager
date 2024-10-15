@@ -32,7 +32,7 @@ class MachineState(VirtualMachine):         # * when displaying a page needing t
 #       data requests
 ###############################
 
-@app.get("/vm/all/networkdata") # * request for network data of all VMs
+@app.get("/vm/all/networkdata", tags=['machine data']) # * request for network data of all VMs
 async def get_all_vms_network_data(
     current_user: Annotated[User, Depends(get_authorized_user)], # ! provides authentication, no need to do anything with it
 ) -> dict[str, MachineNetworkData]:
@@ -50,7 +50,7 @@ async def get_all_vms_network_data(
     }
     
 
-@app.get("/vm/all/state") # * request for state of all VMs
+@app.get("/vm/all/state", tags=['machine data']) # * request for state of all VMs
 async def get_all_vms_state(
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
 ) -> dict[str, MachineState]:
@@ -67,7 +67,7 @@ async def get_all_vms_state(
         # ...
     }
 
-@app.get("/vm/{uuid}/networkdata") # * request for network data of VM with specific <id>
+@app.get("/vm/{uuid}/networkdata", tags=['machine data']) # * request for network data of VM with specific <id>
 async def get_vm_network_data(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
@@ -78,7 +78,7 @@ async def get_vm_network_data(
     # example return:
     return MachineNetworkData(uuid=uuid, group='desktop', group_member_id=1, port=1001, domain='desktop1.wisniowa.oedu.pl')
 
-@app.get("/vm/{uuid}/state") # * request for network data of VM with specific <id>
+@app.get("/vm/{uuid}/state", tags=['machine data']) # * request for network data of VM with specific <id>
 async def get_vm_state(
     uuid: str,
     current_user: Annotated[User, Depends(get_authorized_user)], # ! -"-
