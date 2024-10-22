@@ -145,7 +145,7 @@ create_user(){
     usermod -a -G docker,libvirt,kvm CherryWorker
     ok_handler
     printf '[i] Adding /etc/sudoers.d/cherryworker file: '
-    echo "CherryWorker ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/cherryworker
+    echo "CherryWorker ALL=(ALL) NOPASSWD:ALL" | tee /etc/sudoers.d/cherryworker > "$LOGS_FILE"
     chmod 440 /etc/sudoers.d/cherryworker
     ok_handler 
 }
@@ -215,6 +215,12 @@ configure_daemon_docker(){
     printf "[i] Creating directory structure ($DIR_DOCKER) and copying docker files: "
     mkdir -p "$DIR_DOCKER"
     cp -r ../docker/. "$DIR_DOCKER"
+    ok_handler
+}
+
+create_docker_networks(){
+    printf '\n[i] Creating cvmm-network internal Docker network: '
+    runuser -u CherryWorker -- docker network create --driver=bridge --subnet=172.16.100.0/24 --gateway=172.16.100.1 --internal cvmm-network > "$LOGS_FILE"
     ok_handler
 }
 
@@ -293,8 +299,9 @@ installation(){
     configure_daemon_kvm
     configure_daemon_libvirt
     configure_file_ownership
-    #configure_daemon_docker
-    #configure_container_guacamole
+    configure_daemon_docker
+    create_docker_networks
+    configure_container_guacamole
     create_vm_firewall
     create_vm_networks
     print_finish_notice

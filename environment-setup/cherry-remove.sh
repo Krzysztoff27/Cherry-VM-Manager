@@ -141,6 +141,12 @@ configure_daemon_docker(){
     ok_handler
 }
 
+remove_docker_networks(){
+    printf '\n[i] Removing cvmm-network internal Docker network: '
+    runuser -u CherryWorker -- docker network rm cvmm-network > "$LOGS_FILE"
+    ok_handler
+}
+
 configure_container_guacamole(){
     printf '\n[i] Stopping apache-guacamole docker stack: '
     runuser -u CherryWorker -- docker-compose -f "$DIR_DOCKER/apache-guacamole/docker-compose.yml" down > "$LOGS_FILE"
@@ -199,6 +205,7 @@ removal(){
     remove_vm_networks
     remove_vm_firewall
     configure_container_guacamole
+    remove_docker_networks
     configure_daemon_docker
     configure_daemon_libvirt
     remove_user
