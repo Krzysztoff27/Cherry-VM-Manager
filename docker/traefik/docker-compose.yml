@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  traefik:
+    container_name: cvmm-traefik-proxy
+    restart: always
+    image: traefik
+    command:
+     #DELETE BEFORE RELEASING
+     - "--api.insecure=true"
+     - "--providers.file.directory=./configuration"
+     - "--providers.file.watch=true"
+     - "--entrypoint.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    networks:
+      cvmm-network:
+        ipv4_address: 172.16.100.2
+
+networks:
+  cvmm-network:
+    name: cvmm-network
+    external: true
