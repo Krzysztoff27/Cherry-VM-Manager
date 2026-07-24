@@ -150,7 +150,7 @@ CREATE TABLE network_panel_presets(
     owner_uuid UUID NOT NULL,
     name VARCHAR(50) NOT NULL,
     override_existing BOOLEAN NOT NULL,
-    internal_networks JSONB NOT NULL,
+    internal_network_profiles JSONB NOT NULL,
     FOREIGN KEY (owner_uuid) REFERENCES administrators(uuid) ON DELETE CASCADE
 );
 

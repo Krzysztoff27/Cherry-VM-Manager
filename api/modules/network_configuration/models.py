@@ -118,14 +118,14 @@ class NetworkPanelPresetInDb(BaseModel):
     owner_uuid: UUID
     name: str
     override_existing: bool = False
-    internal_networks: list[NetworkPanelPresetInternalNetwork] 
+    internal_network_profiles: list[NetworkPanelPresetInternalNetwork] 
  
 class NetworkPanelPreset(BaseModel):
     uuid: UUID
     owner: Administrator | None = None
     name: str
     override_existing: bool = False
-    internal_networks: list[NetworkPanelPresetInternalNetwork]
+    internal_network_profiles: list[NetworkPanelPresetInternalNetwork]
     
     
 class NetworkPanelPresetInternalNetworkForm(BaseModel):
@@ -139,7 +139,7 @@ class NetworkPanelPresetInternalNetworkForm(BaseModel):
 class CreateNetworkPanelPresetForm(BaseModel):
     name: str
     override_existing: bool = False
-    internal_networks: list[NetworkPanelPresetInternalNetworkForm]
+    internal_network_profiles: list[NetworkPanelPresetInternalNetworkForm]
     
     @field_validator("name", mode="before")
     @classmethod
@@ -150,6 +150,6 @@ class CreateNetworkPanelPresetArgs(UUIDModel):
     owner_uuid: UUID
     name: str
     override_existing: bool = False
-    internal_networks: Jsonb
+    internal_network_profiles: Jsonb
     
     model_config = ConfigDict(arbitrary_types_allowed=True)
