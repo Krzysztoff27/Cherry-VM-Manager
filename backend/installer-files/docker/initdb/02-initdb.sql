@@ -154,6 +154,16 @@ CREATE TABLE network_panel_presets(
     FOREIGN KEY (owner_uuid) REFERENCES administrators(uuid) ON DELETE CASCADE
 );
 
+-- Machine Naming
+CREATE TABLE machine_name_counters (
+    owner_uuid UUID NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    free_ids INT[] NOT NULL,
+    current_max INT NOT NULL DEFAULT 1,
+    PRIMARY KEY(owner_uuid, name),
+    FOREIGN KEY (owner_uuid) REFERENCES administrators(uuid) ON DELETE CASCADE
+);
+
 -- Indices
 CREATE INDEX administrators_idx ON administrators (uuid, username, email);
 CREATE INDEX clients_idx ON clients (uuid, username, email);
@@ -169,7 +179,9 @@ CREATE INDEX machine_snapshots_shares_idx ON machine_snapshots_shares(snapshot_u
 CREATE INDEX iso_files_idx ON iso_files (uuid, name);
 CREATE INDEX intnets_idx ON intnets (uuid, owner_uuid, intnet_name);
 CREATE INDEX intnets_connections_idx ON intnets_connections (intnet_uuid, machine_uuid, interface_mac);
+CREATE INDEX internet_connections ON internet_connections (machine_uuid, interface_mac);
 CREATE INDEX network_panel_presets_idx ON network_panel_presets(uuid, owner_uuid);
+CREATE INDEX machine_name_counters_idx ON machine_name_counters(owner_uuid, name);
 
 
 -- Insert roles
