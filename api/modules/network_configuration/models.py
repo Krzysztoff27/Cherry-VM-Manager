@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 from uuid import UUID
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from ipaddress import IPv4Interface
 from pydantic_extra_types.mac_address import MacAddress
 from psycopg.types.json import Jsonb
@@ -137,3 +137,5 @@ class CreateNetworkPanelPresetArgs(UUIDModel):
     name: str
     override_existing: bool = False
     internal_networks: Jsonb
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
