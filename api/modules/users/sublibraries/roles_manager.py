@@ -42,11 +42,11 @@ class _RoleTableManager(SimpleTableManager):
         )
     
     def extend_model(self, role: Role) -> RoleExtended:
-        from .administrator_library import AdministratorLibrary
+        from .administrator_manager import AdministratorManager
         
         return RoleExtended(
             **role.model_dump(exclude={"users"}),
-            users=AdministratorLibrary.get_all_records_matching("uuid", role.users)
+            users=AdministratorManager.get_all_records_matching("uuid", role.users)
         )
         
     def verify_role_integrity(self, cursor: Cursor[Any]) -> bool:
@@ -59,10 +59,10 @@ class _RoleTableManager(SimpleTableManager):
         return verify_permission_integrity(assigned_roles)
 
     def assign_role_to_administrator(self, role_uuid: UUID, administrator_uuid: UUID, logged_in_user: Administrator):
-        from .administrator_library import AdministratorLibrary
+        from .administrator_manager import AdministratorManager
 
         role: Role | None = self.get_record_by_uuid(role_uuid)
-        administrator = AdministratorLibrary.get_record_by_uuid(administrator_uuid)
+        administrator = AdministratorManager.get_record_by_uuid(administrator_uuid)
         
         if role is None:
             raise HTTPException(400, f"Role with uuid={role_uuid} does not exist.")
@@ -80,10 +80,10 @@ class _RoleTableManager(SimpleTableManager):
                 """, (administrator_uuid, role_uuid))  
     
     def remove_role_from_administrator(self, role_uuid: UUID, administrator_uuid: UUID, logged_in_user: Administrator):
-        from .administrator_library import AdministratorLibrary
+        from .administrator_manager import AdministratorManager
 
         role = self.get_record_by_uuid(role_uuid)
-        administrator = AdministratorLibrary.get_record_by_uuid(administrator_uuid)
+        administrator = AdministratorManager.get_record_by_uuid(administrator_uuid)
         
         if role is None:
             raise HTTPException(400, f"Role with uuid={role_uuid} does not exist.")
@@ -105,9 +105,9 @@ class _RoleTableManager(SimpleTableManager):
                         raise HTTPException(400, f"Cannot revoke role with UUID={role_uuid} from the user, as it would leave at least one permission unassigned. Please assign the affected permission to another user before proceeding.")
 
     def update_administrator_roles(self, administrator_uuid: UUID, roles: list[UUID], logged_in_user: Administrator):
-        from .administrator_library import AdministratorLibrary
+        from .administrator_manager import AdministratorManager
         
-        administrator = AdministratorLibrary.get_record_by_uuid(administrator_uuid)
+        administrator = AdministratorManager.get_record_by_uuid(administrator_uuid)
 
         if administrator is None:
             raise HTTPException(400, f"Administrator with uuid={administrator_uuid} does not exist.")
@@ -118,7 +118,7 @@ class _RoleTableManager(SimpleTableManager):
         if not_existing:
             raise HTTPException(400, f"The following roles do not exist in the system: {', '.join(map(str, not_existing))}")
         
-        assigned_roles = RoleLibrary.get_all_records_matching("uuid", roles).values()
+        assigned_roles = RoleManager.get_all_records_matching("uuid", roles).values()
         
         required_permissions = 0
         
@@ -151,6 +151,6 @@ class _RoleTableManager(SimpleTableManager):
  
             
 
-RoleLibrary = _RoleTableManager()
+RoleManager = _RoleTableManager()
 
-__all__ = ["RoleLibrary"]
+__all__ = ["RoleManager"]

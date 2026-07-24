@@ -7,7 +7,7 @@ from modules.machine_state.models import MachinePropertiesPayload
 from modules.machine_state.state_management import start_machine, stop_machine
 from modules.authentication.validation import DependsOnAuthentication, DependsOnAdministrativeAuthentication, get_authenticated_administrator, get_authenticated_user
 from modules.users.permissions import verify_permissions, has_permissions
-from modules.machine_resources.iso_files.library import update_iso_last_used
+from modules.machine_resources.iso_files.manager import update_iso_last_used
 from modules.machine_lifecycle.xml_translator import *
 from modules.machine_lifecycle.machines import *
 from modules.machine_lifecycle.models import MachineParameters, MachineDisk, CreateMachineForm, MachineBulkSpec

@@ -55,9 +55,9 @@ const MachineControls = ({ machine, size = "lg", gap = "sm", buttonProps, disabl
             onClick={(e) => e.preventDefault()}
         >
             <ActionIcon
-                variant="light"
+                variant="filled"
                 size={size}
-                color="suse-green.9"
+                color="lime.7"
                 {...buttonProps}
                 disabled={buttonDisabled || machine.state === "ACTIVE"}
                 onClick={startMachine}
@@ -73,9 +73,9 @@ const MachineControls = ({ machine, size = "lg", gap = "sm", buttonProps, disabl
                 )}
             </ActionIcon>
             <ActionIcon
-                variant="light"
+                variant="filled"
                 size={size}
-                color="red.9"
+                color="red.7"
                 {...buttonProps}
                 disabled={buttonDisabled || ["OFFLINE", "ERROR"].includes(machine.state)}
                 onClick={stopMachine}

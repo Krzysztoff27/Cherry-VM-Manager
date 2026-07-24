@@ -36,7 +36,6 @@ const ContributorsPage = () => {
                                         {developer.contributionKeys?.map((key, i) => (
                                             <Badge
                                                 variant="light"
-                                                color="cherry.4"
                                                 size="lg"
                                                 fw={500}
                                             >

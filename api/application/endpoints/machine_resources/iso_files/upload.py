@@ -13,7 +13,7 @@ from config.permissions_config import PERMISSIONS
 from modules.users.permissions import verify_permissions
 from modules.file_upload.models import UploadAlreadyExists, UploadHeadersError, UploadNotExistent, UploadTooLargeException
 from modules.machine_resources.iso_files.models import CreateIsoRecordArgs, CreateIsoRecordForm
-from modules.machine_resources.iso_files.library import IsoLibrary
+from modules.machine_resources.iso_files.manager import IsoManager
 from modules.authentication.validation import DependsOnAdministrativeAuthentication
 from modules.file_upload.upload_handler import UploadHandler
 
@@ -100,7 +100,7 @@ async def __upload_iso_file_chunk__(current_user: DependsOnAdministrativeAuthent
 async def __complete_iso_file_upload__(data: CreateIsoRecordForm, current_user: DependsOnAdministrativeAuthentication):
     verify_permissions(current_user, mask=PERMISSIONS.MANAGE_ISO_FILES)
     
-    name_duplicate = IsoLibrary.get_record_by_field("name", data.name)
+    name_duplicate = IsoManager.get_record_by_field("name", data.name)
 
     if name_duplicate is not None:
         raise HTTPException(
@@ -120,7 +120,7 @@ async def __complete_iso_file_upload__(data: CreateIsoRecordForm, current_user: 
             imported_at=dt.datetime.now(),
         )
         
-        IsoLibrary.create_record(creation_args)
+        IsoManager.create_record(creation_args)
     except UploadNotExistent:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

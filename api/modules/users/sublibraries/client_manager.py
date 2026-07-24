@@ -52,11 +52,11 @@ class _ClientTableManager(SimpleTableManager):
         return response.get("password") if response else None
 
     def extend_model(self, client: Client) -> ClientExtended:
-        from .group_library import GroupLibrary
+        from .group_manager import GroupManager
         
         return ClientExtended(
             **client.model_dump(exclude={"groups"}),
-            groups=GroupLibrary.get_all_records_matching("uuid", client.groups)
+            groups=GroupManager.get_all_records_matching("uuid", client.groups)
         )
         
     def get_all_clients_in_group(self, group_uuid):
@@ -70,12 +70,12 @@ class _ClientTableManager(SimpleTableManager):
         
     @override
     def create_record(self, args: CreateClientArgs):
-        from .group_library import GroupLibrary
+        from .group_manager import GroupManager
 
         args.username = args.username.lower()
         args.password = hash_password(args.password)
         
-        all_groups = set(GroupLibrary.get_all_records().keys())
+        all_groups = set(GroupManager.get_all_records().keys())
         not_existing = set(args.groups) - all_groups
         
         if not_existing:
@@ -106,9 +106,9 @@ class _ClientTableManager(SimpleTableManager):
         return args.uuid
     
     async def create_records(self, args_list: list[CreateClientArgs], cursor: AsyncCursor[Any]):
-        from .group_library import GroupLibrary
+        from .group_manager import GroupManager
         
-        all_groups = GroupLibrary.get_all_records()
+        all_groups = GroupManager.get_all_records()
         all_group_uuids = set(all_groups.keys())
         
         groups_query_data = []
@@ -192,6 +192,6 @@ class _ClientTableManager(SimpleTableManager):
                 cursor.execute("UPDATE clients SET last_active = CURRENT_TIMESTAMP WHERE uuid = %s", (uuid,))
     
         
-ClientLibrary = _ClientTableManager()
+ClientManager = _ClientTableManager()
 
-__all__ = ["ClientLibrary"]
+__all__ = ["ClientManager"]

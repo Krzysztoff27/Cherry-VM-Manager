@@ -60,11 +60,11 @@ class _AdministratorTableManager(SimpleTableManager):
         return response.get("password") if response else None
     
     def extend_model(self, administrator: Administrator) -> AdministratorExtended:
-        from .roles_library import RoleLibrary
+        from .roles_manager import RoleManager
         
         return AdministratorExtended(
             **administrator.model_dump(exclude={"roles"}),
-            roles=RoleLibrary.get_all_records_matching("uuid", administrator.roles)
+            roles=RoleManager.get_all_records_matching("uuid", administrator.roles)
         )
         
     def get_all_administrators_with_role(self, role_uuid):
@@ -78,18 +78,18 @@ class _AdministratorTableManager(SimpleTableManager):
         
     @override
     def create_record(self, args: CreateAdministratorArgs, logged_in_user: Administrator):
-        from .roles_library import RoleLibrary
+        from .roles_manager import RoleManager
 
         args.username = args.username.lower()
         args.password = hash_password(args.password)
         
-        all_roles = set(RoleLibrary.get_all_records().keys())
+        all_roles = set(RoleManager.get_all_records().keys())
         not_existing = set(args.roles) - all_roles
         
         if not_existing:
             raise HTTPException(400, f"The following roles do not exist in the system: {', '.join(map(str, not_existing))}")
         
-        assigned_roles = RoleLibrary.get_all_records_matching("uuid", args.roles).values()
+        assigned_roles = RoleManager.get_all_records_matching("uuid", args.roles).values()
         
         required_permissions = 0
         
@@ -124,9 +124,9 @@ class _AdministratorTableManager(SimpleTableManager):
         return args.uuid
     
     async def create_records(self, args_list: list[CreateAdministratorArgs], logged_in_user: Administrator, cursor: AsyncCursor[Any]):
-        from .roles_library import RoleLibrary
+        from .roles_manager import RoleManager
         
-        all_roles: dict[UUID, Role] = RoleLibrary.get_all_records()
+        all_roles: dict[UUID, Role] = RoleManager.get_all_records()
         all_role_uuids = set(all_roles.keys())
         
         required_permissions = 0
@@ -171,13 +171,13 @@ class _AdministratorTableManager(SimpleTableManager):
     
     @override
     def remove_record(self, uuid: UUID):
-        from .roles_library import RoleLibrary
+        from .roles_manager import RoleManager
 
         with pool.connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute("DELETE FROM administrators WHERE uuid = %s", (uuid,))
                 
-                if not RoleLibrary.verify_role_integrity(cursor):
+                if not RoleManager.verify_role_integrity(cursor):
                     connection.rollback()
                     raise HTTPException(
                         400, f"""
@@ -225,6 +225,6 @@ class _AdministratorTableManager(SimpleTableManager):
             with connection.cursor() as cursor:
                 cursor.execute("UPDATE administrators SET last_active = CURRENT_TIMESTAMP WHERE uuid = %s", (uuid,))
     
-AdministratorLibrary = _AdministratorTableManager()
+AdministratorManager = _AdministratorTableManager()
 
-__all__ = ["AdministratorLibrary"]
+__all__ = ["AdministratorManager"]

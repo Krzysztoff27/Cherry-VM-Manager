@@ -145,6 +145,15 @@ CREATE TABLE internet_connections(
     FOREIGN KEY (machine_uuid) REFERENCES deployed_machines_owners(machine_uuid) ON DELETE CASCADE
 );
 
+CREATE TABLE network_panel_presets(
+    uuid UUID PRIMARY KEY,
+    owner_uuid UUID NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    override_existing BOOLEAN NOT NULL,
+    internal_networks JSONB NOT NULL,
+    FOREIGN KEY (owner_uuid) REFERENCES administrators(uuid) ON DELETE CASCADE
+);
+
 -- Indices
 CREATE INDEX administrators_idx ON administrators (uuid, username, email);
 CREATE INDEX clients_idx ON clients (uuid, username, email);
@@ -160,6 +169,7 @@ CREATE INDEX machine_snapshots_shares_idx ON machine_snapshots_shares(snapshot_u
 CREATE INDEX iso_files_idx ON iso_files (uuid, name);
 CREATE INDEX intnets_idx ON intnets (uuid, owner_uuid, intnet_name);
 CREATE INDEX intnets_connections_idx ON intnets_connections (intnet_uuid, machine_uuid, interface_mac);
+CREATE INDEX network_panel_presets_idx ON network_panel_presets(uuid, owner_uuid);
 
 
 -- Insert roles

@@ -15,9 +15,9 @@ def validate_user_creation(user_data: CreateAnyUserForm):
     
     
 def validate_group_creation(group_data: CreateGroupForm):
-    from .sublibraries.group_library import GroupLibrary
+    from .sublibraries.group_manager import GroupManager
     
-    if GroupLibrary.get_record_by_field("name", group_data.name) is not None:
+    if GroupManager.get_record_by_field("name", group_data.name) is not None:
         raise HTTPException(status_code=409, detail="Group with this name already exists")
     
     if len(group_data.name) > 50:

@@ -1,2 +1,2 @@
-from .library import *
+from .manager import *
 from .models import *

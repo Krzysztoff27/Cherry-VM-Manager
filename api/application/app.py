@@ -11,7 +11,8 @@ from modules.machine_websockets.main_manager import MachineWebSocketManager
 from .endpoints.authentication import authentication
 from .endpoints.machine_resources.iso_files import main as iso_files, upload as iso_files_upload
 from .endpoints.machine_resources.machine_templates import main as machine_templates
-from .endpoints.machines import machines, network, websockets
+from .endpoints.machines import machines, websockets
+from .endpoints.networks import configuration as network_configuration, presets as network_panel_presets
 from .endpoints.users import users, groups, roles
 
 
@@ -33,18 +34,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# routers
 app.include_router(authentication.router)
 app.include_router(iso_files.router)
 app.include_router(iso_files_upload.router)
 app.include_router(machine_templates.router)
 app.include_router(machines.router)
-app.include_router(machines.debug_router)
 app.include_router(websockets.router)
-app.include_router(network.router)
+app.include_router(network_configuration.router)
+app.include_router(network_panel_presets.router)
 app.include_router(users.router)
 app.include_router(groups.router)
 app.include_router(roles.router)
-app.include_router(network.debug_router)
+# debug routers
+app.include_router(machines.debug_router)
+app.include_router(network_configuration.debug_router)
 
 @app.exception_handler(Exception)
 async def internal_exception_handler(request: Request, exc: Exception):

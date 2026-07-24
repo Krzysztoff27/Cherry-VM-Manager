@@ -39,18 +39,18 @@ class _GroupTableManager(SimpleTableManager):
         )
     
     def extend_model(self, group: Group) -> GroupExtended:
-        from .client_library import ClientLibrary
+        from .client_manager import ClientManager
         
         return GroupExtended(
             **group.model_dump(exclude={"users"}),
-            users=ClientLibrary.get_all_records_matching("uuid", group.users)
+            users=ClientManager.get_all_records_matching("uuid", group.users)
         )
         
     @override
     def create_record(self, args: CreateGroupArgs) -> UUID:
-        from .client_library import ClientLibrary
+        from .client_manager import ClientManager
         
-        all_clients = set(ClientLibrary.get_all_records().keys())
+        all_clients = set(ClientManager.get_all_records().keys())
         not_existing = set(args.users) - all_clients
         
         if not_existing:
@@ -76,10 +76,10 @@ class _GroupTableManager(SimpleTableManager):
         return args.uuid
 
     def join_client_to_group(self, group_uuid: UUID, client_uuid: UUID):
-        from .client_library import ClientLibrary
+        from .client_manager import ClientManager
         
         group = self.get_record_by_uuid(group_uuid)
-        client = ClientLibrary.get_record_by_uuid(client_uuid)
+        client = ClientManager.get_record_by_uuid(client_uuid)
         
         if not group:
             raise HTTPException(400, f"Group with uuid={group_uuid} does not exist.")
@@ -95,10 +95,10 @@ class _GroupTableManager(SimpleTableManager):
                 """, (client_uuid, group_uuid))
                 
     def remove_client_from_group(self, group_uuid: UUID, client_uuid: UUID):
-        from .client_library import ClientLibrary
+        from .client_manager import ClientManager
         
         group = self.get_record_by_uuid(group_uuid)
-        client = ClientLibrary.get_record_by_uuid(client_uuid)
+        client = ClientManager.get_record_by_uuid(client_uuid)
         
         if group is None:
             raise HTTPException(400, f"Group with uuid={group_uuid} does not exist.")
@@ -113,9 +113,9 @@ class _GroupTableManager(SimpleTableManager):
                 """, (client_uuid, group_uuid))
                 
     def update_client_groups(self, client_uuid: UUID, groups: list[UUID]):
-        from .client_library import ClientLibrary
+        from .client_manager import ClientManager
         
-        client = ClientLibrary.get_record_by_uuid(client_uuid)
+        client = ClientManager.get_record_by_uuid(client_uuid)
         
         if client is None:
             raise HTTPException(400, f"Client with uuid={client_uuid} does not exist.")
@@ -144,6 +144,6 @@ class _GroupTableManager(SimpleTableManager):
                     cursor.execute(insert_query)
         
 
-GroupLibrary = _GroupTableManager()
+GroupManager = _GroupTableManager()
 
-__all__ = ["GroupLibrary"]
+__all__ = ["GroupManager"]

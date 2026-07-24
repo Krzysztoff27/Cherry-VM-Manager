@@ -9,8 +9,8 @@ from modules.authentication.validation import encode_guacamole_connection_string
 from modules.users.permissions import is_admin, is_client
 from modules.postgresql.simple_select import select_single_field, select_rows
 from modules.users.models import Administrator, AnyUser, Client
-from modules.users.sublibraries.administrator_library import AdministratorLibrary
-from modules.users.sublibraries.client_library import ClientLibrary
+from modules.users.sublibraries.administrator_manager import AdministratorManager
+from modules.users.sublibraries.client_manager import ClientManager
 from config import ENV_CONFIG
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def get_machine_owner(machine_uuid: UUID) -> Optional[Administrator]:
     owner_uuid = get_machine_owner_uuid(machine_uuid)
     
     if owner_uuid:
-        return AdministratorLibrary.get_record_by_uuid(owner_uuid)
+        return AdministratorManager.get_record_by_uuid(owner_uuid)
 
 
 def get_machine_assigned_clients_uuids(machine_uuid: UUID) -> Optional[list[UUID]]:
@@ -49,7 +49,7 @@ def get_machine_assigned_clients_uuids(machine_uuid: UUID) -> Optional[list[UUID
 def get_machine_assigned_clients(machine_uuid: UUID) -> dict[UUID, Client]:
     assigned_client_uuids = get_machine_assigned_clients_uuids(machine_uuid)
     
-    return ClientLibrary.get_all_records_matching("uuid", assigned_client_uuids)
+    return ClientManager.get_all_records_matching("uuid", assigned_client_uuids)
 
 # Get combined list of uuids of owner + assigned_clients to the machine
 def get_machine_linked_account_uuids(machine_uuid: UUID) -> list[UUID]:

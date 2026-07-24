@@ -5,16 +5,9 @@ from pydantic import BaseModel, field_validator, model_validator
 from pydantic import BaseModel, field_validator
 from uuid import UUID, uuid4
 
+from modules.global_models.models import UUIDModel
 from modules.validation.string import lenient_name_validator, name_validator, username_validator
 
-
-class UUIDModel(BaseModel):
-    uuid: UUID = uuid4()
-
-    @model_validator(mode="after")
-    def set_uuid(self):
-        self.uuid = uuid4()
-        return self
 
 # 
 #   BASE TYPES

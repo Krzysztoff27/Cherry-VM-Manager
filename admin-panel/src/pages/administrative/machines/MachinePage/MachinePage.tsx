@@ -18,7 +18,7 @@ const MachinePage = (): React.JSX.Element => {
     const { machines, loading, error } = useMachineWebSocket("subscribed", uuid);
     const machine = uuid && machines ? (machines[uuid] ?? null) : null;
 
-    console.log(machine)
+    console.log(machine);
 
     const machineProperties = useMemo<MachineEditFormData | null>(
         () =>
@@ -35,6 +35,7 @@ const MachinePage = (): React.JSX.Element => {
                       ram_max: machine.ram_max,
                       vcpu: machine.vcpu,
                       state: machine.state,
+                      interfaces: machine.interfaces,
                   }
                 : null,
         [

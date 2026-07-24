@@ -13,10 +13,10 @@ from modules.authentication.passwords import hash_password
 from modules.postgresql.simple_select import select_single_field
 from modules.users.guacamole_synchronization import create_entity
 from modules.users.permissions import verify_can_change_password, verify_permissions
-from modules.users.sublibraries.roles_library import RoleLibrary
-from modules.users.sublibraries.group_library import GroupLibrary
-from modules.users.sublibraries.client_library import ClientLibrary
-from modules.users.sublibraries.administrator_library import AdministratorLibrary
+from modules.users.sublibraries.roles_manager import RoleManager
+from modules.users.sublibraries.group_manager import GroupManager
+from modules.users.sublibraries.client_manager import ClientManager
+from modules.users.sublibraries.administrator_manager import AdministratorManager
 from modules.users.validation import validate_group_creation, validate_user_creation, validate_user_modification
 from .models import Administrator, AnyUser, AnyUserExtended, CreateAdministratorArgs, CreateAnyUserForm, CreateClientArgs, CreateGroupArgs, CreateGroupForm, GetUsersFilters, ModifyUserArgs, ModifyUserForm
 
@@ -25,16 +25,16 @@ logger = logging.getLogger(__name__)
 class _UsersSystemManager():
     
     def get_user(self, uuid: UUID) -> Optional[AnyUser]:
-        return AdministratorLibrary.get_record_by_uuid(uuid) or ClientLibrary.get_record_by_uuid(uuid)
+        return AdministratorManager.get_record_by_uuid(uuid) or ClientManager.get_record_by_uuid(uuid)
     
     def get_user_by_username(self, username: str) -> Optional[AnyUser]:
-        return AdministratorLibrary.get_record_by_field("username", username) or ClientLibrary.get_record_by_field("username", username)
+        return AdministratorManager.get_record_by_field("username", username) or ClientManager.get_record_by_field("username", username)
     
     def get_user_by_email(self, email: str) -> Optional[AnyUser]:
-        return AdministratorLibrary.get_record_by_field("email", email) or ClientLibrary.get_record_by_field("email", email)
+        return AdministratorManager.get_record_by_field("email", email) or ClientManager.get_record_by_field("email", email)
     
     def get_user_password(self, uuid: UUID) -> Optional[str]:
-        return AdministratorLibrary.get_password(uuid) or ClientLibrary.get_password(uuid)
+        return AdministratorManager.get_password(uuid) or ClientManager.get_password(uuid)
     
     def get_users(self, filters: GetUsersFilters) -> dict[UUID, AnyUser]:
         users: dict[UUID, AnyUser] = {}
@@ -44,23 +44,23 @@ class _UsersSystemManager():
             
         if filters.account_type in (None, "administrative") and filters.group is None:
             if filters.role is None:
-                users |= AdministratorLibrary.get_all_records()
+                users |= AdministratorManager.get_all_records()
             else:
-                users |= AdministratorLibrary.get_all_administrators_with_role(filters.role)
+                users |= AdministratorManager.get_all_administrators_with_role(filters.role)
 
         if filters.account_type in (None, "client") and filters.role is None:
             if filters.group is None:
-                users |= ClientLibrary.get_all_records()
+                users |= ClientManager.get_all_records()
             else:
-                users |= ClientLibrary.get_all_clients_in_group(filters.group)
+                users |= ClientManager.get_all_clients_in_group(filters.group)
         
         return users
     
     def extend_user_model(self, user: AnyUser) -> AnyUserExtended:
         if user.account_type == 'administrative':
-            return AdministratorLibrary.extend_model(user)
+            return AdministratorManager.extend_model(user)
         if user.account_type == 'client':
-            return ClientLibrary.extend_model(user)
+            return ClientManager.extend_model(user)
     
     def create_user(self, form: CreateAnyUserForm, logged_in_user: Administrator) -> UUID:                      
         validate_user_creation(form)
@@ -71,9 +71,9 @@ class _UsersSystemManager():
             verify_permissions(logged_in_user, PERMISSIONS.MANAGE_CLIENT_USERS)
         
         if form.account_type == 'administrative':                       
-            return AdministratorLibrary.create_record(CreateAdministratorArgs.model_validate(form.model_dump()), logged_in_user)
+            return AdministratorManager.create_record(CreateAdministratorArgs.model_validate(form.model_dump()), logged_in_user)
         if form.account_type == 'client':
-            return ClientLibrary.create_record(CreateClientArgs.model_validate(form.model_dump()))
+            return ClientManager.create_record(CreateClientArgs.model_validate(form.model_dump()))
         
     async def create_users(self, forms: list[CreateAnyUserForm], logged_in_user: Administrator):
         usernames = []
@@ -112,9 +112,9 @@ class _UsersSystemManager():
                     logger.info("[create-users-in-bulk] Connected to the DB")
                     try:
                         if administrators_args_list:
-                            await AdministratorLibrary.create_records(administrators_args_list, logged_in_user, cursor)
+                            await AdministratorManager.create_records(administrators_args_list, logged_in_user, cursor)
                         if clients_args_list:
-                            await ClientLibrary.create_records(clients_args_list, cursor)
+                            await ClientManager.create_records(clients_args_list, cursor)
                         
                     except Exception as e:
                         logger.exception("Error creating users in bulk")
@@ -135,10 +135,10 @@ class _UsersSystemManager():
         
         if user.account_type == 'administrative':
             verify_permissions(logged_in_user, PERMISSIONS.MANAGE_ADMIN_USERS)
-            return AdministratorLibrary.remove_record(uuid)
+            return AdministratorManager.remove_record(uuid)
         if user.account_type == 'client':
             verify_permissions(logged_in_user, PERMISSIONS.MANAGE_CLIENT_USERS)
-            return ClientLibrary.remove_record(uuid)
+            return ClientManager.remove_record(uuid)
         
     def delete_users(self, uuids: list[UUID],  logged_in_user: Administrator):
         all_administrator_uuids = set(select_single_field("uuid", "SELECT uuid FROM administrators"))
@@ -155,8 +155,8 @@ class _UsersSystemManager():
                         if administrator_uuids_to_delete:
                             verify_permissions(logged_in_user, PERMISSIONS.MANAGE_ADMIN_USERS)
                             
-                            AdministratorLibrary.remove_records(administrator_uuids_to_delete, cursor)
-                            if not RoleLibrary.verify_role_integrity(cursor):
+                            AdministratorManager.remove_records(administrator_uuids_to_delete, cursor)
+                            if not RoleManager.verify_role_integrity(cursor):
                                 connection.rollback()
                                 raise HTTPException(
                                     400,
@@ -166,7 +166,7 @@ class _UsersSystemManager():
 
                         if client_uuids_to_delete:
                             verify_permissions(logged_in_user, PERMISSIONS.MANAGE_CLIENT_USERS)
-                            ClientLibrary.remove_records(client_uuids_to_delete, cursor)
+                            ClientManager.remove_records(client_uuids_to_delete, cursor)
                     except Exception:
                         logger.exception("Error occurred during bulk removal of users.")
                         raise HTTPException(500, "Error occurred during bulk removal of users.")
@@ -189,15 +189,15 @@ class _UsersSystemManager():
         
         if user.account_type == 'administrative':
             if form.roles: 
-                RoleLibrary.update_administrator_roles(uuid, form.roles, logged_in_user)
+                RoleManager.update_administrator_roles(uuid, form.roles, logged_in_user)
                 
-            AdministratorLibrary.modify_record(uuid, args)
+            AdministratorManager.modify_record(uuid, args)
         
         elif user.account_type == 'client':
             if form.groups: 
-                GroupLibrary.update_client_groups(uuid, form.groups)
+                GroupManager.update_client_groups(uuid, form.groups)
             
-            ClientLibrary.modify_record(uuid, args)
+            ClientManager.modify_record(uuid, args)
         
         return self.get_user(uuid)
         
@@ -215,20 +215,20 @@ class _UsersSystemManager():
         hashed_password = hash_password(new_password)
     
         if user.account_type == 'administrative':
-            return AdministratorLibrary.change_password(uuid, hashed_password)
+            return AdministratorManager.change_password(uuid, hashed_password)
         if user.account_type == 'client':
-            return ClientLibrary.change_password(uuid, hashed_password)
+            return ClientManager.change_password(uuid, hashed_password)
         
     def update_user_last_active(self, logged_in_user: AnyUser):
         if logged_in_user.account_type == 'administrative':
-            return AdministratorLibrary.update_last_active(logged_in_user.uuid)
+            return AdministratorManager.update_last_active(logged_in_user.uuid)
         if logged_in_user.account_type == 'client':
-            return ClientLibrary.update_last_active(logged_in_user.uuid)
+            return ClientManager.update_last_active(logged_in_user.uuid)
         
     def create_group(self, form: CreateGroupForm) -> UUID:
         validate_group_creation(form)
         
-        return GroupLibrary.create_record(CreateGroupArgs.model_validate(form.model_dump()))
+        return GroupManager.create_record(CreateGroupArgs.model_validate(form.model_dump()))
 
     
 UsersManager = _UsersSystemManager()

@@ -220,15 +220,15 @@ export default function CreateAccountModal({ opened, onClose, onSubmit, accountT
                     <SimpleGrid cols={2}>
                         <Button
                             onClick={closeModal}
-                            variant="light"
-                            color="cherry.9"
+                            variant="default"
+                            className="borderless"
                         >
                             {t("cancel")}
                         </Button>
                         <Button
                             type="submit"
-                            variant="light"
-                            color="suse-green.8"
+                            variant="white"
+                            fw="700"
                         >
                             {t("confirm")}
                         </Button>

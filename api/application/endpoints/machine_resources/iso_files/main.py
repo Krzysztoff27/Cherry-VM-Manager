@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from config.permissions_config import PERMISSIONS
 from config.files_config import FILES_CONFIG
 from modules.users.permissions import verify_permissions
-from modules.machine_resources.iso_files.library import IsoLibrary
+from modules.machine_resources.iso_files.manager import IsoManager
 from modules.authentication.validation import DependsOnAdministrativeAuthentication, get_authenticated_administrator
 from modules.machine_resources.iso_files.models import IsoRecord
 
@@ -17,12 +17,12 @@ router = APIRouter(
 
 @router.get("/all", response_model=dict[UUID, IsoRecord])
 async def __read_all_iso_file_records__(current_user: DependsOnAdministrativeAuthentication) -> dict[UUID, IsoRecord]:
-    return IsoLibrary.get_all_records()
+    return IsoManager.get_all_records()
 
 
 @router.get("/iso/{uuid}", response_model=IsoRecord)
 async def __read_iso_file_record__(uuid: UUID, current_user: DependsOnAdministrativeAuthentication) -> IsoRecord:
-    record = IsoLibrary.get_record_by_uuid(uuid)
+    record = IsoManager.get_record_by_uuid(uuid)
     if record is None: 
         raise HTTPException(status_code=404, detail=f"ISO file with UUID={uuid} does not exist.")
     return record
@@ -32,7 +32,7 @@ async def __read_iso_file_record__(uuid: UUID, current_user: DependsOnAdministra
 async def __delete_iso_file_record__(uuid: UUID, current_user: DependsOnAdministrativeAuthentication):
     verify_permissions(current_user, mask=PERMISSIONS.MANAGE_ISO_FILES)
         
-    record = IsoLibrary.get_record_by_uuid(uuid)
+    record = IsoManager.get_record_by_uuid(uuid)
     
     if record is None: 
         raise HTTPException(status_code=404, detail=f"ISO file with UUID={uuid} does not exist.")
@@ -43,4 +43,4 @@ async def __delete_iso_file_record__(uuid: UUID, current_user: DependsOnAdminist
         if os.path.exists(local_file_path): 
             os.remove(local_file_path)
         
-    IsoLibrary.remove_record(uuid)
+    IsoManager.remove_record(uuid)
