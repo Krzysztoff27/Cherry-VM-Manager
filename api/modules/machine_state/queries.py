@@ -149,8 +149,7 @@ def get_machine_network_interfaces(machine_uuid: UUID) -> list[StaticInterfaceIn
     
     rows = select_rows(select_network_interfaces, (machine_uuid,))
     
-    # return [StaticInterfaceInfo(mac=mac, ip=ip, name=name) for mac, ip, name in rows]
-    return [StaticInterfaceInfo(mac=mac, ip=ip) for mac, ip, name in rows]
+    return [StaticInterfaceInfo(mac=mac, ip=ip) for mac, ip in rows]
 
 
 def check_machine_membership(machine_uuid: UUID) -> bool:
