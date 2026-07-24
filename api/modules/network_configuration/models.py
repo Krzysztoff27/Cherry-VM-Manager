@@ -127,10 +127,24 @@ class NetworkPanelPreset(BaseModel):
     override_existing: bool = False
     internal_networks: list[NetworkPanelPresetInternalNetwork]
     
+    
+class NetworkPanelPresetInternalNetworkForm(BaseModel):
+    name: str | None = None
+    conditions: list[NetworkPanelPresetIntnetArg]   
+    @field_validator("name", mode="before")
+    @classmethod
+    def validate_name(cls, value):
+        return name_validator(value, field_name="intnet name")
+    
 class CreateNetworkPanelPresetForm(BaseModel):
     name: str
     override_existing: bool = False
-    internal_networks: list[NetworkPanelPresetInternalNetwork]
+    internal_networks: list[NetworkPanelPresetInternalNetworkForm]
+    
+    @field_validator("name", mode="before")
+    @classmethod
+    def validate_name(cls, value):
+        return name_validator(value)
     
 class CreateNetworkPanelPresetArgs(UUIDModel):
     owner_uuid: UUID
