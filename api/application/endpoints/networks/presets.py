@@ -17,12 +17,12 @@ router = APIRouter(
 )
 
 
-@router.get("/all", response_model=dict[UUID, NetworkPanelPreset])
+@router.get("/all", response_model=dict[UUID, NetworkPanelPreset], tags=["Network Panel Presets"])
 async def __read_all_network_panel_presets_belonging_to_user__(current_user: DependsOnAdministrativeAuthentication) -> dict[UUID, NetworkPanelPreset]:
     return NetworkPanelPresetsManager.get_all_records_matching(field_name="owner_uuid", value=str(current_user.uuid))
 
 
-@router.get("/preset/{uuid}", response_model=NetworkPanelPreset)
+@router.get("/preset/{uuid}", response_model=NetworkPanelPreset, tags=["Network Panel Presets"])
 async def __read_network_panel_preset__(uuid: UUID, current_user: DependsOnAdministrativeAuthentication) -> NetworkPanelPreset:
     preset = NetworkPanelPresetsManager.get_record_by_uuid(uuid)
     
@@ -38,7 +38,7 @@ async def __read_network_panel_preset__(uuid: UUID, current_user: DependsOnAdmin
     return preset
 
 
-@router.post("/create", response_model=None)
+@router.post("/create", response_model=None, tags=["Network Panel Presets"])
 async def __create_network_panel_preset__(data: CreateNetworkPanelPresetForm, current_user: DependsOnAdministrativeAuthentication):
     name_duplicate = NetworkPanelPresetsManager.get_record_by_fields(fields={"name": data.name, "owner_uuid": str(current_user.uuid)})
     
@@ -57,7 +57,7 @@ async def __create_network_panel_preset__(data: CreateNetworkPanelPresetForm, cu
     )
     
 
-@router.delete("/delete/{uuid}" , response_model=None)
+@router.delete("/delete/{uuid}" , response_model=None, tags=["Network Panel Presets"])
 async def __delete_network_panel_preset__(uuid: UUID, current_user: DependsOnAdministrativeAuthentication) -> None:
     preset = NetworkPanelPresetsManager.get_record_by_uuid(uuid)
     
