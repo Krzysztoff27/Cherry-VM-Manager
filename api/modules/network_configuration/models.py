@@ -106,7 +106,7 @@ NetworkPanelPresetIntnetArg = Annotated[
     | OwnerArg
     | AssignedClientsArg
     | BulkIdArg,
-    Field(discriminator="target"),
+    Field(discriminator="field"),
 ]
 
 class NetworkPanelPresetInternalNetwork(BaseModel):
