@@ -37,7 +37,6 @@ app.add_middleware(
 # routers
 app.include_router(authentication.router)
 app.include_router(iso_files.router)
-app.include_router(iso_files_upload.router)
 app.include_router(machine_templates.router)
 app.include_router(machines.router)
 app.include_router(websockets.router)
