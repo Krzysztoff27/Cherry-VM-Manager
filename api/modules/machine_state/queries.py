@@ -145,7 +145,7 @@ def get_machine_connections(machine_uuid: UUID) -> dict[Literal["ssh", "rdp", "v
     return connections
 
 def get_machine_network_interfaces(machine_uuid: UUID) -> list[StaticInterfaceInfo]:
-    select_network_interfaces = "SELECT interface_mac, interface_ip, interface_name FROM intnets_connections WHERE machine_uuid = %s"
+    select_network_interfaces = "SELECT interface_mac, interface_ip FROM intnets_connections WHERE machine_uuid = %s"
     
     rows = select_rows(select_network_interfaces, (machine_uuid,))
     
