@@ -36,7 +36,7 @@ def get_machine_properties_payload(machine_uuid: UUID, skip_membership_check: bo
         disks = machine_disks,
         connections = get_machine_connections(machine_uuid),
         interfaces = get_machine_network_interfaces(machine_uuid)
-        )
+    )
    
     
 def get_machine_properties_payloads_by_uuids(machine_uuids: set[UUID] | list[UUID]) -> dict[UUID, MachinePropertiesPayload]: 
@@ -47,9 +47,8 @@ def get_machine_properties_payloads_by_uuids(machine_uuids: set[UUID] | list[UUI
             properties = None
             try:
                 properties = get_machine_properties_payload(machine_uuid, skip_membership_check=True)
-            except Exception as e:
-                logger.error(f"Exception occured when fetching machine state in get_machine_properties_payload function for machine with uuid={machine_uuid}")
-                logger.debug(pprint(e))
+            except Exception:
+                logger.exception(f"Exception occured when fetching machine state in get_machine_properties_payload function for machine with uuid={machine_uuid}")
             if properties is not None:
                 machine_properties[machine_uuid] = properties    
             

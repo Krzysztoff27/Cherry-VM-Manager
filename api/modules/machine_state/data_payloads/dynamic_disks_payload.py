@@ -57,10 +57,8 @@ def get_machine_disks_payloads_by_uuids(machine_uuids: set[UUID] | list[UUID]) -
             state = None
             try:
                 state = get_machine_disks_payload(machine_uuid, skip_membership_check=True)
-            except Exception as e:
-                logger.error(f"Exception occured when fetching machine state in get_machine_disks_payload function for machine with uuid={machine_uuid}")
-                logger.debug(pprint(e))
-                
+            except Exception:
+                logger.exception(f"Exception occured when fetching machine state in get_machine_disks_payload function for machine with uuid={machine_uuid}")
             if state is not None:
                 machine_disk_states[machine_uuid] = state    
             
