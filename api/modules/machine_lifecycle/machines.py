@@ -590,7 +590,7 @@ async def delete_machine_async(machine_uuid: UUID) -> bool:
         def get_machine_xml():
             with LibvirtConnection("ro") as libvirt_connection:
                 logger.debug(f"Fetching {machine_uuid} XML config.")
-                machine = libvirt_connection.lookupByUUID(machine_uuid.bytes)
+                machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
                 return machine.XMLDesc(libvirt.VIR_DOMAIN_XML_INACTIVE)
                 
         
@@ -704,7 +704,7 @@ async def delete_machine_async(machine_uuid: UUID) -> bool:
             with LibvirtConnection("rw") as libvirt_connection:
                 try:
                     logger.debug(f"Trying to undefine machine {machine_uuid} configuration.")
-                    machine = libvirt_connection.lookupByUUID(machine_uuid.bytes)
+                    machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
                     machine.undefineFlags(libvirt.VIR_DOMAIN_UNDEFINE_NVRAM)
                 except libvirt.libvirtError as e:
                     logger.warning(f"Failed to undefine machine {machine_uuid} because of Libvirt error: {e}")
