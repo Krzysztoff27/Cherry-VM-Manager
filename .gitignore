@@ -127,3 +127,10 @@ backend/installer-files/settings.yaml
 # DOCS
 ############################
 docs/public/
+
+############################
+#      INTERNAL USE
+############################
+api/.venv
+api/rebuild.sh
+admin-panel/rebuild.sh
