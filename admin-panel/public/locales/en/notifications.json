@@ -78,6 +78,10 @@
             "title": "Something bad has happened",
             "message": "API service could not handle the request because of an internal issue."
         },
+        "502": {
+            "title": "Service unavailable",
+            "message": "API service is either down or unreachable."
+        },
         "503": {
             "title": "Service unavailable",
             "message": "API service is either down or unreachable."

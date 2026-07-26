@@ -78,6 +78,10 @@
       "title": "Wystąpił błąd wewnętrzny",
       "message": "Usługa API nie mogła przetworzyć żądania z powodu błędu wewnętrznego."
     },
+    "502": {
+      "title": "Serwis niedostępny",
+      "message": "Usługa API jest obecnie nieosiągalna."
+    },
     "503": {
       "title": "Serwis niedostępny",
       "message": "Usługa API jest obecnie nieosiągalna."
