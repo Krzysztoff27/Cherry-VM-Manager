@@ -1,9 +1,11 @@
 from uuid import UUID
 from pydantic import BaseModel
 from typing import Literal
+
+from datetime import datetime
+
 from modules.users.models import Administrator, Client
 from modules.machine_lifecycle.models import DiskType
-from datetime import datetime
 
 ################################
 # Machine data retrieval models
@@ -25,6 +27,7 @@ class StaticInterfaceInfo(BaseModel):
 class MachinePropertiesPayload(BaseModel):
     uuid: UUID                                      
     title: str | None = None
+    ordinal_number: str | None = None
     tags: list[str] | None = None
     description: str | None = None        
     owner: Administrator | None = None          

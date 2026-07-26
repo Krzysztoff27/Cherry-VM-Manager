@@ -5,12 +5,12 @@ import string
 import xml.etree.ElementTree as ET
 
 from uuid import UUID, uuid4
-from typing import Union, Optional, Any, Literal, List
+from typing import Union, Optional, Any, Literal
 from pathlib import Path
 
 from modules.machine_lifecycle.disks import get_machine_disk_size
 from modules.machine_lifecycle.models import MachineParameters, MachineDisk, MachineNetworkInterface, MachineMetadata, StoragePool, MachineGraphicalFramebuffer, NetworkInterfaceSource, CreateMachineForm, CreateMachineFormDisk, InternetInterface
-from modules.postgresql import select_rows
+from modules.postgresql.simple_select import select_rows
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,7 @@ def translate_machine_form_to_machine_parameters(machine_form: CreateMachineForm
     return MachineParameters(
         uuid = uuid4(),
         title = machine_form.title,
+        ordinal_number = 0,
         description = machine_form.description,
         metadata = [MachineMetadata(tag = "tags", value = tag) for tag in machine_form.tags] if machine_form.tags else [],
         ram = machine_form.config.ram,
@@ -78,7 +79,6 @@ def translate_machine_form_to_machine_parameters(machine_form: CreateMachineForm
         assigned_clients = machine_form.assigned_clients,
         internet_connectivity = machine_form.internet_connectivity
     )
-
 
 ################################
 #    XML elements creation
@@ -169,12 +169,15 @@ def create_machine_xml(machine: MachineParameters, machine_uuid: UUID) -> str:
         if machine.description:
             description.text = machine.description
         else:
-            description.text = " "
+            description.text = ""
 
 
         metadata = ET.SubElement(domain, "metadata")
         vm_info = ET.SubElement(metadata, "vm:info", {"xmlns:vm": "http://example.com/virtualization"})
         
+        
+        ordinal_number_tag = ET.SubElement(vm_info, f"vm:ordinal_number")
+        ordinal_number_tag.text = str(machine.ordinal_number)
         
         if machine.metadata:
             for machine_metadata in machine.metadata:
@@ -401,13 +404,22 @@ def parse_machine_xml(machine_xml: str) -> MachineParameters:
 
 
         metadata = []
+        ordinal_number = None
+        
         metadata_el = get_required_xml_tag(domain, "metadata/vm:info", {"vm": "http://example.com/virtualization"})
         
         for child_metadata in metadata_el:
-            tag = child_metadata.tag.split("}", 1)[-1]  # strip namespace element
+            # strip namespace element
+            tag = child_metadata.tag.split("}", 1)[-1]  
+            
             if child_metadata.text is not None:
-                metadata.append(MachineMetadata(tag=tag, value=child_metadata.text))
+                if tag == "ordinal_number":
+                    ordinal_number = int(child_metadata.text)
+                else:
+                    metadata.append(MachineMetadata(tag=tag, value=child_metadata.text))
 
+        if ordinal_number is None:
+            raise ValueError("No ordinal number found in doman XML.")
 
         ram = int(get_required_xml_tag_text(domain, "memory"))
         vcpu = int(get_required_xml_tag_text(domain, "vcpu"))
@@ -470,6 +482,7 @@ def parse_machine_xml(machine_xml: str) -> MachineParameters:
         return MachineParameters(
             uuid=uuid,
             title=title,
+            ordinal_number=ordinal_number,
             description=description,
             metadata=metadata if metadata else None,
             ram=ram,

@@ -71,7 +71,8 @@ class MachineGraphicalFramebuffer(BaseModel):
 
 class MachineParameters(BaseModel):
     uuid: UUID | None = None                   
-    title: str                                                                             
+    title: str
+    ordinal_number: int                                                                             
     description: Optional[str] = None
     
     metadata: Optional[list[MachineMetadata]] = None 

@@ -18,7 +18,7 @@ def get_machine_properties_payload(machine_uuid: UUID, skip_membership_check: bo
         raise HTTPException(status_code=500, detail="Requested data of a machine that is not managed by Cherry VM Studio.")
     
     with LibvirtConnection("ro") as libvirt_connection:
-        parsed_machine = parse_machine_xml(libvirt_connection.lookupByUUID(machine_uuid.bytes).XMLDesc())
+        parsed_machine = parse_machine_xml(libvirt_connection.lookupByUUID(machine_uuid.bytes).XMLDesc()) # pyright: ignore[reportArgumentType]
 
     machine_disks = [StaticDiskInfo(system=True, name=parsed_machine.system_disk.name, size_bytes=parsed_machine.system_disk.size, type=parsed_machine.system_disk.type)]
     
@@ -28,6 +28,7 @@ def get_machine_properties_payload(machine_uuid: UUID, skip_membership_check: bo
     return MachinePropertiesPayload(
         uuid = machine_uuid,
         title = parsed_machine.title,
+        ordinal_number = str(parsed_machine.ordinal_number),
         tags = [machine_metadata.value for machine_metadata in parsed_machine.metadata] if parsed_machine.metadata is not None else None,
         description = parsed_machine.description,
         owner = get_machine_owner(machine_uuid),
@@ -35,7 +36,7 @@ def get_machine_properties_payload(machine_uuid: UUID, skip_membership_check: bo
         disks = machine_disks,
         connections = get_machine_connections(machine_uuid),
         interfaces = get_machine_network_interfaces(machine_uuid)
-    )
+        )
    
     
 def get_machine_properties_payloads_by_uuids(machine_uuids: set[UUID] | list[UUID]) -> dict[UUID, MachinePropertiesPayload]: 

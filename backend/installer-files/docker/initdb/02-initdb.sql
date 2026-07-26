@@ -159,7 +159,7 @@ CREATE TABLE machine_name_counters (
     owner_uuid UUID NOT NULL,
     name VARCHAR(50) NOT NULL,
     free_ids INT[] NOT NULL,
-    current_max INT NOT NULL DEFAULT 1,
+    current_max INT NOT NULL DEFAULT 0,
     PRIMARY KEY(owner_uuid, name),
     FOREIGN KEY (owner_uuid) REFERENCES administrators(uuid) ON DELETE CASCADE
 );

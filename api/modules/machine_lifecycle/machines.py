@@ -5,21 +5,148 @@ import libvirt
 import asyncio
 import copy
 
-from typing import Optional, List
+from typing import Optional, List, Any
 from uuid import UUID, uuid4
+from bisect import insort
+from contextlib import AsyncExitStack
+from psycopg import AsyncConnection
+from psycopg_pool import AsyncConnectionPool
 
+from config.env_config import ENV_CONFIG
 from modules.libvirt_socket import LibvirtConnection
 from modules.machine_lifecycle.remote_access import update_machine_clients
-from modules.machine_lifecycle.models import MachineParameters, CreateMachineForm, MachineBulkSpec, ConnectionPermissions, ModifyMachineForm, InternetInterface, MachineNetworkInterface
+from modules.machine_lifecycle.models import MachineParameters, CreateMachineForm, MachineBulkSpec, ConnectionPermissions, ModifyMachineForm, InternetInterface
 from modules.machine_lifecycle.xml_translator import create_machine_xml, parse_machine_xml, translate_machine_form_to_machine_parameters
 from modules.machine_lifecycle.disks import delete_machine_disk, machine_disks_cleanup, create_machine_disk
-from modules.machine_lifecycle.networks import get_network_bridge_ip, attach_internet_interface, detach_internet_interface, attach_network_interface, detach_network_interface
+from modules.machine_lifecycle.networks import get_network_bridge_ip, attach_internet_interface, detach_internet_interface
+from modules.machine_state.queries import get_machine_owner_uuid
 from modules.postgresql.main import async_pool
 from modules.postgresql.simple_select import select_single_field
 from utils.mac import generate_random_mac
-from config.env_config import ENV_CONFIG
 
 logger = logging.getLogger(__name__)
+
+################################
+#          Helpers
+################################
+class NameCounter:
+    
+    def __init__(self, async_connection_pool: AsyncConnectionPool[Any], owner_uuid: UUID, machine_name: str):
+        self.async_connection_pool = async_connection_pool
+        self.owner_uuid = owner_uuid
+        self.machine_name = machine_name
+        
+        self.free_ids: list[int] = []
+        self.current_max: int = 0
+        
+        self._exit_stack: AsyncExitStack | None = None
+        self._connection: AsyncConnection | None = None
+        
+
+    async def __aenter__(self) -> NameCounter:
+        # Registers all opened context managers. When stack is closed it performs cleanup callbacks and closes them freeing the resources.
+        # This variable is an integral part of every async context manager.
+        self._exit_stack = AsyncExitStack()
+        
+        # This part adds async psycopg connection from the pool to the AsyncExitStack starting a transaction. This way correct cleanup is ensured. 
+        self._connection = await self._exit_stack.enter_async_context(self.async_connection_pool.connection())
+
+        # In order to block concurrent operations on the same (owner_uuid, name) combination in machine_name_counters table, a PostgreSQL advisory lock is acquired.
+        await self._acquire_lock()
+
+        # Only after locking given (owner_uuid, name) combination queries can be performed to retireve current state or create a new record
+        await self._load_state()
+        
+        # After the initial setup, instance of the context manager is returned to be used
+        return self
+    
+    
+    async def __aexit__(self, exc_type, exc, tb) -> bool:
+        # Check whether any excpetion occured during the execution of the code inside the context manager. If not, save the state to the database.
+        try:
+            if exc_type is None:
+                await self._save_state()
+        # This is a standard cleanup procedure in async context managers.
+        # _exit_stack contains all open references to this context manager and open connections to the db taken from the pool
+        # aclose() ensures that they are dereferenced and closed correctly - this is called reagardless of any error that might have occured during the performed operations
+        finally:
+            if self._exit_stack is not None:
+                await self._exit_stack.aclose()
+                self._exit_stack = None
+                self._connection = None
+                
+        return False
+    
+    def _lock_key(self) -> str:
+            return f"{self.owner_uuid}:{self.machine_name}"
+        
+    async def _acquire_lock(self) -> None:
+        if self._connection is not None:
+            await self._connection.execute("SELECT pg_advisory_xact_lock(hashtextexntended(%s, 0))")
+        else:
+            raise Exception(f"Connection to the Database is not open. Cannot acquire resource lock for {self.owner_uuid}:{self.machine_name}.")
+    
+    
+    async def _load_state(self) -> None:
+        if self._connection is not None:
+            # Try to insert new record - if it already exists the ignore the conflict. 
+            # This is actually faster than querying a record with SELECT and checking if it actually exists and only then performing INSERT operation.
+            await self._connection.execute(
+                """
+                INSERT INTO machine_name_counters (owner_uuid, name, free_ids, current_max) 
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (owner_uuid, name) DO NOTHING
+                """, 
+                (self.owner_uuid, self.machine_name, [], 0)
+            )
+        
+            cursor = await self._connection.execute(
+                """
+                SELECT free_ids, current_max
+                FROM machine_name_counters
+                WHERE owner_uuid = %s AND name = %s
+                """,
+                (self.owner_uuid, self.machine_name)
+                                                    
+            )
+            
+            row = await cursor.fetchone()
+            
+            if row is None:
+                raise Exception(f"Failed to load machine name counter state for {self.owner_uuid}:{self.machine_name}.")
+            
+            self.free_ids = list(row[0])
+            self.current_max = int(row[1])
+        
+        else:
+            raise Exception(f"Connection to the Database is not open. Cannot load state for {self.owner_uuid}:{self.machine_name}.")
+    
+    
+    async def _save_state(self) -> None:
+        if self._connection is not None:
+            await self._connection.execute(
+                """
+                UPDATE machine_name_counters
+                SET free_ids = %s, current_max = %s
+                WHERE owner_uuid = %s AND name = %s
+                """,
+                (self.free_ids, self.current_max, self.owner_uuid, self.machine_name)
+            )
+            
+        else:
+            raise Exception(f"Connection to the Database is not open. Cannot save state for {self.owner_uuid}:{self.machine_name}.")
+    
+   
+    def get_next(self) -> int:
+        if self.free_ids:
+            return self.free_ids.pop(0)
+        else:
+            self.current_max += 1
+            return self.current_max
+    
+    
+    def release(self, ordinal_number: int) -> None:
+        insort(self.free_ids, ordinal_number)
 
 ################################
 #          Creation
@@ -33,6 +160,9 @@ async def create_machine_async(machine: CreateMachineForm, owner_uuid: UUID) -> 
     machine_parameters = translate_machine_form_to_machine_parameters(machine)
     
     machine_parameters.uuid = uuid4()
+    
+    async with NameCounter(async_pool, owner_uuid, machine.title) as counter:
+        machine_parameters.ordinal_number = counter.get_next()
     
     insert_owner = """
         INSERT INTO deployed_machines_owners (machine_uuid, owner_uuid)
@@ -255,30 +385,30 @@ async def create_machine_async_bulk(machines: List[MachineBulkSpec], owner_uuid:
     
     machine_clones: list[MachineParameters] = []
     
-    # Creating a number of machines requires that for every on of them a new UUID is generated.
-    # In the future, to distinguish between different machines of the same "title" an ordinal number kept in the metadata will be added to the "title" property of a machine.
+    logger.debug("Creating machine clones.")
     
-    try:
-        logger.debug("Creating machine clones.")
-        
-        if group_uuid is not None:
-            for client_uuid in group_members:
-                for machine, machine_count in machines_config:
+    
+    if group_uuid is not None:
+        for client_uuid in group_members:
+            for machine, machine_count in machines_config:
+                async with NameCounter(async_pool, owner_uuid, machine.title) as counter:
                     for _ in range(machine_count):
                         machine_clone = copy.deepcopy(machine)
                         machine_clone.uuid = uuid4()
+                        machine_clone.ordinal_number = counter.get_next()
                         machine_clone.assigned_clients = {client_uuid}
                         machine_clones.append(machine_clone)
-              
-        else:
-            for machine, machine_count in machines_config:
-                for machine_clone in range(machine_count):
+            
+    else:
+        for machine, machine_count in machines_config:
+            for machine_clone in range(machine_count):
+                async with NameCounter(async_pool, owner_uuid, machine.title) as counter:
                     machine_clone = copy.deepcopy(machine)
                     machine_clone.uuid = uuid4()
+                    machine_clone.ordinal_number = counter.get_next()
                     machine_clones.append(machine_clone)
         
-    except Exception as e:
-        raise Exception(f"Failed to create machine clones for bulk creation.\n{e}")
+
         
     async with async_pool.connection() as connection:
         async with connection.cursor() as cursor:
@@ -492,6 +622,15 @@ async def delete_machine_async(machine_uuid: UUID) -> bool:
         # In case the machine_parameters is not a valid instance of MachineParameters model, this step is skipped.
         if isinstance(machine_parameters, MachineParameters):
             
+            owner_uuid = get_machine_owner_uuid(machine_uuid)
+            
+            if owner_uuid is not None:
+                async with NameCounter(async_pool, owner_uuid, machine_parameters.title) as counter:
+                    counter.release(machine_parameters.ordinal_number)
+            else:
+                logger.error(f"Could not find owner of machine {machine_uuid}. Cannot update machine_name_counters table for name {machine_parameters.title}.")
+            
+            
             system_disk = machine_parameters.system_disk
             additional_disks = machine_parameters.additional_disks
             
@@ -607,6 +746,7 @@ async def modify_machine_internet_connectivity(machine_uuid: UUID, enable_intern
             
                     except Exception as e:
                         raise Exception(f"Failed to modify the Internet connectivity for machine {machine_uuid}:\n{e}")
+
 
 async def modify_machine(machine_uuid: UUID, form: ModifyMachineForm):
     if form.title is not None:
