@@ -28,7 +28,7 @@ def get_network_bridge_ip(network_id: Union[UUID, str]) -> str:
     """
     with LibvirtConnection("ro") as libvirt_connection:
         if isinstance(network_id, UUID):
-            network = libvirt_connection.networkLookupByUUID(network_id.bytes) # pyright: ignore[reportArgumentType] # pyright: ignore[reportArgumentType]
+            network = libvirt_connection.networkLookupByUUID(network_id.bytes)  
         else:
             network = libvirt_connection.networkLookupByName(network_id)
         
@@ -48,7 +48,7 @@ def get_machine_framebuffer_port(machine_uuid: UUID) -> str:
     Find framebuffer port of a given machine.
     """
     with LibvirtConnection("ro") as libvirt_connection:
-        machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
+        machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) 
         
         machine_xml = machine.XMLDesc()
         
@@ -91,7 +91,7 @@ def attach_internet_interface(machine_uuid: UUID) -> None:
     
     with LibvirtConnection("rw") as libvirt_connection:
         try:
-            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
+            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) 
             
             machine.attachDeviceFlags(interface_xml, establish_libvirt_affect_flags(machine_uuid))
             
@@ -131,7 +131,7 @@ def detach_internet_interface(machine_uuid: UUID) -> None:
 
     with LibvirtConnection("rw") as libvirt_connection:
         try:
-            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
+            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) 
                         
             machine.detachDeviceFlags(interface_minimal_xml, establish_libvirt_affect_flags(machine_uuid))
             
@@ -169,7 +169,7 @@ def attach_network_interface(machine_uuid: UUID, network_interface: MachineNetwo
 
     with LibvirtConnection("rw") as libvirt_connection:
         try:
-            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
+            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) 
             
             machine.attachDeviceFlags(interface_xml, establish_libvirt_affect_flags(machine_uuid))
             
@@ -202,7 +202,7 @@ def detach_network_interface(machine_uuid: UUID, mac_address: str) -> None:
     
     with LibvirtConnection("rw") as libvirt_connection:
         try:
-            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
+            machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) 
                         
             machine.detachDeviceFlags(interface_minimal_xml, establish_libvirt_affect_flags(machine_uuid))
             
@@ -297,7 +297,7 @@ def delete_internal_network(intnet_uuid: UUID) -> None:
     
     with LibvirtConnection("rw") as libvirt_connection:
         try:
-            network = libvirt_connection.networkLookupByUUID(intnet_uuid.bytes) # pyright: ignore[reportArgumentType]
+            network = libvirt_connection.networkLookupByUUID(intnet_uuid.bytes) 
             network.destroy()
             network.undefine()
             
@@ -325,7 +325,7 @@ def modify_internal_network(intnet_uuid: UUID, internal_network_set_form: Intern
     if internal_network_set_form.bridge_ip is not None:
         with LibvirtConnection("rw") as libvirt_connection:
             try:
-                network = libvirt_connection.networkLookupByUUID(intnet_uuid.bytes) # pyright: ignore[reportArgumentType]
+                network = libvirt_connection.networkLookupByUUID(intnet_uuid.bytes) 
                                     
                 network_xml = network.XMLDesc(0)
                 

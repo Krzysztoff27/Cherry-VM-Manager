@@ -167,4 +167,4 @@ def check_machine_membership(machine_uuid: UUID) -> bool:
 
 def check_machine_existence(uuid: UUID) -> bool:  
     with LibvirtConnection("ro") as libvirt_readonly_connection:
-        return libvirt_readonly_connection.lookupByUUID(uuid.bytes) is not None # pyright: ignore[reportArgumentType]
+        return libvirt_readonly_connection.lookupByUUID(uuid.bytes) is not None 

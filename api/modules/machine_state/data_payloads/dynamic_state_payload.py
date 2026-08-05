@@ -23,7 +23,7 @@ def get_machine_state_payload(machine_uuid: UUID, skip_membership_check: bool = 
         raise HTTPException(status_code=500, detail="Requested data of a machine that is not managed by Cherry VM Studio.")
     
     with LibvirtConnection("ro") as libvirt_connection:
-        machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) # pyright: ignore[reportArgumentType]
+        machine = libvirt_connection.lookupByUUID(machine_uuid.bytes) 
         parsed_machine = parse_machine_xml(machine.XMLDesc())
     
     is_active: bool = machine.state()[0] == libvirt.VIR_DOMAIN_RUNNING
